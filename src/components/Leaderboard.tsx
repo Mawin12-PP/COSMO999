@@ -786,14 +786,6 @@ export function Leaderboard() {
 
       {viewSwitcher}
 
-      {showRoast ? (
-        <div className="overflow-hidden rounded-full border border-danger/30 bg-danger/10 py-1.5 px-3">
-          <p className="animate-marquee whitespace-nowrap text-xs font-semibold text-danger">
-            <Flame className="mr-1 inline size-3 align-[-0.125em]" aria-hidden />
-            ข่าวด่วน: {sorted[0].player.name} นำโด่ง ส่วน {lowestEntry.player.name} รับจบเลี้ยงทั้งวง...
-          </p>
-        </div>
-      ) : null}
 
       <Podium
         entries={podiumEntries}

@@ -114,6 +114,17 @@ function RoundSetupInner({
   // empty, nothing is marked applied, and the next players update retries.
   const appliedTriggerRef = useRef<number | null>(null);
 
+  function getRandomMultiplier(): number {
+    const rand = Math.random() * 100;
+    if (rand < 5) return 1;
+    if (rand < 15) return 2;
+    if (rand < 25) return 4;
+    if (rand < 50) return 5;
+    if (rand < 75) return 8;
+    if (rand < 95) return 10;
+    return 20;
+  }
+
   // In-page preset trigger (e.g. from LatestRoundCard "เล่นกลุ่มเดิมอีกครั้ง")
   useEffect(() => {
     if (!presetTrigger || !presetTrigger.ids.length) return;
@@ -124,8 +135,10 @@ function RoundSetupInner({
     if (validIds.length > 0) {
       appliedTriggerRef.current = presetTrigger.timestamp;
       setSelectedIds(validIds);
-      setMultiplier(1);
-      setIsRandom(false);
+      // Auto-randomize multiplier when replaying the same group
+      const nextMultiplier = getRandomMultiplier();
+      setMultiplier(nextMultiplier);
+      setIsRandom(true);
       setRoundPlayers([]);
       setStep("setup");
     }
@@ -147,17 +160,7 @@ function RoundSetupInner({
   }
 
   function randomizeMultiplier() {
-    const rand = Math.random() * 100;
-    let next = 1;
-    if (rand < 5) next = 1;
-    else if (rand < 15) next = 2;
-    else if (rand < 25) next = 4;
-    else if (rand < 50) next = 5;
-    else if (rand < 75) next = 8;
-    else if (rand < 95) next = 10;
-    else next = 20;
-
-    setMultiplier(next);
+    setMultiplier(getRandomMultiplier());
     setIsRandom(true);
   }
 
