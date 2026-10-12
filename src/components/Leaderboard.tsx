@@ -8,16 +8,24 @@
 // champions and last-place finishers from the same history - also read-only.
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
+  Activity,
   CalendarX,
   Crown,
   Medal,
+  PiggyBank,
+  Shield,
+  ShieldAlert,
   Spade,
+  Sparkles,
+  Sun,
+  Target,
   TriangleAlert,
   Trophy,
   Users,
   Flame,
   Banknote,
   Ghost,
+  Zap,
   type LucideIcon,
 } from "lucide-react";
 import { AnimatedNumber } from "@/components/AnimatedNumber";
@@ -28,6 +36,12 @@ import { useHistory } from "@/hooks/useHistory";
 import { getHallOfFame, getTrophyCounts, type PeriodResult } from "@/lib/honors";
 import { aggregatePeriod } from "@/lib/leaderboard";
 import { getCurrentPeriod, listPeriodsInHistory } from "@/lib/periods";
+import {
+  computePeriodPlayerStats,
+  getPersonalTitle,
+  type PersonalTitle,
+  type TitleIcon,
+} from "@/lib/titles";
 import type { Player } from "@/types/models";
 
 // Matches the JS animation duration in AnimatedNumber / --duration-slow, so
@@ -131,6 +145,46 @@ function TrophyBadge({ count }: { count: number }) {
   );
 }
 
+const TITLE_ICON_MAP: Record<TitleIcon, React.ComponentType<{ className?: string }>> = {
+  Crown,
+  PiggyBank,
+  Target,
+  Flame,
+  Zap,
+  Activity,
+  Sparkles,
+  Shield,
+  ShieldAlert,
+  Sun,
+  Ghost,
+};
+
+function PersonalTitleBadge({
+  title,
+  className = "",
+}: {
+  title: PersonalTitle;
+  className?: string;
+}) {
+  const Icon = TITLE_ICON_MAP[title.iconName] ?? Sparkles;
+  const toneClasses = {
+    accent: "bg-accent/20 text-accent",
+    danger: "bg-danger/20 text-danger",
+    success: "bg-emerald-400/20 text-emerald-400",
+    muted: "bg-surface-raised text-text-muted",
+  }[title.tone];
+
+  return (
+    <span
+      title={title.description}
+      className={`flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold leading-tight ${toneClasses} ${className}`}
+    >
+      <Icon className="size-3 shrink-0" aria-hidden />
+      <span>{title.title}</span>
+    </span>
+  );
+}
+
 const PODIUM_STYLE: Record<
   1 | 2 | 3,
   { pedestal: string; height: string; avatar: string }
@@ -157,16 +211,16 @@ function PodiumCard({
   player,
   score,
   championCount,
+  personalTitle,
   showLatestScore,
-  showPeriodBadge,
   pulsing,
 }: {
   rank: 1 | 2 | 3;
   player: Player;
   score: number;
   championCount: number;
+  personalTitle: PersonalTitle;
   showLatestScore: boolean;
-  showPeriodBadge: boolean;
   pulsing: boolean;
 }) {
   const style = PODIUM_STYLE[rank];
@@ -198,16 +252,7 @@ function PodiumCard({
           {player.name}
         </p>
         <TrophyBadge count={championCount} />
-        {rank === 1 ? (
-          <span className="flex items-center gap-1 rounded-full bg-accent/20 px-2 py-0.5 text-center text-[10px] font-bold leading-tight text-accent">
-            <Flame className="size-3 shrink-0" />{" "}
-            {showPeriodBadge ? "เซียนไพ่ประจำงวด" : "ตัวตึง"}
-          </span>
-        ) : (
-          <span className="flex items-center gap-1 rounded-full bg-surface-raised px-2 py-0.5 text-[10px] font-medium text-text-muted">
-            <Ghost className="size-3" /> ทรงอย่างแบด
-          </span>
-        )}
+        <PersonalTitleBadge title={personalTitle} className="text-center" />
       </div>
       <AnimatedNumber
         value={score}
@@ -230,12 +275,15 @@ function Podium({
   entries,
   pulsingIds,
   showLatestScore,
-  showPeriodBadge,
 }: {
-  entries: Array<{ player: Player; score: number; championCount: number }>;
+  entries: Array<{
+    player: Player;
+    score: number;
+    championCount: number;
+    personalTitle: PersonalTitle;
+  }>;
   pulsingIds: Set<string>;
   showLatestScore: boolean;
-  showPeriodBadge: boolean;
 }) {
   const slots: Array<1 | 2 | 3> = [2, 1, 3];
   return (
@@ -250,8 +298,8 @@ function Podium({
             player={entry.player}
             score={entry.score}
             championCount={entry.championCount}
+            personalTitle={entry.personalTitle}
             showLatestScore={showLatestScore}
-            showPeriodBadge={showPeriodBadge}
             pulsing={pulsingIds.has(entry.player.id)}
           />
         );
@@ -288,7 +336,7 @@ function RoastCallout({
       </div>
       <div className="min-w-0 flex-1">
         <p className="text-xs font-semibold tracking-wide text-danger">
-          {showPeriodBadge ? "หมูแจกแต้มประจำงวด" : "หมูแจกแต้ม"}
+          {showPeriodBadge ? "เลี้ยงทั้งวง" : "นายทุนตลอดกาล"}
         </p>
         <p className="truncate font-semibold">{player.name}</p>
       </div>
@@ -305,6 +353,7 @@ function LeaderboardRow({
   score,
   championCount,
   rank,
+  personalTitle,
   showLatestScore,
   pulsing,
   delayMs,
@@ -313,6 +362,7 @@ function LeaderboardRow({
   score: number;
   championCount: number;
   rank: number;
+  personalTitle: PersonalTitle;
   showLatestScore: boolean;
   pulsing: boolean;
   delayMs: number;
@@ -327,16 +377,10 @@ function LeaderboardRow({
       </span>
       <PlayerAvatar player={player} className="size-10 text-base" />
       <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 flex-wrap">
           <p className="truncate font-medium">{player.name}</p>
           <TrophyBadge count={championCount} />
-          <span
-            className={`flex shrink-0 items-center gap-1 rounded-full bg-surface-raised px-2 py-0.5 text-[10px] font-medium text-text-muted ${
-              championCount > 0 ? "max-sm:hidden" : ""
-            }`}
-          >
-            <Ghost className="size-3" /> ผู้ทรงศีล
-          </span>
+          <PersonalTitleBadge title={personalTitle} />
         </div>
         {showLatestScore ? (
           <LatestScoreLabel latestScore={player.latestScore} />
@@ -597,6 +641,10 @@ export function Leaderboard() {
       : visiblePlayers.length === 0;
   const trophyCounts = useMemo(() => getTrophyCounts(history), [history]);
   const hallOfFame = useMemo(() => getHallOfFame(history), [history]);
+  const periodStats = useMemo(
+    () => computePeriodPlayerStats(history, viewKey),
+    [history, viewKey],
+  );
 
   const pulsingIds = usePulseOnChange(scores, viewKey);
 
@@ -681,16 +729,45 @@ export function Leaderboard() {
   }
 
   const showLatestScore = viewKey === "all";
-  const scored = visiblePlayers.map((player) => ({
+  const roundsList = Object.values(periodStats).map((s) => s.roundsPlayed);
+  const maxRoundsInGroup = roundsList.length > 0 ? Math.max(...roundsList) : 0;
+  const isAllTime = viewKey === "all";
+  const trophyCountsValues = Object.values(trophyCounts).map((t) => t.championCount);
+  const maxChampionCountInGroup =
+    trophyCountsValues.length > 0 ? Math.max(...trophyCountsValues) : 0;
+
+  const preScored = visiblePlayers.map((player) => ({
     player,
     score: scores[player.id] ?? 0,
     championCount: trophyCounts[player.id]?.championCount ?? 0,
   }));
-  const sorted = [...scored].sort((a, b) => b.score - a.score);
-  const podiumEntries = sorted.slice(0, 3);
-  const restEntries = sorted.slice(3);
-  const lowestEntry = sorted[sorted.length - 1];
-  const showRoast = sorted.length >= 2;
+  const sorted = [...preScored].sort((a, b) => b.score - a.score);
+  const totalRanked = sorted.length;
+
+  const scoredWithTitles = sorted.map((entry, index) => {
+    const rank = index + 1;
+    const personalTitle = getPersonalTitle(
+      periodStats[entry.player.id],
+      rank,
+      totalRanked,
+      maxRoundsInGroup,
+      {
+        isAllTime,
+        championCount: entry.championCount,
+        maxChampionCountInGroup,
+      },
+    );
+    return {
+      ...entry,
+      rank,
+      personalTitle,
+    };
+  });
+
+  const podiumEntries = scoredWithTitles.slice(0, 3);
+  const restEntries = scoredWithTitles.slice(3);
+  const lowestEntry = scoredWithTitles[scoredWithTitles.length - 1];
+  const showRoast = scoredWithTitles.length >= 2;
   const showPeriodBadge = isCurrentPeriodView && showRoast;
 
   return (
@@ -713,7 +790,7 @@ export function Leaderboard() {
         <div className="overflow-hidden rounded-full border border-danger/30 bg-danger/10 py-1.5 px-3">
           <p className="animate-marquee whitespace-nowrap text-xs font-semibold text-danger">
             <Flame className="mr-1 inline size-3 align-[-0.125em]" aria-hidden />
-            ข่าวด่วน: {sorted[0].player.name} แบกตี้จนปวดหลัง ส่วน {lowestEntry.player.name} ล้มละลาย เตรียมขอกู้เงินนอกระบบ...
+            ข่าวด่วน: {sorted[0].player.name} นำโด่ง ส่วน {lowestEntry.player.name} รับจบเลี้ยงทั้งวง...
           </p>
         </div>
       ) : null}
@@ -722,7 +799,6 @@ export function Leaderboard() {
         entries={podiumEntries}
         pulsingIds={pulsingIds}
         showLatestScore={showLatestScore}
-        showPeriodBadge={showPeriodBadge}
       />
 
       {showRoast ? (
@@ -743,6 +819,7 @@ export function Leaderboard() {
               score={entry.score}
               championCount={entry.championCount}
               rank={index + 4}
+              personalTitle={entry.personalTitle}
               showLatestScore={showLatestScore}
               pulsing={pulsingIds.has(entry.player.id)}
               delayMs={index * 60}
