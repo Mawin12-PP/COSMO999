@@ -189,21 +189,21 @@ export function getPersonalTitle(
     };
   }
 
-  if (isAllTime && totalRanked >= 2 && rank === totalRanked && stat.netScore < 0) {
+  if (isAllTime && totalRanked >= 2 && rank === totalRanked) {
     return {
       id: "all_time_sponsor",
-      title: "นายทุนตลอดกาล",
-      description: "จ่ายแต้มสะสมให้เพื่อนเยอะสุด",
+      title: "หมูแจกแต้ม",
+      description: "อันดับโหล่ตลอดกาล จ่ายแต้มให้เพื่อนเยอะสุด",
       iconName: "PiggyBank",
       tone: "danger",
     };
   }
 
-  if (!isAllTime && totalRanked >= 2 && rank === totalRanked && stat.netScore < 0) {
+  if (!isAllTime && totalRanked >= 2 && rank === totalRanked) {
     return {
       id: "period_last",
-      title: "เลี้ยงทั้งวง",
-      description: "อันดับท้ายสุด รับจบจ่ายรอบโต๊ะ",
+      title: "หมูแจกแต้ม",
+      description: "อันดับโหล่ประจำงวด รับจบจ่ายรอบโต๊ะ",
       iconName: "PiggyBank",
       tone: "danger",
     };

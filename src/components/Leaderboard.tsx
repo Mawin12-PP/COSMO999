@@ -311,12 +311,10 @@ function Podium({
 function RoastCallout({
   player,
   score,
-  showPeriodBadge,
   pulsing,
 }: {
   player: Player;
   score: number;
-  showPeriodBadge: boolean;
   pulsing: boolean;
 }) {
   return (
@@ -336,7 +334,7 @@ function RoastCallout({
       </div>
       <div className="min-w-0 flex-1">
         <p className="text-xs font-semibold tracking-wide text-danger">
-          {showPeriodBadge ? "เลี้ยงทั้งวง" : "นายทุนตลอดกาล"}
+          หมูแจกแต้ม
         </p>
         <p className="truncate font-semibold">{player.name}</p>
       </div>
@@ -619,7 +617,6 @@ export function Leaderboard() {
     : [currentPeriod, ...periodsInHistory];
   const activePeriod =
     selectablePeriods.find((period) => period.key === viewKey) ?? null;
-  const isCurrentPeriodView = viewKey === currentPeriod.key;
 
   const scores = useMemo(
     () => aggregatePeriod(history, viewKey),
@@ -768,7 +765,6 @@ export function Leaderboard() {
   const restEntries = scoredWithTitles.slice(3);
   const lowestEntry = scoredWithTitles[scoredWithTitles.length - 1];
   const showRoast = scoredWithTitles.length >= 2;
-  const showPeriodBadge = isCurrentPeriodView && showRoast;
 
   return (
     <div className="flex flex-col gap-6">
@@ -797,7 +793,6 @@ export function Leaderboard() {
         <RoastCallout
           player={lowestEntry.player}
           score={lowestEntry.score}
-          showPeriodBadge={showPeriodBadge}
           pulsing={pulsingIds.has(lowestEntry.player.id)}
         />
       ) : null}
