@@ -7,8 +7,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Dices } from "lucide-react";
 
-// Legacy multiplier ladder, kept in the same order as the prototype.
-export const MULTIPLIERS = [1, 2, 4, 5, 8, 10, 20] as const;
+// Legacy multiplier ladder + manual-only x50 multiplier.
+export const MULTIPLIERS = [1, 2, 4, 5, 8, 10, 20, 50] as const;
 
 // Kept in step with --duration-slow in globals.css: how long the dice tumbles
 // before the randomised value is committed.

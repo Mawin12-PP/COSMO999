@@ -114,6 +114,8 @@ function RoundSetupInner({
   // empty, nothing is marked applied, and the next players update retries.
   const appliedTriggerRef = useRef<number | null>(null);
 
+  // Random multiplier pool (x1 - x20). Note: x50 is strictly excluded from random
+  // and can only be selected manually.
   function getRandomMultiplier(): number {
     const rand = Math.random() * 100;
     if (rand < 5) return 1;
@@ -229,7 +231,7 @@ function RoundSetupInner({
 
       <div className="flex flex-col gap-2">
         <p className="text-sm text-text-muted">2. ตัวคูณคะแนนรอบนี้</p>
-        <div className={multiplier === 20 ? "animate-shake" : ""}>
+        <div className={multiplier >= 20 ? "animate-shake" : ""}>
           <MultiplierPicker
             value={multiplier}
             onChange={pickMultiplier}
