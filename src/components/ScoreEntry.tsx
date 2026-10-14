@@ -9,7 +9,6 @@ import { useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
   ClipboardCheck,
-  Flame,
   MessageSquareHeart,
   PartyPopper,
   RotateCcw,
@@ -150,12 +149,6 @@ export function ScoreEntry({
       <section className="reveal flex flex-col items-center gap-4 rounded-lg border border-border bg-surface p-8 text-center shadow-card">
         <PartyPopper className="size-10 text-accent" />
         <h2 className="text-lg font-semibold">บันทึกรอบแล้ว</h2>
-        {saveState.commentary ? (
-          <p className="flex items-center gap-2 rounded-md border border-danger bg-danger/10 px-3 py-2 text-sm text-danger">
-            <Flame className="size-4 shrink-0" />
-            {saveState.commentary}
-          </p>
-        ) : null}
         <button
           type="button"
           onClick={onReset}

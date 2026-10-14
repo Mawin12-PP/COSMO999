@@ -12,7 +12,6 @@ import {
   BarChart2,
   Loader2,
   TrendingUp,
-  Trophy,
   TriangleAlert,
 } from "lucide-react";
 import { AnimatedNumber } from "@/components/AnimatedNumber";
@@ -21,67 +20,21 @@ import { useHistory } from "@/hooks/useHistory";
 import { usePlayers } from "@/hooks/usePlayers";
 import { formatSignedScore } from "@/lib/format";
 import { computePlayerStats } from "@/lib/stats";
-import type { RoundDataPoint } from "@/lib/stats";
 
-// --- recharts dynamic imports (client-only, no SSR) ---
-const ResponsiveContainer = dynamic(
-  () => import("recharts").then((m) => m.ResponsiveContainer),
-  { ssr: false },
+// StatsCharts uses Recharts (browser SVG/ResizeObserver APIs), so it is loaded
+// dynamically with ssr:false to avoid server render issues.
+const StatsCharts = dynamic(
+  () => import("@/components/StatsCharts").then((m) => m.StatsCharts),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex flex-col gap-6">
+        <div className="h-64 rounded-lg border border-border bg-surface p-4 animate-pulse" />
+        <div className="h-64 rounded-lg border border-border bg-surface p-4 animate-pulse" />
+      </div>
+    ),
+  },
 );
-const LineChart = dynamic(
-  () => import("recharts").then((m) => m.LineChart),
-  { ssr: false },
-);
-const AreaChart = dynamic(
-  () => import("recharts").then((m) => m.AreaChart),
-  { ssr: false },
-);
-const Line = dynamic(() => import("recharts").then((m) => m.Line), {
-  ssr: false,
-});
-const Area = dynamic(() => import("recharts").then((m) => m.Area), {
-  ssr: false,
-});
-const XAxis = dynamic(() => import("recharts").then((m) => m.XAxis), {
-  ssr: false,
-});
-const YAxis = dynamic(() => import("recharts").then((m) => m.YAxis), {
-  ssr: false,
-});
-const CartesianGrid = dynamic(
-  () => import("recharts").then((m) => m.CartesianGrid),
-  { ssr: false },
-);
-const ReferenceLine = dynamic(
-  () => import("recharts").then((m) => m.ReferenceLine),
-  { ssr: false },
-);
-
-// Read a CSS custom property value from the document root at call time.
-// Falls back to `fallback` when running on the server or when the variable
-// is not defined. This is the only place theme colours enter chart config.
-function cssVar(name: string, fallback: string): string {
-  if (typeof window === "undefined") return fallback;
-  return (
-    getComputedStyle(document.documentElement).getPropertyValue(name).trim() ||
-    fallback
-  );
-}
-
-// Whether the visitor has requested reduced motion.
-function prefersReducedMotion(): boolean {
-  return (
-    typeof window !== "undefined" &&
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches
-  );
-}
-
-// Colour for a single-round score based on sign.
-function roundDotColour(score: number): string {
-  if (score > 0) return cssVar("--color-success", "#3ecf7f");
-  if (score < 0) return cssVar("--color-danger", "#c62330");
-  return cssVar("--color-ivory-400", "#a8a291");
-}
 
 // Stat card: label + large value. `valueClassName` swaps the big-number
 // styling for cards whose value is a row of tags instead.
@@ -111,29 +64,6 @@ function StatCard({
   );
 }
 
-// Custom dot renderer for the round-score line chart. Each dot is coloured
-// by the sign of its score value, matching legacy roundColors (L1322).
-function RoundDot(props: {
-  cx?: number;
-  cy?: number;
-  payload?: unknown;
-}) {
-  const { cx, cy, payload } = props;
-  if (cx === undefined || cy === undefined || !payload) return null;
-  const p = payload as RoundDataPoint;
-  const fill = roundDotColour(p.score);
-  return (
-    <circle
-      cx={cx}
-      cy={cy}
-      r={5}
-      fill={fill}
-      stroke={cssVar("--color-felt-900", "#0a2318")}
-      strokeWidth={2}
-    />
-  );
-}
-
 export function Stats() {
   const { history, loading: hLoading, error: hError } = useHistory();
   const { players, loading: pLoading } = usePlayers();
@@ -148,17 +78,6 @@ export function Stats() {
   }, [selectedId, history]);
 
   const selectedPlayer = players.find((p) => p.id === selectedId) ?? null;
-
-  // Chart theme tokens resolved once per render (client-side).
-  const borderColour = cssVar("--color-felt-700", "#14472f");
-  const successColour = cssVar("--color-success", "#3ecf7f");
-  const dangerColour = cssVar("--color-danger", "#c62330");
-  const mutedColour = cssVar("--color-ivory-400", "#a8a291");
-  const noAnimate = prefersReducedMotion();
-
-  // Cumulative line/area colour depends on whether the player is net positive.
-  const cumulativeTone =
-    stats && stats.totalScore >= 0 ? successColour : dangerColour;
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8">
@@ -296,95 +215,12 @@ export function Stats() {
                 </StatCard>
               </div>
 
-              {/* Chart 1: Per-round scores */}
-              <section className="rounded-lg border border-border bg-surface p-4">
-                <div className="mb-3 flex items-center gap-2">
-                  <Trophy className="size-4 text-accent" aria-hidden />
-                  <h2 className="text-sm font-semibold">คะแนนรายรอบ</h2>
-                  {stats.roundData.length < stats.totalRounds ? (
-                    <span className="ml-auto text-xs text-text-muted">
-                      {stats.roundData.length} รอบล่าสุด
-                    </span>
-                  ) : null}
-                </div>
-                <ResponsiveContainer width="100%" height={200}>
-                  <LineChart
-                    data={stats.roundData}
-                    margin={{ top: 20, right: 16, bottom: 8, left: 0 }}
-                  >
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      stroke={borderColour}
-                      opacity={0.4}
-                    />
-                    <XAxis
-                      dataKey="label"
-                      tick={{ fill: mutedColour, fontSize: 11 }}
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <YAxis hide />
-                    <ReferenceLine y={0} stroke={mutedColour} strokeDasharray="4 2" />
-                    <Line
-                      type="monotone"
-                      dataKey="score"
-                      stroke={mutedColour}
-                      strokeWidth={2}
-                      dot={<RoundDot />}
-                      activeDot={{ r: 7 }}
-                      isAnimationActive={!noAnimate}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </section>
-
-              {/* Chart 2: Cumulative */}
-              <section className="rounded-lg border border-border bg-surface p-4">
-                <div className="mb-3 flex items-center gap-2">
-                  <TrendingUp className="size-4 text-accent" aria-hidden />
-                  <h2 className="text-sm font-semibold">คะแนนสะสม</h2>
-                </div>
-                <ResponsiveContainer width="100%" height={200}>
-                  <AreaChart
-                    data={stats.cumulativeData}
-                    margin={{ top: 20, right: 16, bottom: 8, left: 0 }}
-                  >
-                    <defs>
-                      <linearGradient id="cumGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor={cumulativeTone} stopOpacity={0.35} />
-                        <stop offset="95%" stopColor={cumulativeTone} stopOpacity={0.0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      stroke={borderColour}
-                      opacity={0.4}
-                    />
-                    <XAxis
-                      dataKey="label"
-                      tick={{ fill: mutedColour, fontSize: 11 }}
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <YAxis hide />
-                    <ReferenceLine y={0} stroke={mutedColour} strokeDasharray="4 2" />
-                    <Area
-                      type="monotone"
-                      dataKey="cumulative"
-                      stroke={cumulativeTone}
-                      strokeWidth={3}
-                      fill="url(#cumGradient)"
-                      dot={{
-                        fill: cssVar("--color-gold-400", "#e6c878"),
-                        stroke: cssVar("--color-felt-900", "#0a2318"),
-                        strokeWidth: 2,
-                        r: 4,
-                      }}
-                      isAnimationActive={!noAnimate}
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </section>
+              <StatsCharts
+                roundData={stats.roundData}
+                cumulativeData={stats.cumulativeData}
+                totalRounds={stats.totalRounds}
+                totalScore={stats.totalScore}
+              />
             </div>
           )}
         </>

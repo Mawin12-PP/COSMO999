@@ -190,7 +190,7 @@ export function GroupScoreDialog({
                       {isLastPlace ? (
                         <Badge
                           icon={PiggyBank}
-                          label="สปอนเซอร์กลุ่ม"
+                          label="หมูแจกแต้ม"
                           className="bg-danger/15 text-danger"
                         />
                       ) : null}

@@ -10,7 +10,6 @@ import { useState } from "react";
 import {
   ClipboardList,
   Loader2,
-  MessageSquare,
   RefreshCw,
   TriangleAlert,
   Undo2,
@@ -90,17 +89,6 @@ function HistoryCard({
           );
         })}
       </ul>
-
-      {/* Commentary line (lucide icon leads, no emoji) */}
-      {entry.commentary ? (
-        <p className="flex items-start gap-1.5 text-xs italic text-text-muted">
-          <MessageSquare
-            className="mt-0.5 size-3.5 shrink-0 text-accent"
-            aria-hidden
-          />
-          {entry.commentary}
-        </p>
-      ) : null}
 
       {/* Undo button for this round */}
       <button

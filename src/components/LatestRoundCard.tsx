@@ -7,7 +7,7 @@
 // timestamp, per-player score breakdown, commentary roast, and an instant
 // "เล่นกลุ่มเดิมอีกครั้ง" shortcut button with inline player count guards.
 import { useState } from "react";
-import { Clock, Flame, RotateCcw, Sparkles, Dices } from "lucide-react";
+import { Clock, RotateCcw, Sparkles, Dices } from "lucide-react";
 import { PlayerAvatar } from "@/components/PlayerAvatar";
 import type { HistoryEntry, Player } from "@/types/models";
 
@@ -142,15 +142,6 @@ export function LatestRoundCard({
         })}
       </div>
 
-      {/* Commentary Roast Box */}
-      {latestMatch.commentary && latestMatch.commentary.trim() !== "" ? (
-        <div className="flex items-start gap-2.5 rounded-md border border-accent/30 bg-accent/10 p-3 text-xs text-accent">
-          <Flame className="mt-0.5 size-4 shrink-0 text-accent" aria-hidden />
-          <p className="font-medium leading-relaxed">
-            {latestMatch.commentary}
-          </p>
-        </div>
-      ) : null}
 
       {/* Error Message */}
       {errorMsg ? (
