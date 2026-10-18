@@ -3,8 +3,7 @@
 // Play page: set up a round, plus the roster tools for adding, editing, and
 // removing players. Ultra-Premium iOS 18 typography and frosted badges.
 import { useState } from "react";
-import { Loader2, TriangleAlert, Wifi } from "lucide-react";
-import { CreatePlayerForm } from "@/components/CreatePlayerForm";
+import { Loader2, Plus, TriangleAlert, Wifi } from "lucide-react";
 import { LatestRoundCard } from "@/components/LatestRoundCard";
 import { PlayerList } from "@/components/PlayerList";
 import { RoundSetup } from "@/components/RoundSetup";
@@ -16,6 +15,7 @@ export default function HomePage() {
   const { players, loading, error } = usePlayers();
   const { history, loading: historyLoading } = useHistory();
   const [presetTrigger, setPresetTrigger] = useState<PresetTrigger | null>(null);
+  const [isAddPlayerOpen, setIsAddPlayerOpen] = useState(false);
 
   function handlePlayAgain(playerIds: string[]) {
     setPresetTrigger({ ids: playerIds, timestamp: Date.now() });
@@ -76,15 +76,30 @@ export default function HomePage() {
         </div>
 
         <section className="reveal flex flex-col gap-4">
-          <div>
-            <h2 className="text-xl font-semibold tracking-tight text-[#1C1C1E] dark:text-[#F2F2F7]">จัดการผู้เล่น</h2>
-            <p className="mt-0.5 text-sm text-[#8E8E93] dark:text-[#98989D]">
-              เพิ่ม แก้ไข หรือลบผู้เล่นในวง
-            </p>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <h2 className="text-xl font-semibold tracking-tight text-[#1C1C1E] dark:text-[#F2F2F7]">จัดการผู้เล่น</h2>
+              <p className="mt-0.5 text-sm text-[#8E8E93] dark:text-[#98989D]">
+                เพิ่ม แก้ไข หรือลบผู้เล่นในวง
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsAddPlayerOpen(true)}
+              className="flex min-h-[48px] items-center justify-center gap-2 self-start sm:self-auto bg-[#007AFF] text-white rounded-full px-5 py-2.5 sm:px-6 sm:py-3 font-semibold shadow-md active:scale-95 transition-all cursor-pointer"
+            >
+              <Plus className="size-5 stroke-[2.5]" />
+              <span>เพิ่มผู้เล่นใหม่</span>
+            </button>
           </div>
 
-          <CreatePlayerForm />
-          <PlayerList players={players} loading={loading} />
+          <PlayerList
+            players={players}
+            loading={loading}
+            isAddOpen={isAddPlayerOpen}
+            onOpenAdd={() => setIsAddPlayerOpen(true)}
+            onCloseAdd={() => setIsAddPlayerOpen(false)}
+          />
         </section>
       </div>
     </div>

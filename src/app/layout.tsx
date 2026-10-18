@@ -38,7 +38,7 @@ export default function RootLayout({
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
-          enableSystem
+          enableSystem={true}
           disableTransitionOnChange
         >
           <div className="min-h-dvh bg-[var(--background)] md:flex">
