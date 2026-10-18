@@ -1,12 +1,51 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 /*
-  COSMO999 theme foundation - Ultra-Premium Apple iOS 18 Aesthetic (Light Mode).
-  Palette: Authentic iOS Materials (#F2F2F7), frosted glass (bg-white/80 backdrop-blur-2xl),
-  deep near-black text (#1C1C1E), secondary gray (#8E8E93),
-  and vibrant iOS Blue gradient (#2E8BFF to #007AFF) with diffused Apple depth.
+  COSMO999 Apple iOS Theme Variables:
+  - Light Mode (:root): Background (#F2F2F7), Card (#FFFFFF), Primary Text (#1C1C1E), Secondary Text (#8E8E93), Divider (#E5E5EA)
+  - Dark Mode (.dark): Background (#000000), Card (#1C1C1E), Primary Text (#F2F2F7), Secondary Text (#98989D), Divider (#38383A)
 */
+:root {
+  --background: #F2F2F7;
+  --card: #FFFFFF;
+  --text-primary: #1C1C1E;
+  --text-secondary: #8E8E93;
+  --divider: #E5E5EA;
+
+  --color-bg: #F2F2F7;
+  --color-surface: #FFFFFF;
+  --color-surface-raised: #FFFFFF;
+  --color-border: #E5E5EA;
+  --color-border-strong: #D1D1D6;
+  --color-text: #1C1C1E;
+  --color-text-muted: #8E8E93;
+}
+
+.dark {
+  --background: #000000;
+  --card: #1C1C1E;
+  --text-primary: #F2F2F7;
+  --text-secondary: #98989D;
+  --divider: #38383A;
+
+  --color-bg: #000000;
+  --color-surface: #1C1C1E;
+  --color-surface-raised: #2C2C2E;
+  --color-border: #38383A;
+  --color-border-strong: #48484A;
+  --color-text: #F2F2F7;
+  --color-text-muted: #98989D;
+}
+
 @theme {
+  --color-background: var(--background);
+  --color-card: var(--card);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-divider: var(--divider);
+
   /* iOS Raw palette scale */
   --color-ios-gray-50: #f9f9fb;
   --color-ios-gray-100: #f2f2f7;
@@ -29,15 +68,6 @@
   --color-copper-500: #c4975a;
 
   /* Semantic tokens */
-  --color-bg: #f2f2f7;
-  --color-surface: #ffffff;
-  --color-surface-raised: #f2f2f7;
-  --color-border: #e5e5ea;
-  --color-border-strong: #d1d1d6;
-
-  --color-text: #1c1c1e;
-  --color-text-muted: #8e8e93;
-
   --color-accent: #007aff;
   --color-accent-strong: #0062cc;
   --color-on-accent: #ffffff;
@@ -47,7 +77,6 @@
   --color-on-danger: #ffffff;
 
   --color-success: #34c759;
-
   --color-suit-red: #ff3b30;
 
   /* Rank-2 / rank-3 podium colours */
@@ -151,8 +180,8 @@
 }
 
 body {
-  background-color: #f2f2f7;
-  color: #1c1c1e;
+  background-color: var(--background);
+  color: var(--text-primary);
   font-family: var(--font-sans);
   min-height: 100dvh;
   -webkit-font-smoothing: antialiased;

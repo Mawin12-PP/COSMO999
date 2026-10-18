@@ -106,22 +106,22 @@ export function GroupScoreDialog({
         if (event.target === event.currentTarget) dismiss();
       }}
       aria-labelledby="group-score-title"
-      className="m-auto max-h-[calc(100dvh-2rem)] w-[min(26rem,calc(100vw-2rem))] overflow-y-auto rounded-[20px] border border-black/[0.04] bg-white p-0 text-[#1C1C1E] shadow-2xl backdrop:bg-black/30 backdrop:backdrop-blur-sm"
+      className="m-auto max-h-[calc(100dvh-2rem)] w-[min(26rem,calc(100vw-2rem))] overflow-y-auto rounded-[20px] border border-black/[0.04] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] p-0 text-[#1C1C1E] dark:text-[#F2F2F7] shadow-2xl backdrop:bg-black/40 backdrop:backdrop-blur-sm"
     >
       <div className="flex flex-col gap-5 p-5 sm:p-6">
         {/* Header */}
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <span className="grid size-8 place-items-center rounded-full bg-blue-50 text-[#007AFF] shadow-xs">
+              <span className="grid size-8 place-items-center rounded-full bg-blue-50 dark:bg-blue-500/15 text-[#007AFF] dark:text-[#2E8BFF] shadow-xs">
                 <BarChart2 className="size-4 shrink-0" aria-hidden />
               </span>
-              <h2 id="group-score-title" className="text-base font-semibold leading-snug text-[#1C1C1E]">
+              <h2 id="group-score-title" className="text-base font-semibold leading-snug text-[#1C1C1E] dark:text-[#F2F2F7]">
                 คะแนนรวมกลุ่ม: {group.name}
               </h2>
             </div>
             {stats ? (
-              <p className="mt-1 flex items-center gap-1.5 text-xs text-[#8E8E93]">
+              <p className="mt-1 flex items-center gap-1.5 text-xs text-[#8E8E93] dark:text-[#98989D]">
                 <Gamepad2 className="size-3.5 shrink-0" aria-hidden />
                 ดวลกันไปแล้วทั้งหมด {formatNumber(stats.totalRounds)} รอบ
               </p>
@@ -131,14 +131,14 @@ export function GroupScoreDialog({
             type="button"
             onClick={dismiss}
             aria-label="ปิด"
-            className="flex size-11 min-h-[44px] min-w-[44px] items-center justify-center -mr-2 -mt-2 rounded-full text-[#8E8E93] transition-all duration-200 ease-out active:scale-[0.97] hover:bg-black/[0.04] hover:text-[#1C1C1E]"
+            className="flex size-11 min-h-[44px] min-w-[44px] items-center justify-center -mr-2 -mt-2 rounded-full text-[#8E8E93] dark:text-[#98989D] transition-all duration-200 ease-out active:scale-[0.97] hover:bg-black/[0.04] hover:text-[#1C1C1E] dark:hover:bg-white/[0.06] dark:hover:text-[#F2F2F7]"
           >
             <X className="size-5" />
           </button>
         </div>
 
         {/* Ranked iOS Grouped List */}
-        <ol className="rounded-[16px] border border-black/[0.04] bg-white shadow-2xs overflow-hidden divide-y divide-gray-100/80">
+        <ol className="rounded-[16px] border border-black/[0.04] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] shadow-2xs overflow-hidden divide-y divide-gray-100/80 dark:divide-[#38383A]">
           {ranked.map(({ pId, player, score }, index) => {
             const rank = index + 1;
             const record = stats?.records[pId];
@@ -148,7 +148,7 @@ export function GroupScoreDialog({
             return (
               <li
                 key={pId}
-                className="flex min-h-[52px] items-center gap-3 p-3.5 transition-colors hover:bg-gray-50/60 active:bg-gray-100/60"
+                className="flex min-h-[52px] items-center gap-3 p-3.5 transition-colors hover:bg-gray-50/60 active:bg-gray-100/60 dark:hover:bg-white/[0.04] dark:active:bg-white/[0.08]"
               >
                 {/* Rank number */}
                 <span
@@ -161,14 +161,14 @@ export function GroupScoreDialog({
                 {player ? (
                   <PlayerAvatar player={player} className="size-9 text-xs shrink-0" />
                 ) : (
-                  <span className="flex size-9 shrink-0 items-center justify-center rounded-full border border-black/[0.06] bg-black/[0.04] text-xs text-[#8E8E93]">
+                  <span className="flex size-9 shrink-0 items-center justify-center rounded-full border border-black/[0.06] dark:border-[#38383A] bg-black/[0.04] dark:bg-white/[0.04] text-xs text-[#8E8E93] dark:text-[#98989D]">
                     ?
                   </span>
                 )}
 
                 {/* Name, nickname badges, win/loss record */}
                 <div className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-semibold text-[#1C1C1E]">
+                  <span className="block truncate text-sm font-semibold text-[#1C1C1E] dark:text-[#F2F2F7]">
                     {player ? player.name : "(ถูกลบ)"}
                   </span>
                   {isLeader || isLastPlace || isNemesis ? (
@@ -177,27 +177,27 @@ export function GroupScoreDialog({
                         <Badge
                           icon={Crown}
                           label="เจ้ามือประจำกลุ่ม"
-                          className="bg-blue-50/80 border border-blue-500/20 text-[#007AFF]"
+                          className="bg-blue-50/80 border border-blue-500/20 text-[#007AFF] dark:bg-blue-500/15 dark:border-blue-500/30 dark:text-[#2E8BFF]"
                         />
                       ) : null}
                       {isLastPlace ? (
                         <Badge
                           icon={PiggyBank}
                           label="หมูแจกแต้ม"
-                          className="bg-red-50/80 border border-red-500/20 text-[#FF3B30]"
+                          className="bg-red-50/80 border border-red-500/20 text-[#FF3B30] dark:bg-red-500/15 dark:border-red-500/30 dark:text-[#FF453A]"
                         />
                       ) : null}
                       {isNemesis ? (
                         <Badge
                           icon={Target}
                           label="มือปราบแชมป์"
-                          className="bg-black/[0.04] text-[#1C1C1E]"
+                          className="bg-black/[0.04] dark:bg-white/[0.06] text-[#1C1C1E] dark:text-[#F2F2F7]"
                         />
                       ) : null}
                     </div>
                   ) : null}
                   {record ? (
-                    <p className="mt-0.5 text-xs tabular-nums text-[#8E8E93]">
+                    <p className="mt-0.5 text-xs tabular-nums text-[#8E8E93] dark:text-[#98989D]">
                       ชนะ {record.wins} • แพ้ {record.losses}
                       {record.winRate !== null
                         ? ` (${Math.round(record.winRate)}%)`
@@ -221,7 +221,7 @@ export function GroupScoreDialog({
         <button
           type="button"
           onClick={dismiss}
-          className="flex min-h-[48px] w-full items-center justify-center rounded-full border border-black/[0.06] bg-white px-6 py-3 text-base font-semibold text-[#1C1C1E] shadow-xs transition-all duration-200 ease-out active:scale-[0.97] hover:bg-gray-50"
+          className="flex min-h-[48px] w-full items-center justify-center rounded-full border border-black/[0.06] dark:border-[#38383A] bg-white dark:bg-[#2C2C2E] px-6 py-3 text-base font-semibold text-[#1C1C1E] dark:text-[#F2F2F7] shadow-xs transition-all duration-200 ease-out active:scale-[0.97] hover:bg-gray-50 dark:hover:bg-[#38383A]"
         >
           ปิด
         </button>

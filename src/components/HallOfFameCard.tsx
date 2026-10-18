@@ -12,7 +12,7 @@ import type { Player } from "@/types/models";
 
 function MetaPill({ icon: Icon, text }: { icon: LucideIcon; text: string }) {
   return (
-    <span className="flex items-center gap-1 rounded-full border border-black/[0.04] bg-white/70 px-2.5 py-1 text-xs font-medium text-[#8E8E93] shadow-2xs">
+    <span className="flex items-center gap-1 rounded-full border border-black/[0.04] dark:border-[#38383A] bg-white/70 dark:bg-[#2C2C2E] px-2.5 py-1 text-xs font-medium text-[#8E8E93] dark:text-[#98989D] shadow-2xs">
       <Icon className="size-3.5" aria-hidden />
       {text}
     </span>
@@ -33,7 +33,7 @@ function HonoreeAvatar({
   ) : (
     <span
       aria-hidden
-      className={`${className} flex shrink-0 items-center justify-center rounded-full border border-black/[0.06] bg-black/[0.04] text-[#8E8E93]`}
+      className={`${className} flex shrink-0 items-center justify-center rounded-full border border-black/[0.06] dark:border-[#38383A] bg-black/[0.04] dark:bg-white/[0.06] text-[#8E8E93] dark:text-[#98989D]`}
     >
       ?
     </span>
@@ -92,7 +92,7 @@ function Honoree({
       </div>
       <div className="flex w-full min-w-0 flex-col items-center">
         {ids.map((id) => (
-          <p key={id} className="w-full truncate text-sm font-semibold text-[#1C1C1E]">
+          <p key={id} className="w-full truncate text-sm font-semibold text-[#1C1C1E] dark:text-[#F2F2F7]">
             {players.find((p) => p.id === id)?.name ?? "(ถูกลบ)"}
           </p>
         ))}
@@ -121,11 +121,11 @@ export function HallOfFameCard({
 
   return (
     <li
-      className="reveal flex flex-col gap-4 rounded-[20px] border border-black/[0.04] bg-white p-5 sm:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)]"
+      className="reveal flex flex-col gap-4 rounded-[20px] border border-black/[0.04] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] p-5 sm:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)]"
       style={{ animationDelay: `${delayMs}ms` }}
     >
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-black/[0.04] pb-3">
-        <h3 className="text-base font-semibold tracking-tight text-[#1C1C1E]">งวด {result.period.label}</h3>
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-black/[0.04] dark:border-[#38383A] pb-3">
+        <h3 className="text-base font-semibold tracking-tight text-[#1C1C1E] dark:text-[#F2F2F7]">งวด {result.period.label}</h3>
         <div className="flex items-center gap-2">
           <MetaPill icon={Gamepad2} text={`${formatNumber(result.roundCount)} รอบ`} />
           <MetaPill icon={Users} text={`${formatNumber(result.playerCount)} คน`} />
@@ -143,9 +143,9 @@ export function HallOfFameCard({
         />
         <div className="flex flex-col items-center gap-0.5 text-center px-2">
           <span className="text-base font-black tracking-widest text-[#007AFF]">VS</span>
-          <span className="text-[11px] text-[#8E8E93]">
+          <span className="text-[11px] text-[#8E8E93] dark:text-[#98989D]">
             ผลต่าง{" "}
-            <span className="font-semibold whitespace-nowrap text-[#1C1C1E]">{formatNumber(gap)}</span>
+            <span className="font-semibold whitespace-nowrap text-[#1C1C1E] dark:text-[#F2F2F7]">{formatNumber(gap)}</span>
           </span>
         </div>
         <Honoree

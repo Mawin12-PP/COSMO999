@@ -43,19 +43,19 @@ function HistoryRow({
   const timeStr = new Date(entry.timestamp).toLocaleString("th-TH");
 
   return (
-    <article className="flex flex-col gap-3.5 p-4 sm:p-5 transition-colors hover:bg-gray-50/60">
+    <article className="flex flex-col gap-3.5 p-4 sm:p-5 transition-colors hover:bg-gray-50/60 dark:hover:bg-[#2C2C2E]/40">
       {/* Header row: time + group name + multiplier badge */}
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="flex flex-col gap-0.5">
           <time
             dateTime={entry.timestamp}
-            className="text-xs text-[#8E8E93] tabular-nums"
+            className="text-xs text-[#8E8E93] dark:text-[#98989D] tabular-nums"
           >
             {timeStr}
           </time>
-          <span className="text-base font-semibold text-[#1C1C1E]">{entry.groupName}</span>
+          <span className="text-base font-semibold text-[#1C1C1E] dark:text-[#F2F2F7]">{entry.groupName}</span>
         </div>
-        <span className="shrink-0 rounded-full bg-blue-50/80 border border-blue-500/20 px-3 py-1 text-xs font-semibold tabular-nums text-[#007AFF]">
+        <span className="shrink-0 rounded-full bg-blue-50/80 dark:bg-blue-950/40 border border-blue-500/20 px-3 py-1 text-xs font-semibold tabular-nums text-[#007AFF]">
           x{entry.multiplier}
         </span>
       </div>
@@ -67,12 +67,12 @@ function HistoryRow({
           return (
             <li
               key={pId}
-              className="flex min-h-[36px] items-center gap-2 rounded-xl border border-black/[0.04] bg-white px-3 py-1.5 shadow-2xs"
+              className="flex min-h-[36px] items-center gap-2 rounded-xl border border-black/[0.04] dark:border-[#38383A] bg-white dark:bg-[#2C2C2E] px-3 py-1.5 shadow-2xs"
             >
               {player ? (
                 <PlayerAvatar player={player} className="size-6 text-xs shrink-0" />
               ) : null}
-              <span className="text-xs font-semibold text-[#1C1C1E]">
+              <span className="text-xs font-semibold text-[#1C1C1E] dark:text-[#F2F2F7]">
                 {player ? player.name : "(ถูกลบ)"}
               </span>
               <span
@@ -90,7 +90,7 @@ function HistoryRow({
         <button
           type="button"
           onClick={() => onUndo(entry.id)}
-          className="flex min-h-[44px] items-center gap-2 rounded-full border border-black/[0.06] bg-white px-4 py-2 text-xs font-semibold text-[#8E8E93] shadow-2xs transition-all duration-200 ease-out active:scale-[0.97] hover:border-red-200 hover:bg-red-50 hover:text-[#FF3B30]"
+          className="flex min-h-[44px] items-center gap-2 rounded-full border border-black/[0.06] dark:border-[#38383A] bg-white dark:bg-[#2C2C2E] px-4 py-2 text-xs font-semibold text-[#8E8E93] dark:text-[#98989D] shadow-2xs transition-all duration-200 ease-out active:scale-[0.97] hover:border-red-200 dark:hover:border-red-900/40 hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-[#FF3B30]"
         >
           <Undo2 className="size-4" aria-hidden />
           ยกเลิกผลรอบนี้
@@ -161,10 +161,10 @@ export function History() {
       {/* Page header */}
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-[#1C1C1E] sm:text-3xl">
+          <h1 className="text-2xl font-semibold tracking-tight text-[#1C1C1E] dark:text-[#F2F2F7] sm:text-3xl">
             ประวัติการเล่น
           </h1>
-          <p className="mt-1 text-sm text-[#8E8E93]">
+          <p className="mt-1 text-sm text-[#8E8E93] dark:text-[#98989D]">
             {sorted.length > 0
               ? `${sorted.length} รอบ — เรียงล่าสุดก่อน`
               : "\u00a0"}
@@ -176,7 +176,7 @@ export function History() {
             setRecalcError(null);
             setRecalcPending(true);
           }}
-          className="flex min-h-[44px] items-center gap-2 rounded-full border border-black/[0.06] bg-white px-4 py-2.5 text-xs font-semibold text-[#8E8E93] shadow-xs transition-all duration-200 ease-out active:scale-[0.97] hover:bg-gray-50 hover:text-[#1C1C1E]"
+          className="flex min-h-[44px] items-center gap-2 rounded-full border border-black/[0.06] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] px-4 py-2.5 text-xs font-semibold text-[#8E8E93] dark:text-[#98989D] shadow-xs transition-all duration-200 ease-out active:scale-[0.97] hover:bg-gray-50 dark:hover:bg-[#2C2C2E] hover:text-[#1C1C1E] dark:hover:text-[#F2F2F7]"
         >
           <RefreshCw className="size-4" aria-hidden />
           คำนวณคะแนนใหม่จากประวัติ
@@ -186,7 +186,7 @@ export function History() {
       {/* Loading state */}
       {loading ? (
         <div
-          className="flex flex-col items-center gap-3 py-20 text-[#8E8E93]"
+          className="flex flex-col items-center gap-3 py-20 text-[#8E8E93] dark:text-[#98989D]"
           aria-live="polite"
           aria-label="กำลังโหลด"
         >
@@ -200,25 +200,25 @@ export function History() {
         >
           <TriangleAlert className="size-8" aria-hidden />
           <p className="text-sm font-semibold">โหลดประวัติไม่สำเร็จ</p>
-          <p className="text-xs text-[#8E8E93]">
+          <p className="text-xs text-[#8E8E93] dark:text-[#98989D]">
             กรุณาตรวจสอบอินเทอร์เน็ตแล้วรีเฟรชหน้า
           </p>
         </div>
       ) : sorted.length === 0 ? (
-        <div className="flex flex-col items-center gap-4 rounded-[20px] border border-black/[0.04] bg-white p-12 text-center shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-          <div className="grid size-14 place-items-center rounded-full bg-black/[0.04] text-[#8E8E93]">
+        <div className="flex flex-col items-center gap-4 rounded-[20px] border border-black/[0.04] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] p-12 text-center shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none">
+          <div className="grid size-14 place-items-center rounded-full bg-black/[0.04] dark:bg-white/[0.06] text-[#8E8E93] dark:text-[#98989D]">
             <ClipboardList className="size-7" aria-hidden />
           </div>
           <div>
-            <p className="font-semibold text-[#1C1C1E]">ยังไม่มีประวัติการเล่น</p>
-            <p className="mt-1 text-sm text-[#8E8E93]">
+            <p className="font-semibold text-[#1C1C1E] dark:text-[#F2F2F7]">ยังไม่มีประวัติการเล่น</p>
+            <p className="mt-1 text-sm text-[#8E8E93] dark:text-[#98989D]">
               บันทึกรอบแรกจากหน้าหลักเพื่อเริ่มติดตามคะแนน
             </p>
           </div>
         </div>
       ) : (
         /* iOS Grouped List */
-        <div className="rounded-[20px] border border-black/[0.04] bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden divide-y divide-gray-100/80">
+        <div className="rounded-[20px] border border-black/[0.04] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none overflow-hidden divide-y divide-gray-100/80 dark:divide-[#38383A]">
           {sorted.map((entry) => (
             <HistoryRow
               key={entry.id}

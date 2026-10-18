@@ -67,7 +67,7 @@ function PlayerRow({ player }: { player: Player }) {
   }
 
   return (
-    <li className="p-4 transition-colors hover:bg-gray-50/60">
+    <li className="p-4 transition-colors hover:bg-gray-50/60 dark:hover:bg-[#2C2C2E]/40">
       <div className="flex items-center gap-3">
         <PlayerAvatar player={player} className="size-11 text-base shrink-0" />
 
@@ -80,10 +80,10 @@ function PlayerRow({ player }: { player: Player }) {
               setName(event.target.value);
               setError(null);
             }}
-            className="min-h-[44px] min-w-0 flex-1 rounded-xl border border-black/[0.08] bg-white/90 px-3.5 py-2 text-base font-semibold text-[#1C1C1E] outline-none focus:border-[#007AFF] focus:ring-2 focus:ring-blue-500/20"
+            className="min-h-[44px] min-w-0 flex-1 rounded-xl border border-black/[0.08] dark:border-[#38383A] bg-white/90 dark:bg-[#2C2C2E] px-3.5 py-2 text-base font-semibold text-[#1C1C1E] dark:text-[#F2F2F7] outline-none focus:border-[#007AFF] focus:ring-2 focus:ring-blue-500/20"
           />
         ) : (
-          <p className="min-w-0 flex-1 truncate text-base font-semibold text-[#1C1C1E]">{player.name}</p>
+          <p className="min-w-0 flex-1 truncate text-base font-semibold text-[#1C1C1E] dark:text-[#F2F2F7]">{player.name}</p>
         )}
 
         <div className="flex shrink-0 items-center gap-1">
@@ -93,7 +93,7 @@ function PlayerRow({ player }: { player: Player }) {
                 type="button"
                 onClick={enterEdit}
                 aria-label={`แก้ไข ${player.name}`}
-                className="flex size-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-xl text-[#8E8E93] transition-all duration-200 ease-out active:scale-[0.97] active:bg-blue-50 active:text-[#007AFF] hover:bg-blue-50/70 hover:text-[#007AFF]"
+                className="flex size-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-xl text-[#8E8E93] dark:text-[#98989D] transition-all duration-200 ease-out active:scale-[0.97] active:bg-blue-50 dark:active:bg-blue-950/40 active:text-[#007AFF] hover:bg-blue-50/70 dark:hover:bg-blue-950/30 hover:text-[#007AFF]"
               >
                 <Pencil className="size-4.5" />
               </button>
@@ -101,7 +101,7 @@ function PlayerRow({ player }: { player: Player }) {
                 type="button"
                 onClick={() => setMode("confirm-delete")}
                 aria-label={`ลบ ${player.name}`}
-                className="flex size-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-xl text-[#8E8E93] transition-all duration-200 ease-out active:scale-[0.97] active:bg-red-50 active:text-[#FF3B30] hover:bg-red-50/70 hover:text-[#FF3B30]"
+                className="flex size-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-xl text-[#8E8E93] dark:text-[#98989D] transition-all duration-200 ease-out active:scale-[0.97] active:bg-red-50 dark:active:bg-red-950/40 active:text-[#FF3B30] hover:bg-red-50/70 dark:hover:bg-red-950/30 hover:text-[#FF3B30]"
               >
                 <Trash2 className="size-4.5" />
               </button>
@@ -128,7 +128,7 @@ function PlayerRow({ player }: { player: Player }) {
                 onClick={resetToView}
                 disabled={pending}
                 aria-label="ยกเลิก"
-                className="flex size-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-xl text-[#8E8E93] transition-all duration-200 ease-out active:scale-[0.97] hover:bg-gray-100 disabled:opacity-50"
+                className="flex size-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-xl text-[#8E8E93] dark:text-[#98989D] transition-all duration-200 ease-out active:scale-[0.97] hover:bg-gray-100 dark:hover:bg-[#2C2C2E] disabled:opacity-50"
               >
                 <X className="size-5" />
               </button>
@@ -138,11 +138,11 @@ function PlayerRow({ player }: { player: Player }) {
       </div>
 
       {mode === "edit" ? (
-        <div className="mt-3 flex flex-col gap-2 border-t border-gray-100/80 pt-3">
+        <div className="mt-3 flex flex-col gap-2 border-t border-gray-100/80 dark:border-[#38383A] pt-3">
           <button
             type="button"
             onClick={() => fileRef.current?.click()}
-            className="flex min-h-[44px] items-center self-start rounded-xl border border-black/[0.06] bg-gray-50 px-4 py-2 text-xs font-semibold text-[#007AFF] transition-all duration-200 ease-out active:scale-[0.97] hover:bg-white"
+            className="flex min-h-[44px] items-center self-start rounded-xl border border-black/[0.06] dark:border-[#38383A] bg-gray-50 dark:bg-[#2C2C2E] px-4 py-2 text-xs font-semibold text-[#007AFF] transition-all duration-200 ease-out active:scale-[0.97] hover:bg-white dark:hover:bg-[#38383A]"
           >
             {fileName ?? "เปลี่ยนรูป"}
           </button>
@@ -159,8 +159,8 @@ function PlayerRow({ player }: { player: Player }) {
       ) : null}
 
       {mode === "confirm-delete" ? (
-        <div className="mt-3 flex flex-col gap-3 rounded-2xl border border-red-200/80 bg-red-50/80 p-4 text-sm backdrop-blur-sm">
-          <p className="text-[#1C1C1E]">
+        <div className="mt-3 flex flex-col gap-3 rounded-2xl border border-red-200/80 dark:border-red-900/40 bg-red-50/80 dark:bg-red-950/30 p-4 text-sm backdrop-blur-sm">
+          <p className="text-[#1C1C1E] dark:text-[#F2F2F7]">
             ลบ <span className="font-bold text-[#FF3B30]">{player.name}</span> ?
             คะแนนรวมของผู้เล่นคนนี้จะหายไปด้วย
           </p>
@@ -182,7 +182,7 @@ function PlayerRow({ player }: { player: Player }) {
               type="button"
               onClick={resetToView}
               disabled={pending}
-              className="flex min-h-[44px] items-center rounded-full border border-black/[0.06] bg-white px-5 py-2 text-xs font-medium text-[#1C1C1E] shadow-2xs transition-all duration-200 ease-out active:scale-[0.97] hover:bg-gray-50 disabled:opacity-50"
+              className="flex min-h-[44px] items-center rounded-full border border-black/[0.06] dark:border-[#38383A] bg-white dark:bg-[#2C2C2E] px-5 py-2 text-xs font-medium text-[#1C1C1E] dark:text-[#F2F2F7] shadow-2xs transition-all duration-200 ease-out active:scale-[0.97] hover:bg-gray-50 dark:hover:bg-[#38383A] disabled:opacity-50"
             >
               ยกเลิก
             </button>
@@ -203,19 +203,19 @@ export function PlayerList({
   loading: boolean;
 }) {
   if (loading) {
-    return <p className="text-sm text-[#8E8E93]">กำลังโหลดรายชื่อผู้เล่น...</p>;
+    return <p className="text-sm text-[#8E8E93] dark:text-[#98989D]">กำลังโหลดรายชื่อผู้เล่น...</p>;
   }
 
   if (players.length === 0) {
     return (
-      <p className="rounded-[20px] border border-black/[0.04] bg-white p-6 text-center text-sm text-[#8E8E93] shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+      <p className="rounded-[20px] border border-black/[0.04] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] p-6 text-center text-sm text-[#8E8E93] dark:text-[#98989D] shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none">
         ยังไม่มีผู้เล่น เพิ่มคนแรกได้จากแบบฟอร์มด้านบน
       </p>
     );
   }
 
   return (
-    <ul className="bg-white rounded-[20px] overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] divide-y divide-gray-100/80 border border-black/[0.04]">
+    <ul className="bg-white dark:bg-[#1C1C1E] rounded-[20px] overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none divide-y divide-gray-100/80 dark:divide-[#38383A] border border-black/[0.04] dark:border-[#38383A]">
       {players.map((player) => (
         <PlayerRow key={player.id} player={player} />
       ))}

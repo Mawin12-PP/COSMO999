@@ -26,8 +26,8 @@ const StatsCharts = dynamic(
     ssr: false,
     loading: () => (
       <div className="flex flex-col gap-6">
-        <div className="h-64 rounded-[20px] border border-black/[0.04] bg-white p-4 animate-pulse shadow-sm" />
-        <div className="h-64 rounded-[20px] border border-black/[0.04] bg-white p-4 animate-pulse shadow-sm" />
+        <div className="h-64 rounded-[20px] border border-black/[0.04] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] p-4 animate-pulse shadow-sm" />
+        <div className="h-64 rounded-[20px] border border-black/[0.04] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] p-4 animate-pulse shadow-sm" />
       </div>
     ),
   },
@@ -49,11 +49,11 @@ function StatCard({
       ? "text-[#34C759]"
       : tone === "negative"
         ? "text-[#FF3B30]"
-        : "text-[#1C1C1E]";
+        : "text-[#1C1C1E] dark:text-[#F2F2F7]";
 
   return (
-    <div className="flex flex-col gap-1.5 rounded-[20px] border border-black/[0.04] bg-white p-4 sm:p-5 shadow-[0_4px_20px_rgb(0,0,0,0.03)]">
-      <span className="text-xs font-semibold uppercase tracking-wider text-[#8E8E93]">{label}</span>
+    <div className="flex flex-col gap-1.5 rounded-[20px] border border-black/[0.04] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] p-4 sm:p-5 shadow-[0_4px_20px_rgb(0,0,0,0.03)]">
+      <span className="text-xs font-semibold uppercase tracking-wider text-[#8E8E93] dark:text-[#98989D]">{label}</span>
       <span className={`${valueClassName} ${toneClass}`}>{children}</span>
     </div>
   );
@@ -78,10 +78,10 @@ export function Stats() {
     <div className="mx-auto max-w-2xl px-1 sm:px-4 py-4 sm:py-6">
       {/* Page header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold tracking-tight text-[#1C1C1E] sm:text-3xl">
+        <h1 className="text-2xl font-semibold tracking-tight text-[#1C1C1E] dark:text-[#F2F2F7] sm:text-3xl">
           สถิติ
         </h1>
-        <p className="mt-1 text-sm text-[#8E8E93]">
+        <p className="mt-1 text-sm text-[#8E8E93] dark:text-[#98989D]">
           ประวัติการเล่นและกราฟคะแนนรายผู้เล่น
         </p>
       </div>
@@ -89,30 +89,30 @@ export function Stats() {
       {/* Global loading / error */}
       {loading ? (
         <div
-          className="flex flex-col items-center gap-3 py-20 text-[#8E8E93]"
+          className="flex flex-col items-center gap-3 py-20 text-[#8E8E93] dark:text-[#98989D]"
           aria-live="polite"
         >
-          <Loader2 className="size-8 animate-spin text-[#007AFF]" aria-hidden />
+          <Loader2 className="size-8 animate-spin text-[#007AFF] dark:text-[#2E8BFF]" aria-hidden />
           <span className="text-sm font-medium">กำลังโหลดข้อมูล...</span>
         </div>
       ) : hError ? (
-        <div className="flex flex-col items-center gap-3 py-20 text-[#FF3B30]" role="alert">
+        <div className="flex flex-col items-center gap-3 py-20 text-[#FF3B30] dark:text-[#FF453A]" role="alert">
           <TriangleAlert className="size-8" aria-hidden />
           <p className="text-sm font-semibold">โหลดประวัติไม่สำเร็จ</p>
-          <p className="text-xs text-[#8E8E93]">กรุณาตรวจสอบอินเทอร์เน็ตแล้วรีเฟรชหน้า</p>
+          <p className="text-xs text-[#8E8E93] dark:text-[#98989D]">กรุณาตรวจสอบอินเทอร์เน็ตแล้วรีเฟรชหน้า</p>
         </div>
       ) : (
         <>
           {/* Player selector with min 48px height */}
           <div className="mb-6 flex flex-col gap-2">
-            <label htmlFor="stats-player-select" className="text-xs font-semibold uppercase tracking-wider text-[#8E8E93]">
+            <label htmlFor="stats-player-select" className="text-xs font-semibold uppercase tracking-wider text-[#8E8E93] dark:text-[#98989D]">
               เลือกผู้เล่น
             </label>
             <select
               id="stats-player-select"
               value={selectedId}
               onChange={(e) => setSelectedId(e.target.value)}
-              className="flex min-h-[48px] w-full rounded-2xl border border-black/[0.06] bg-white px-4 py-3 text-base font-semibold text-[#1C1C1E] shadow-xs focus:border-[#007AFF] focus:outline-none sm:max-w-xs"
+              className="flex min-h-[48px] w-full rounded-2xl border border-black/[0.06] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] px-4 py-3 text-base font-semibold text-[#1C1C1E] dark:text-[#F2F2F7] shadow-xs focus:border-[#007AFF] focus:outline-none sm:max-w-xs"
             >
               <option value="">เลือกผู้เล่นเพื่อดูสถิติ...</option>
               {players.map((p) => (
@@ -125,43 +125,43 @@ export function Stats() {
 
           {/* No player selected yet */}
           {!selectedId ? (
-            <div className="flex flex-col items-center gap-4 rounded-[20px] border border-black/[0.04] bg-white p-12 text-center text-[#8E8E93] shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-              <div className="grid size-14 place-items-center rounded-full bg-blue-50 text-[#007AFF] shadow-xs">
+            <div className="flex flex-col items-center gap-4 rounded-[20px] border border-black/[0.04] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] p-12 text-center text-[#8E8E93] dark:text-[#98989D] shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+              <div className="grid size-14 place-items-center rounded-full bg-blue-50 dark:bg-blue-500/15 text-[#007AFF] dark:text-[#2E8BFF] shadow-xs">
                 <BarChart2 className="size-7" aria-hidden />
               </div>
               <p className="text-base font-medium">เลือกผู้เล่นด้านบนเพื่อดูสถิติ</p>
             </div>
           ) : stats === null ? (
-            <div className="flex flex-col items-center gap-4 rounded-[20px] border border-black/[0.04] bg-white p-12 text-center text-[#8E8E93] shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-              <div className="grid size-14 place-items-center rounded-full bg-black/[0.04] text-[#8E8E93]">
+            <div className="flex flex-col items-center gap-4 rounded-[20px] border border-black/[0.04] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] p-12 text-center text-[#8E8E93] dark:text-[#98989D] shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+              <div className="grid size-14 place-items-center rounded-full bg-black/[0.04] dark:bg-white/[0.06] text-[#8E8E93] dark:text-[#98989D]">
                 <TrendingUp className="size-7" aria-hidden />
               </div>
               <div className="text-center">
-                <p className="font-semibold text-[#1C1C1E]">ยังไม่มีประวัติการเล่น</p>
-                <p className="mt-1 text-sm text-[#8E8E93]">บันทึกรอบแรกเพื่อเริ่มติดตามสถิติ</p>
+                <p className="font-semibold text-[#1C1C1E] dark:text-[#F2F2F7]">ยังไม่มีประวัติการเล่น</p>
+                <p className="mt-1 text-sm text-[#8E8E93] dark:text-[#98989D]">บันทึกรอบแรกเพื่อเริ่มติดตามสถิติ</p>
               </div>
             </div>
           ) : (
             <div className="reveal flex flex-col gap-6">
               {/* Profile header */}
               {selectedPlayer ? (
-                <div className="flex items-center gap-4 rounded-[20px] border border-black/[0.04] bg-white p-4 sm:p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+                <div className="flex items-center gap-4 rounded-[20px] border border-black/[0.04] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] p-4 sm:p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
                   <PlayerAvatar player={selectedPlayer} className="size-14 text-xl shrink-0" />
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-[#8E8E93]">ข้อมูลสถิติของ</p>
-                    <p className="text-lg font-bold text-[#1C1C1E]">{selectedPlayer.name}</p>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-[#8E8E93] dark:text-[#98989D]">ข้อมูลสถิติของ</p>
+                    <p className="text-lg font-bold text-[#1C1C1E] dark:text-[#F2F2F7]">{selectedPlayer.name}</p>
                     <p
                       className={`text-base font-bold tabular-nums ${
                         stats.totalScore > 0
                           ? "text-[#34C759]"
                           : stats.totalScore < 0
                             ? "text-[#FF3B30]"
-                            : "text-[#8E8E93]"
+                            : "text-[#8E8E93] dark:text-[#98989D]"
                       }`}
                     >
                       <AnimatedNumber value={stats.totalScore} grouped /> คะแนน
                     </p>
-                    <p className="text-xs tabular-nums text-[#8E8E93]">
+                    <p className="text-xs tabular-nums text-[#8E8E93] dark:text-[#98989D]">
                       (คะแนนดิบ: {formatSignedScore(stats.rawTotal)})
                     </p>
                   </div>
@@ -191,7 +191,7 @@ export function Stats() {
                 <StatCard label="ชนะ / แพ้" tone="neutral">
                   <span className="text-xl font-bold">
                     <span className="text-[#34C759]">{stats.wins}</span>
-                    <span className="text-[#8E8E93] text-sm"> / </span>
+                    <span className="text-[#8E8E93] dark:text-[#98989D] text-sm"> / </span>
                     <span className="text-[#FF3B30]">{stats.losses}</span>
                   </span>
                 </StatCard>
@@ -203,13 +203,13 @@ export function Stats() {
                     stats.multiplierWins.map(({ multiplier, count }) => (
                       <span
                         key={multiplier}
-                        className="rounded-full bg-blue-50/80 border border-blue-500/20 px-2.5 py-1 text-[#007AFF]"
+                        className="rounded-full bg-blue-50/80 border border-blue-500/20 px-2.5 py-1 text-[#007AFF] dark:bg-blue-500/15 dark:border-blue-500/30 dark:text-[#2E8BFF]"
                       >
                         x{multiplier} ({count})
                       </span>
                     ))
                   ) : (
-                    <span className="text-2xl font-bold text-[#8E8E93]">-</span>
+                    <span className="text-2xl font-bold text-[#8E8E93] dark:text-[#98989D]">-</span>
                   )}
                 </StatCard>
               </div>

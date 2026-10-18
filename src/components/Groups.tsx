@@ -52,15 +52,15 @@ function GroupCard({
   }
 
   return (
-    <article className="reveal flex flex-col justify-between gap-5 rounded-[20px] border border-black/[0.04] bg-white p-5 sm:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all">
+    <article className="reveal flex flex-col justify-between gap-5 rounded-[20px] border border-black/[0.04] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] p-5 sm:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all">
       {/* Group name + member list */}
       <div className="flex items-start gap-3.5">
-        <span className="grid size-10 shrink-0 place-items-center rounded-full bg-blue-50 text-[#007AFF] shadow-xs">
+        <span className="grid size-10 shrink-0 place-items-center rounded-full bg-blue-50 dark:bg-blue-500/15 text-[#007AFF] dark:text-[#2E8BFF] shadow-xs">
           <Users className="size-5" aria-hidden />
         </span>
         <div className="min-w-0 flex-1">
-          <h2 className="truncate text-base font-semibold tracking-tight text-[#1C1C1E]">{group.name}</h2>
-          <p className="mt-1 text-xs text-[#8E8E93] leading-relaxed">
+          <h2 className="truncate text-base font-semibold tracking-tight text-[#1C1C1E] dark:text-[#F2F2F7]">{group.name}</h2>
+          <p className="mt-1 text-xs text-[#8E8E93] dark:text-[#98989D] leading-relaxed">
             {memberLabel(group.playerIds, players)}
           </p>
         </div>
@@ -68,7 +68,7 @@ function GroupCard({
 
       {/* Play error */}
       {playError ? (
-        <p role="alert" className="rounded-2xl border border-red-200/80 bg-red-50/80 p-3 text-xs font-medium text-[#FF3B30] backdrop-blur-sm">
+        <p role="alert" className="rounded-2xl border border-red-200/80 dark:border-red-500/30 bg-red-50/80 dark:bg-red-500/10 p-3 text-xs font-medium text-[#FF3B30] dark:text-[#FF453A] backdrop-blur-sm">
           {playError}
         </p>
       ) : null}
@@ -90,14 +90,14 @@ function GroupCard({
           <button
             type="button"
             onClick={() => onScore(group.id)}
-            className="flex min-h-[44px] flex-1 items-center justify-center gap-1.5 rounded-full border border-black/[0.06] bg-white px-4 py-2.5 text-sm font-semibold text-[#1C1C1E] shadow-2xs transition-all duration-200 ease-out active:scale-[0.97] hover:bg-gray-50"
+            className="flex min-h-[44px] flex-1 items-center justify-center gap-1.5 rounded-full border border-black/[0.06] dark:border-[#38383A] bg-white dark:bg-[#2C2C2E] px-4 py-2.5 text-sm font-semibold text-[#1C1C1E] dark:text-[#F2F2F7] shadow-2xs transition-all duration-200 ease-out active:scale-[0.97] hover:bg-gray-50 dark:hover:bg-[#38383A]"
           >
             ดูคะแนน
           </button>
           <button
             type="button"
             onClick={() => onEdit(group.id)}
-            className="flex size-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-black/[0.06] bg-white text-[#8E8E93] shadow-2xs transition-all duration-200 ease-out active:scale-[0.97] hover:bg-gray-50 hover:text-[#1C1C1E]"
+            className="flex size-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-black/[0.06] dark:border-[#38383A] bg-white dark:bg-[#2C2C2E] text-[#8E8E93] dark:text-[#98989D] shadow-2xs transition-all duration-200 ease-out active:scale-[0.97] hover:bg-gray-50 dark:hover:bg-[#38383A] hover:text-[#1C1C1E] dark:hover:text-[#F2F2F7]"
             aria-label={`แก้ไขกลุ่ม ${group.name}`}
           >
             <Pencil className="size-4.5" aria-hidden />
@@ -175,10 +175,10 @@ export function Groups() {
     <div className="mx-auto max-w-2xl px-1 sm:px-4 py-4 sm:py-6">
       {/* Page header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold tracking-tight text-[#1C1C1E] sm:text-3xl">
+        <h1 className="text-2xl font-semibold tracking-tight text-[#1C1C1E] dark:text-[#F2F2F7] sm:text-3xl">
           ขาประจำ
         </h1>
-        <p className="mt-1 text-sm text-[#8E8E93]">
+        <p className="mt-1 text-sm text-[#8E8E93] dark:text-[#98989D]">
           {groups.length > 0
             ? `${groups.length} กลุ่ม — สร้างอัตโนมัติจากรอบที่เล่น`
             : "\u00a0"}
@@ -188,32 +188,32 @@ export function Groups() {
       {/* Loading state */}
       {loading ? (
         <div
-          className="flex flex-col items-center gap-3 py-20 text-[#8E8E93]"
+          className="flex flex-col items-center gap-3 py-20 text-[#8E8E93] dark:text-[#98989D]"
           aria-live="polite"
           aria-label="กำลังโหลด"
         >
-          <Loader2 className="size-8 animate-spin text-[#007AFF]" aria-hidden />
+          <Loader2 className="size-8 animate-spin text-[#007AFF] dark:text-[#2E8BFF]" aria-hidden />
           <span className="text-sm font-medium">กำลังโหลดกลุ่ม...</span>
         </div>
       ) : error ? (
         <div
-          className="flex flex-col items-center gap-3 py-20 text-[#FF3B30]"
+          className="flex flex-col items-center gap-3 py-20 text-[#FF3B30] dark:text-[#FF453A]"
           role="alert"
         >
           <TriangleAlert className="size-8" aria-hidden />
           <p className="text-sm font-semibold">โหลดกลุ่มไม่สำเร็จ</p>
-          <p className="text-xs text-[#8E8E93]">
+          <p className="text-xs text-[#8E8E93] dark:text-[#98989D]">
             กรุณาตรวจสอบอินเทอร์เน็ตแล้วรีเฟรชหน้า
           </p>
         </div>
       ) : groups.length === 0 ? (
-        <div className="flex flex-col items-center gap-4 rounded-[20px] border border-black/[0.04] bg-white p-12 text-center text-[#8E8E93] shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-          <div className="grid size-14 place-items-center rounded-full bg-black/[0.04] text-[#8E8E93]">
+        <div className="flex flex-col items-center gap-4 rounded-[20px] border border-black/[0.04] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] p-12 text-center text-[#8E8E93] dark:text-[#98989D] shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+          <div className="grid size-14 place-items-center rounded-full bg-black/[0.04] dark:bg-white/[0.06] text-[#8E8E93] dark:text-[#98989D]">
             <ClipboardList className="size-7" aria-hidden />
           </div>
           <div>
-            <p className="font-semibold text-[#1C1C1E]">ยังไม่มีกลุ่มขาประจำ</p>
-            <p className="mt-1 text-sm text-[#8E8E93]">
+            <p className="font-semibold text-[#1C1C1E] dark:text-[#F2F2F7]">ยังไม่มีกลุ่มขาประจำ</p>
+            <p className="mt-1 text-sm text-[#8E8E93] dark:text-[#98989D]">
               บันทึกรอบแรกจากหน้าหลักเพื่อสร้างกลุ่มอัตโนมัติ
             </p>
           </div>

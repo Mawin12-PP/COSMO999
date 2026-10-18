@@ -29,29 +29,29 @@ export default function HomePage() {
     <div className="flex flex-col gap-6">
       <div className="reveal flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-[#1C1C1E] sm:text-3xl">
+          <h1 className="text-2xl font-semibold tracking-tight text-[#1C1C1E] dark:text-[#F2F2F7] sm:text-3xl">
             ตั้งค่ารอบ
           </h1>
-          <p className="mt-1 text-sm text-[#8E8E93]">
+          <p className="mt-1 text-sm text-[#8E8E93] dark:text-[#98989D]">
             เลือกผู้เล่นกับตัวคูณ แล้วไปกรอกคะแนน
           </p>
         </div>
 
-        <span className="flex shrink-0 items-center gap-1.5 rounded-full border border-black/[0.04] bg-white/80 backdrop-blur-xl px-3.5 py-1 text-xs font-medium shadow-sm">
+        <span className="flex shrink-0 items-center gap-1.5 rounded-full border border-black/[0.04] dark:border-[#38383A] bg-white/80 dark:bg-[#1C1C1E]/80 backdrop-blur-xl px-3.5 py-1 text-xs font-medium shadow-sm">
           {error ? (
             <>
-              <TriangleAlert className="size-3.5 text-[#FF3B30]" />
-              <span className="text-[#FF3B30]">หลุดการเชื่อมต่อ</span>
+              <TriangleAlert className="size-3.5 text-[#FF3B30] dark:text-[#FF453A]" />
+              <span className="text-[#FF3B30] dark:text-[#FF453A]">หลุดการเชื่อมต่อ</span>
             </>
           ) : loading ? (
             <>
-              <Loader2 className="size-3.5 animate-spin text-[#007AFF]" />
-              <span className="text-[#8E8E93]">กำลังเชื่อมต่อ</span>
+              <Loader2 className="size-3.5 animate-spin text-[#007AFF] dark:text-[#2E8BFF]" />
+              <span className="text-[#8E8E93] dark:text-[#98989D]">กำลังเชื่อมต่อ</span>
             </>
           ) : (
             <>
-              <Wifi className="size-3.5 text-[#007AFF]" />
-              <span className="text-[#007AFF] font-semibold">{players.length} คน</span>
+              <Wifi className="size-3.5 text-[#007AFF] dark:text-[#2E8BFF]" />
+              <span className="text-[#007AFF] dark:text-[#2E8BFF] font-semibold">{players.length} คน</span>
             </>
           )}
         </span>
@@ -77,8 +77,8 @@ export default function HomePage() {
 
         <section className="reveal flex flex-col gap-4">
           <div>
-            <h2 className="text-xl font-semibold tracking-tight text-[#1C1C1E]">จัดการผู้เล่น</h2>
-            <p className="mt-0.5 text-sm text-[#8E8E93]">
+            <h2 className="text-xl font-semibold tracking-tight text-[#1C1C1E] dark:text-[#F2F2F7]">จัดการผู้เล่น</h2>
+            <p className="mt-0.5 text-sm text-[#8E8E93] dark:text-[#98989D]">
               เพิ่ม แก้ไข หรือลบผู้เล่นในวง
             </p>
           </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { Trophy, TrendingUp } from "lucide-react";
+import { useTheme } from "next-themes";
 import {
   ResponsiveContainer,
   LineChart,
@@ -45,8 +46,8 @@ function RoundDot(props: {
       cy={cy}
       r={4.5}
       fill={fill}
-      stroke="#FFFFFF"
       strokeWidth={2}
+      className="stroke-white dark:stroke-[#1C1C1E]"
     />
   );
 }
@@ -66,15 +67,15 @@ function RoundScoreTooltip({
   }
   const score = payload[0].value;
   return (
-    <div className="pointer-events-none flex flex-col gap-1 rounded-2xl border border-black/[0.06] bg-white/90 backdrop-blur-md px-3.5 py-2 shadow-lg">
-      <span className="text-xs font-semibold text-[#8E8E93]">{label}</span>
+    <div className="pointer-events-none flex flex-col gap-1 rounded-2xl border border-black/[0.06] dark:border-[#38383A] bg-white/90 dark:bg-[#1C1C1E]/90 backdrop-blur-md px-3.5 py-2 shadow-lg">
+      <span className="text-xs font-semibold text-[#8E8E93] dark:text-[#98989D]">{label}</span>
       <span
         className={`text-sm font-bold tabular-nums ${
           score > 0
             ? "text-[#34C759]"
             : score < 0
               ? "text-[#FF3B30]"
-              : "text-[#8E8E93]"
+              : "text-[#8E8E93] dark:text-[#98989D]"
         }`}
       >
         {score > 0 ? `+${score.toLocaleString()}` : score.toLocaleString()} คะแนน
@@ -98,15 +99,15 @@ function CumulativeScoreTooltip({
   }
   const cumulative = payload[0].value;
   return (
-    <div className="pointer-events-none flex flex-col gap-1 rounded-2xl border border-black/[0.06] bg-white/90 backdrop-blur-md px-3.5 py-2 shadow-lg">
-      <span className="text-xs font-semibold text-[#8E8E93]">{label}</span>
+    <div className="pointer-events-none flex flex-col gap-1 rounded-2xl border border-black/[0.06] dark:border-[#38383A] bg-white/90 dark:bg-[#1C1C1E]/90 backdrop-blur-md px-3.5 py-2 shadow-lg">
+      <span className="text-xs font-semibold text-[#8E8E93] dark:text-[#98989D]">{label}</span>
       <span
         className={`text-sm font-bold tabular-nums ${
           cumulative > 0
             ? "text-[#34C759]"
             : cumulative < 0
               ? "text-[#FF3B30]"
-              : "text-[#8E8E93]"
+              : "text-[#8E8E93] dark:text-[#98989D]"
         }`}
       >
         สะสม: {cumulative > 0 ? `+${cumulative.toLocaleString()}` : cumulative.toLocaleString()} คะแนน
@@ -127,22 +128,24 @@ export function StatsCharts({
   cumulativeData,
   totalRounds,
 }: StatsChartsProps) {
-  const gridColour = "#E5E5EA";
-  const mutedColour = "#8E8E93";
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
+  const gridColour = isDark ? "#38383A" : "#E5E5EA";
+  const mutedColour = isDark ? "#98989D" : "#8E8E93";
   const iosBlue = "#007AFF";
   const noAnimate = prefersReducedMotion();
 
   return (
     <div className="flex flex-col gap-6">
       {/* Chart 1: Per-round scores */}
-      <section className="rounded-[20px] border border-black/[0.04] bg-white p-5 sm:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+      <section className="rounded-[20px] border border-black/[0.04] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] p-5 sm:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
         <div className="mb-4 flex items-center gap-2">
-          <span className="grid size-7 place-items-center rounded-full bg-blue-50 text-[#007AFF] shadow-xs">
+          <span className="grid size-7 place-items-center rounded-full bg-blue-50 dark:bg-blue-500/15 text-[#007AFF] dark:text-[#2E8BFF] shadow-xs">
             <Trophy className="size-4" aria-hidden />
           </span>
-          <h2 className="text-sm font-semibold text-[#1C1C1E]">คะแนนรายรอบ</h2>
+          <h2 className="text-sm font-semibold text-[#1C1C1E] dark:text-[#F2F2F7]">คะแนนรายรอบ</h2>
           {roundData.length < totalRounds ? (
-            <span className="ml-auto text-xs font-medium text-[#8E8E93]">
+            <span className="ml-auto text-xs font-medium text-[#8E8E93] dark:text-[#98989D]">
               {roundData.length} รอบล่าสุด
             </span>
           ) : null}
@@ -183,7 +186,7 @@ export function StatsCharts({
                 activeDot={{
                   r: 6,
                   fill: iosBlue,
-                  stroke: "#FFFFFF",
+                  stroke: isDark ? "#1C1C1E" : "#FFFFFF",
                   strokeWidth: 2,
                 }}
                 isAnimationActive={!noAnimate}
@@ -194,12 +197,12 @@ export function StatsCharts({
       </section>
 
       {/* Chart 2: Cumulative */}
-      <section className="rounded-[20px] border border-black/[0.04] bg-white p-5 sm:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+      <section className="rounded-[20px] border border-black/[0.04] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] p-5 sm:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
         <div className="mb-4 flex items-center gap-2">
-          <span className="grid size-7 place-items-center rounded-full bg-blue-50 text-[#007AFF] shadow-xs">
+          <span className="grid size-7 place-items-center rounded-full bg-blue-50 dark:bg-blue-500/15 text-[#007AFF] dark:text-[#2E8BFF] shadow-xs">
             <TrendingUp className="size-4" aria-hidden />
           </span>
-          <h2 className="text-sm font-semibold text-[#1C1C1E]">คะแนนสะสม</h2>
+          <h2 className="text-sm font-semibold text-[#1C1C1E] dark:text-[#F2F2F7]">คะแนนสะสม</h2>
         </div>
         <div className="touch-pan-y">
           <ResponsiveContainer width="100%" height={220}>
@@ -250,14 +253,14 @@ export function StatsCharts({
                 fill="url(#cumGradient)"
                 dot={{
                   fill: iosBlue,
-                  stroke: "#FFFFFF",
+                  stroke: isDark ? "#1C1C1E" : "#FFFFFF",
                   strokeWidth: 2,
                   r: 3.5,
                 }}
                 activeDot={{
                   r: 6,
                   fill: iosBlue,
-                  stroke: "#FFFFFF",
+                  stroke: isDark ? "#1C1C1E" : "#FFFFFF",
                   strokeWidth: 2,
                 }}
                 isAnimationActive={!noAnimate}

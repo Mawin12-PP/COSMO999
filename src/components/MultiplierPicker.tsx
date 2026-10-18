@@ -69,10 +69,10 @@ export function MultiplierPicker({
               onClick={() => onChange(m)}
               disabled={rolling}
               aria-pressed={active}
-              className={`flex h-12 min-w-[54px] sm:min-w-[62px] items-center justify-center rounded-2xl px-3.5 py-2.5 text-base font-bold tabular-nums transition-all duration-200 ease-out active:scale-[0.97] disabled:opacity-50 ${
+              className={`flex h-12 min-w-[54px] sm:min-w-[62px] items-center justify-center rounded-2xl px-3.5 py-2.5 text-base font-bold tabular-nums transition-all duration-200 ease-out active:scale-[0.97] disabled:opacity-50 cursor-pointer ${
                 active
                   ? "bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] text-white shadow-md shadow-blue-500/20 border-0 hover:opacity-90"
-                  : "bg-white border border-gray-200 text-gray-800 shadow-sm hover:bg-gray-50 active:bg-gray-100"
+                  : "bg-white dark:bg-[#1C1C1E] border border-gray-200 dark:border-[#38383A] text-gray-800 dark:text-[#F2F2F7] shadow-sm hover:bg-gray-50 dark:hover:bg-[#2C2C2E]"
               }`}
             >
               x{m}
@@ -85,10 +85,10 @@ export function MultiplierPicker({
           onClick={handleRandomize}
           disabled={rolling}
           aria-pressed={isRandom}
-          className={`flex h-12 items-center justify-center gap-2 rounded-2xl px-5 py-2.5 text-base font-bold transition-all duration-200 ease-out active:scale-[0.97] disabled:opacity-70 ${
+          className={`flex h-12 items-center justify-center gap-2 rounded-2xl px-5 py-2.5 text-base font-bold transition-all duration-200 ease-out active:scale-[0.97] disabled:opacity-70 cursor-pointer ${
             isRandom
               ? "bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] text-white shadow-md shadow-blue-500/20 border-0 hover:opacity-90"
-              : "bg-white border border-gray-200 text-[#007AFF] shadow-sm hover:bg-blue-50/50 active:bg-blue-50"
+              : "bg-white dark:bg-[#1C1C1E] border border-gray-200 dark:border-[#38383A] text-[#007AFF] shadow-sm hover:bg-blue-50/50 dark:hover:bg-blue-950/30 active:bg-blue-50 dark:active:bg-blue-950/50"
           }`}
         >
           <Dices key={rollId} className={`size-5 ${rolling ? "dice-tumble" : ""}`} />
@@ -97,9 +97,9 @@ export function MultiplierPicker({
       </div>
 
       {rolling ? (
-        <p className="text-xs font-medium text-[#8E8E93]">กำลังทอยลูกเต๋า...</p>
+        <p className="text-xs font-medium text-[#8E8E93] dark:text-[#98989D]">กำลังทอยลูกเต๋า...</p>
       ) : isRandom ? (
-        <p className="text-xs text-[#8E8E93] tabular-nums">
+        <p className="text-xs text-[#8E8E93] dark:text-[#98989D] tabular-nums">
           รอบนี้สุ่มตัวคูณเป็น <span className="font-bold text-[#007AFF]">x{value}</span>
         </p>
       ) : null}

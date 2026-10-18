@@ -60,20 +60,20 @@ export function ConfirmDialog({
       }}
       aria-labelledby="confirm-dialog-title"
       aria-describedby="confirm-dialog-desc"
-      className="m-auto w-[min(24rem,calc(100vw-2rem))] rounded-[20px] border border-black/[0.04] bg-white p-0 text-[#1C1C1E] shadow-2xl backdrop:bg-black/30 backdrop:backdrop-blur-sm"
+      className="m-auto w-[min(24rem,calc(100vw-2rem))] rounded-[20px] border border-black/[0.04] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] p-0 text-[#1C1C1E] dark:text-[#F2F2F7] shadow-2xl backdrop:bg-black/40 backdrop:backdrop-blur-sm"
     >
       <div className="flex flex-col gap-5 p-5 sm:p-6">
         {/* Header */}
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-2.5">
             {destructive && (
-              <span className="grid size-8 place-items-center rounded-full bg-red-50 text-[#FF3B30] shadow-xs">
+              <span className="grid size-8 place-items-center rounded-full bg-red-50 dark:bg-red-500/15 text-[#FF3B30] dark:text-[#FF453A] shadow-xs">
                 <AlertTriangle className="size-4 shrink-0" aria-hidden />
               </span>
             )}
             <h2
               id="confirm-dialog-title"
-              className="text-base font-semibold leading-snug text-[#1C1C1E]"
+              className="text-base font-semibold leading-snug text-[#1C1C1E] dark:text-[#F2F2F7]"
             >
               {title}
             </h2>
@@ -83,7 +83,7 @@ export function ConfirmDialog({
             onClick={dismiss}
             disabled={busy}
             aria-label="ปิด"
-            className="flex size-11 min-h-[44px] min-w-[44px] items-center justify-center -mr-2 -mt-2 rounded-full text-[#8E8E93] transition-all duration-200 ease-out active:scale-[0.97] hover:bg-black/[0.04] hover:text-[#1C1C1E] disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex size-11 min-h-[44px] min-w-[44px] items-center justify-center -mr-2 -mt-2 rounded-full text-[#8E8E93] dark:text-[#98989D] transition-all duration-200 ease-out active:scale-[0.97] hover:bg-black/[0.04] hover:text-[#1C1C1E] dark:hover:bg-white/[0.06] dark:hover:text-[#F2F2F7] disabled:cursor-not-allowed disabled:opacity-50"
           >
             <X className="size-5" />
           </button>
@@ -92,7 +92,7 @@ export function ConfirmDialog({
         {/* Body */}
         <p
           id="confirm-dialog-desc"
-          className="text-sm leading-relaxed text-[#8E8E93]"
+          className="text-sm leading-relaxed text-[#8E8E93] dark:text-[#98989D]"
         >
           {description}
         </p>
@@ -101,7 +101,7 @@ export function ConfirmDialog({
         {error ? (
           <p
             role="alert"
-            className="rounded-2xl border border-red-200/80 bg-red-50/80 p-3 text-sm text-[#FF3B30] backdrop-blur-sm"
+            className="rounded-2xl border border-red-200/80 dark:border-red-500/30 bg-red-50/80 dark:bg-red-500/10 p-3 text-sm text-[#FF3B30] dark:text-[#FF453A] backdrop-blur-sm"
           >
             {error}
           </p>
@@ -124,7 +124,7 @@ export function ConfirmDialog({
             type="button"
             onClick={dismiss}
             disabled={busy}
-            className="flex min-h-[48px] flex-1 items-center justify-center rounded-full border border-black/[0.06] bg-white px-6 py-3 text-base font-semibold text-[#1C1C1E] shadow-xs transition-all duration-200 ease-out active:scale-[0.97] hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex min-h-[48px] flex-1 items-center justify-center rounded-full border border-black/[0.06] dark:border-[#38383A] bg-white dark:bg-[#2C2C2E] px-6 py-3 text-base font-semibold text-[#1C1C1E] dark:text-[#F2F2F7] shadow-xs transition-all duration-200 ease-out active:scale-[0.97] hover:bg-gray-50 dark:hover:bg-[#38383A] disabled:cursor-not-allowed disabled:opacity-50"
           >
             {cancelLabel}
           </button>

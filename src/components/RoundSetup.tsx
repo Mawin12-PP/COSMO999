@@ -9,7 +9,7 @@
 // - Apple typography: font-semibold tracking-tight text-[#1C1C1E] & text-[#8E8E93]
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowRight, Play, Flame } from "lucide-react";
+import { ArrowRight, Play } from "lucide-react";
 import { MultiplierPicker } from "@/components/MultiplierPicker";
 import { RoundPlayerSelect } from "@/components/RoundPlayerSelect";
 import { ScoreEntry } from "@/components/ScoreEntry";
@@ -160,19 +160,19 @@ function RoundSetupInner({
   return (
     <section
       id="round-setup-section"
-      className="flex flex-col gap-6 rounded-[20px] border border-black/[0.04] bg-white p-5 sm:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all"
+      className="flex flex-col gap-6 rounded-[20px] border border-black/[0.04] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] p-5 sm:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none transition-all"
     >
       <div className="flex items-center gap-2.5">
-        <span className="grid size-8 place-items-center rounded-xl bg-blue-50 text-[#007AFF]">
+        <span className="grid size-8 place-items-center rounded-xl bg-blue-50 dark:bg-blue-950/40 text-[#007AFF]">
           <Play className="size-4 fill-current" />
         </span>
-        <h2 className="text-lg font-semibold tracking-tight text-[#1C1C1E]">
+        <h2 className="text-lg font-semibold tracking-tight text-[#1C1C1E] dark:text-[#F2F2F7]">
           เริ่มเกม
         </h2>
       </div>
 
       <div className="@container flex flex-col gap-2.5">
-        <p className="text-xs font-semibold uppercase tracking-wider text-[#8E8E93]">
+        <p className="text-xs font-semibold uppercase tracking-wider text-[#8E8E93] dark:text-[#98989D]">
           1. เลือกผู้เล่นในรอบนี้
         </p>
         <RoundPlayerSelect
@@ -184,7 +184,7 @@ function RoundSetupInner({
       </div>
 
       <div className="flex flex-col gap-2.5">
-        <p className="text-xs font-semibold uppercase tracking-wider text-[#8E8E93]">
+        <p className="text-xs font-semibold uppercase tracking-wider text-[#8E8E93] dark:text-[#98989D]">
           2. ตัวคูณคะแนนรอบนี้
         </p>
         <div className={multiplier >= 20 ? "animate-shake" : ""}>
@@ -195,17 +195,10 @@ function RoundSetupInner({
             isRandom={isRandom}
           />
         </div>
-        {multiplier === 20 && (
-          <div className="flex flex-col gap-1.5 animate-shake mt-2 p-3 bg-red-50/80 rounded-2xl border border-red-200/60 shadow-xs">
-            <p className="flex items-center gap-1.5 text-sm font-semibold text-[#FF3B30]">
-              <Flame className="size-4" /> x20 จะเครซี่!!
-            </p>
-          </div>
-        )}
       </div>
 
-      <div className="flex flex-col gap-3 border-t border-black/[0.04] pt-5">
-        <div className="flex items-center justify-between text-xs font-medium text-[#8E8E93] tabular-nums">
+      <div className="flex flex-col gap-3 border-t border-black/[0.04] dark:border-[#38383A] pt-5">
+        <div className="flex items-center justify-between text-xs font-medium text-[#8E8E93] dark:text-[#98989D] tabular-nums">
           <span>เลือกแล้ว {validSelectedIds.length} คน</span>
           <span>ตัวคูณ x{multiplier}</span>
         </div>
@@ -219,7 +212,7 @@ function RoundSetupInner({
           <ArrowRight className="size-4.5" />
         </button>
         {!enoughPlayers ? (
-          <p className="text-center text-xs text-[#8E8E93]">
+          <p className="text-center text-xs text-[#8E8E93] dark:text-[#98989D]">
             เลือกผู้เล่นอย่างน้อย {MIN_PLAYERS} คน
           </p>
         ) : null}
@@ -242,12 +235,12 @@ export function RoundSetup({
   return (
     <Suspense
       fallback={
-        <section className="flex flex-col gap-6 rounded-[20px] border border-black/[0.04] bg-white p-5 sm:p-6 opacity-50 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+        <section className="flex flex-col gap-6 rounded-[20px] border border-black/[0.04] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] p-5 sm:p-6 opacity-50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none">
           <div className="flex items-center gap-2.5">
-            <span className="grid size-8 place-items-center rounded-xl bg-blue-50 text-[#007AFF]">
+            <span className="grid size-8 place-items-center rounded-xl bg-blue-50 dark:bg-blue-950/40 text-[#007AFF]">
               <Play className="size-4 fill-current" />
             </span>
-            <h2 className="text-lg font-semibold tracking-tight text-[#1C1C1E]">
+            <h2 className="text-lg font-semibold tracking-tight text-[#1C1C1E] dark:text-[#F2F2F7]">
               เริ่มเกม
             </h2>
           </div>

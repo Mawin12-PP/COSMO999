@@ -66,34 +66,34 @@ export function LatestRoundCard({
   return (
     <section
       aria-labelledby="latest-round-title"
-      className="reveal flex flex-col gap-5 rounded-[20px] border border-black/[0.04] bg-white p-5 sm:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all"
+      className="reveal flex flex-col gap-5 rounded-[20px] border border-black/[0.04] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] p-5 sm:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none transition-all"
     >
       {/* Header */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-2.5">
-          <span className="grid size-9 place-items-center rounded-full bg-blue-50 text-[#007AFF] shadow-xs">
+          <span className="grid size-9 place-items-center rounded-full bg-blue-50 dark:bg-blue-950/40 text-[#007AFF] shadow-xs">
             <Sparkles className="size-4.5" aria-hidden />
           </span>
-          <h2 id="latest-round-title" className="text-lg font-semibold tracking-tight text-[#1C1C1E]">
+          <h2 id="latest-round-title" className="text-lg font-semibold tracking-tight text-[#1C1C1E] dark:text-[#F2F2F7]">
             สรุปรอบล่าสุด
           </h2>
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="flex items-center gap-1 text-xs text-[#8E8E93]">
+          <span className="flex items-center gap-1 text-xs text-[#8E8E93] dark:text-[#98989D]">
             <Clock className="size-3.5" aria-hidden />
             {timeString}
           </span>
-          <span className="rounded-full bg-blue-50/80 border border-blue-500/20 px-2.5 py-0.5 text-xs font-semibold text-[#007AFF]">
+          <span className="rounded-full bg-blue-50/80 dark:bg-blue-950/40 border border-blue-500/20 px-2.5 py-0.5 text-xs font-semibold text-[#007AFF]">
             x{latestMatch.multiplier}
           </span>
         </div>
       </div>
 
       {/* Group Name */}
-      <div className="flex items-center justify-between gap-2 border-b border-black/[0.04] pb-3 text-sm">
-        <span className="text-xs font-semibold uppercase tracking-wider text-[#8E8E93]">กลุ่ม:</span>
-        <span className="font-semibold text-[#1C1C1E]">{latestMatch.groupName}</span>
+      <div className="flex items-center justify-between gap-2 border-b border-black/[0.04] dark:border-[#38383A] pb-3 text-sm">
+        <span className="text-xs font-semibold uppercase tracking-wider text-[#8E8E93] dark:text-[#98989D]">กลุ่ม:</span>
+        <span className="font-semibold text-[#1C1C1E] dark:text-[#F2F2F7]">{latestMatch.groupName}</span>
       </div>
 
       {/* Player Scores Grid */}
@@ -109,21 +109,21 @@ export function LatestRoundCard({
               key={pId}
               className={`flex min-h-[48px] items-center gap-2.5 rounded-2xl border p-2.5 transition-all ${
                 isWinner
-                  ? "border-green-300/60 bg-green-50/70 shadow-2xs"
+                  ? "border-green-300/60 dark:border-green-800/60 bg-green-50/70 dark:bg-green-950/30 shadow-2xs"
                   : isLoser
-                    ? "border-red-300/60 bg-red-50/70 shadow-2xs"
-                    : "border-black/[0.04] bg-gray-50/80 shadow-2xs"
+                    ? "border-red-300/60 dark:border-red-800/60 bg-red-50/70 dark:bg-red-950/30 shadow-2xs"
+                    : "border-black/[0.04] dark:border-[#38383A] bg-gray-50/80 dark:bg-[#2C2C2E] shadow-2xs"
               }`}
             >
               {player ? (
                 <PlayerAvatar player={player} className="size-8 text-xs shrink-0" />
               ) : (
-                <span className="flex size-8 shrink-0 items-center justify-center rounded-full border border-black/[0.06] bg-black/[0.04] text-xs text-[#8E8E93]">
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-full border border-black/[0.06] dark:border-[#38383A] bg-black/[0.04] dark:bg-[#2C2C2E] text-xs text-[#8E8E93] dark:text-[#98989D]">
                   ?
                 </span>
               )}
               <div className="min-w-0 flex-1">
-                <p className="truncate text-xs font-semibold text-[#1C1C1E]">
+                <p className="truncate text-xs font-semibold text-[#1C1C1E] dark:text-[#F2F2F7]">
                   {player ? player.name : "(ถูกลบ)"}
                 </p>
                 <p
@@ -148,7 +148,7 @@ export function LatestRoundCard({
 
       {/* Random Penalty Box */}
       {penalty ? (
-        <div className="flex flex-col gap-2 rounded-2xl border border-red-200/80 bg-red-50/80 p-4 text-[#FF3B30] backdrop-blur-sm">
+        <div className="flex flex-col gap-2 rounded-2xl border border-red-200/80 dark:border-red-900/50 bg-red-50/80 dark:bg-red-950/30 p-4 text-[#FF3B30] backdrop-blur-sm">
           <div className="flex items-start gap-2.5 text-xs">
             <Dices className="mt-0.5 size-4.5 shrink-0 text-[#FF3B30]" aria-hidden />
             <p className="font-semibold leading-relaxed">{penalty}</p>
@@ -179,7 +179,7 @@ export function LatestRoundCard({
               setPenalty(`กรรมตามสนอง! ${loserPlayer.name} ต้อง: ${randomTask}`);
             }
           }}
-          className="flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-full border border-red-200/80 bg-red-50/70 px-5 py-3 text-sm font-semibold text-[#FF3B30] transition-all duration-200 ease-out active:scale-[0.97] hover:bg-red-100/80"
+          className="flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-full border border-red-200/80 dark:border-red-900/50 bg-red-50/70 dark:bg-red-950/30 px-5 py-3 text-sm font-semibold text-[#FF3B30] transition-all duration-200 ease-out active:scale-[0.97] hover:bg-red-100/80 dark:hover:bg-red-950/50"
         >
           <Dices className="size-4.5" aria-hidden />
           สุ่มบทลงโทษ

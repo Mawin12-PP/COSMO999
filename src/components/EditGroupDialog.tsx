@@ -67,14 +67,14 @@ export function EditGroupDialog({
         if (event.target === event.currentTarget) dismiss();
       }}
       aria-labelledby="edit-group-title"
-      className="m-auto w-[min(26rem,calc(100vw-2rem))] rounded-[20px] border border-black/[0.04] bg-white p-0 text-[#1C1C1E] shadow-2xl backdrop:bg-black/30 backdrop:backdrop-blur-sm"
+      className="m-auto w-[min(26rem,calc(100vw-2rem))] rounded-[20px] border border-black/[0.04] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] p-0 text-[#1C1C1E] dark:text-[#F2F2F7] shadow-2xl backdrop:bg-black/40 backdrop:backdrop-blur-sm"
     >
       <div className="flex flex-col gap-5 p-5 sm:p-6">
         {/* Header */}
         <div className="flex items-start justify-between gap-3">
           <h2
             id="edit-group-title"
-            className="text-base font-semibold leading-snug text-[#1C1C1E]"
+            className="text-base font-semibold leading-snug text-[#1C1C1E] dark:text-[#F2F2F7]"
           >
             แก้ไขกลุ่ม
           </h2>
@@ -83,7 +83,7 @@ export function EditGroupDialog({
             onClick={dismiss}
             disabled={busy}
             aria-label="ปิด"
-            className="flex size-11 min-h-[44px] min-w-[44px] items-center justify-center -mr-2 -mt-2 rounded-full text-[#8E8E93] transition-all duration-200 ease-out active:scale-[0.97] hover:bg-black/[0.04] hover:text-[#1C1C1E] disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex size-11 min-h-[44px] min-w-[44px] items-center justify-center -mr-2 -mt-2 rounded-full text-[#8E8E93] dark:text-[#98989D] transition-all duration-200 ease-out active:scale-[0.97] hover:bg-black/[0.04] hover:text-[#1C1C1E] dark:hover:bg-white/[0.06] dark:hover:text-[#F2F2F7] disabled:cursor-not-allowed disabled:opacity-50"
           >
             <X className="size-5" />
           </button>
@@ -93,7 +93,7 @@ export function EditGroupDialog({
         {error ? (
           <p
             role="alert"
-            className="rounded-2xl border border-red-200/80 bg-red-50/80 p-3 text-sm text-[#FF3B30] backdrop-blur-sm"
+            className="rounded-2xl border border-red-200/80 dark:border-red-500/30 bg-red-50/80 dark:bg-red-500/10 p-3 text-sm text-[#FF3B30] dark:text-[#FF453A] backdrop-blur-sm"
           >
             {error}
           </p>
@@ -103,7 +103,7 @@ export function EditGroupDialog({
         <div className="flex flex-col gap-2.5">
           <label
             htmlFor="edit-group-name"
-            className="text-xs font-semibold uppercase tracking-wider text-[#8E8E93]"
+            className="text-xs font-semibold uppercase tracking-wider text-[#8E8E93] dark:text-[#98989D]"
           >
             ชื่อกลุ่ม
           </label>
@@ -114,7 +114,7 @@ export function EditGroupDialog({
             onChange={(e) => setNameValue(e.target.value)}
             disabled={busy}
             maxLength={80}
-            className="min-h-[48px] rounded-xl border border-black/[0.06] bg-white/70 px-4 py-3 text-base text-[#1C1C1E] placeholder-[#8E8E93]/60 transition-all focus:border-[#007AFF] focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+            className="min-h-[48px] rounded-xl border border-black/[0.06] dark:border-[#38383A] bg-white/70 dark:bg-[#2C2C2E] px-4 py-3 text-base text-[#1C1C1E] dark:text-[#F2F2F7] placeholder-[#8E8E93]/60 dark:placeholder-[#98989D]/60 transition-all focus:border-[#007AFF] focus:bg-white dark:focus:bg-[#2C2C2E] focus:ring-2 focus:ring-blue-500/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
           />
           <button
             type="button"
@@ -130,18 +130,18 @@ export function EditGroupDialog({
         </div>
 
         {/* Divider */}
-        <div className="border-t border-black/[0.04]" />
+        <div className="border-t border-black/[0.04] dark:border-[#38383A]" />
 
         {/* Delete section */}
         <div className="flex flex-col gap-2.5">
-          <p className="text-xs text-[#8E8E93]">
+          <p className="text-xs text-[#8E8E93] dark:text-[#98989D]">
             ลบทางลัดกลุ่มนี้ออกจากรายการ — ประวัติการเล่นเดิมยังคงอยู่
           </p>
           <button
             type="button"
             onClick={handleDelete}
             disabled={busy}
-            className="flex min-h-[48px] items-center justify-center gap-2 rounded-full border border-red-200/80 bg-red-50/80 px-6 py-3 text-base font-semibold text-[#FF3B30] transition-all duration-200 ease-out active:scale-[0.97] hover:bg-red-100/80 disabled:cursor-not-allowed disabled:opacity-40"
+            className="flex min-h-[48px] items-center justify-center gap-2 rounded-full border border-red-200/80 dark:border-red-500/30 bg-red-50/80 dark:bg-red-500/10 px-6 py-3 text-base font-semibold text-[#FF3B30] dark:text-[#FF453A] transition-all duration-200 ease-out active:scale-[0.97] hover:bg-red-100/80 dark:hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-40"
           >
             {busy && activeAction === "delete" ? (
               <Loader2 className="size-4.5 animate-spin" aria-hidden />

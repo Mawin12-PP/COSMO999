@@ -130,13 +130,13 @@ export function ScoreEntry({
 
   if (saveState.status === "saved") {
     return (
-      <section className="reveal flex flex-col items-center gap-5 rounded-[20px] border border-black/[0.04] bg-white p-8 text-center shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-        <span className="grid size-16 place-items-center rounded-full bg-blue-50 text-[#007AFF] shadow-xs">
+      <section className="reveal flex flex-col items-center gap-5 rounded-[20px] border border-black/[0.04] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] p-8 text-center shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none">
+        <span className="grid size-16 place-items-center rounded-full bg-blue-50 dark:bg-blue-950/40 text-[#007AFF] shadow-xs">
           <PartyPopper className="size-8" />
         </span>
         <div className="flex flex-col gap-1">
-          <h2 className="text-xl font-semibold tracking-tight text-[#1C1C1E]">บันทึกรอบแล้ว!</h2>
-          <p className="text-sm text-[#8E8E93]">{saveState.commentary}</p>
+          <h2 className="text-xl font-semibold tracking-tight text-[#1C1C1E] dark:text-[#F2F2F7]">บันทึกรอบแล้ว!</h2>
+          <p className="text-sm text-[#8E8E93] dark:text-[#98989D]">{saveState.commentary}</p>
         </div>
         <div className="flex flex-col gap-2.5 w-full max-w-xs mt-3">
           <button
@@ -152,7 +152,7 @@ export function ScoreEntry({
             target="_blank"
             rel="noopener noreferrer"
             aria-label="แจ้งปัญหา / เสนอไอเดีย (เปิดในแท็บใหม่)"
-            className="flex min-h-[48px] items-center justify-center gap-2 rounded-full border border-black/[0.06] bg-white px-5 py-2.5 text-sm font-semibold text-[#8E8E93] shadow-xs transition-all duration-200 ease-out active:scale-[0.97] hover:bg-gray-50 hover:text-[#1C1C1E]"
+            className="flex min-h-[48px] items-center justify-center gap-2 rounded-full border border-black/[0.06] dark:border-[#38383A] bg-white dark:bg-[#2C2C2E] px-5 py-2.5 text-sm font-semibold text-[#8E8E93] dark:text-[#98989D] shadow-xs transition-all duration-200 ease-out active:scale-[0.97] hover:bg-gray-50 dark:hover:bg-[#38383A] hover:text-[#1C1C1E] dark:hover:text-[#F2F2F7]"
           >
             <MessageSquareHeart className="size-4.5" />
             แจ้งปัญหา / เสนอไอเดีย
@@ -163,31 +163,31 @@ export function ScoreEntry({
   }
 
   return (
-    <section className="reveal flex flex-col gap-6 rounded-[20px] border border-black/[0.04] bg-white p-5 sm:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+    <section className="reveal flex flex-col gap-6 rounded-[20px] border border-black/[0.04] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] p-5 sm:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none">
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-2.5">
-          <span className="grid size-9 place-items-center rounded-full bg-blue-50 text-[#007AFF] shadow-xs">
+          <span className="grid size-9 place-items-center rounded-full bg-blue-50 dark:bg-blue-950/40 text-[#007AFF] shadow-xs">
             <ClipboardCheck className="size-4.5" />
           </span>
-          <h2 className="text-lg font-semibold tracking-tight text-[#1C1C1E]">
+          <h2 className="text-lg font-semibold tracking-tight text-[#1C1C1E] dark:text-[#F2F2F7]">
             กรอกคะแนนดิบ
           </h2>
         </div>
-        <span className="rounded-full bg-black/[0.04] px-3.5 py-1 text-xs font-semibold text-[#8E8E93] tabular-nums">
+        <span className="rounded-full bg-black/[0.04] dark:bg-white/[0.06] px-3.5 py-1 text-xs font-semibold text-[#8E8E93] dark:text-[#98989D] tabular-nums">
           {players.length} คน • x{multiplier}
         </span>
       </div>
 
-      <ul className="overflow-hidden rounded-[16px] border border-black/[0.04] divide-y divide-gray-100/80 bg-white">
+      <ul className="overflow-hidden rounded-[16px] border border-black/[0.04] dark:border-[#38383A] divide-y divide-gray-100/80 dark:divide-[#38383A] bg-white dark:bg-[#1C1C1E]">
         {players.map((player, index) => (
           <li
             key={player.id}
-            className="flex min-h-[56px] items-center gap-3.5 px-4 py-3 transition-colors hover:bg-gray-50/60 focus-within:bg-blue-50/20"
+            className="flex min-h-[56px] items-center gap-3.5 px-4 py-3 transition-colors hover:bg-gray-50/60 dark:hover:bg-[#2C2C2E]/40 focus-within:bg-blue-50/20 dark:focus-within:bg-blue-950/20"
           >
             <PlayerAvatar player={player} className="size-10 text-sm shrink-0" />
             <label
               htmlFor={`score-${player.id}`}
-              className="min-w-0 flex-1 truncate text-base font-semibold text-[#1C1C1E]"
+              className="min-w-0 flex-1 truncate text-base font-semibold text-[#1C1C1E] dark:text-[#F2F2F7]"
             >
               {player.name}
             </label>
@@ -202,7 +202,7 @@ export function ScoreEntry({
               value={rawInputs[player.id] ?? ""}
               onChange={(event) => updateScore(player.id, event.target.value)}
               onKeyDown={(event) => handleKeyDown(event, index)}
-              className="h-11 w-28 rounded-xl border border-black/[0.06] bg-white px-3.5 py-1.5 text-right text-lg font-bold tabular-nums text-[#1C1C1E] outline-none shadow-xs transition-all placeholder:text-[#8E8E93]/60 focus:border-[#007AFF] focus:ring-2 focus:ring-blue-500/20"
+              className="h-11 w-28 rounded-xl border border-black/[0.06] dark:border-[#38383A] bg-white dark:bg-[#2C2C2E] px-3.5 py-1.5 text-right text-lg font-bold tabular-nums text-[#1C1C1E] dark:text-[#F2F2F7] outline-none shadow-xs transition-all placeholder:text-[#8E8E93]/60 dark:placeholder:text-[#98989D]/60 focus:border-[#007AFF] focus:ring-2 focus:ring-blue-500/20"
             />
           </li>
         ))}
@@ -211,13 +211,13 @@ export function ScoreEntry({
       {error ? (
         <p
           role="alert"
-          className="rounded-2xl border border-red-200/80 bg-red-50/80 p-4 text-sm font-medium text-[#FF3B30] backdrop-blur-sm"
+          className="rounded-2xl border border-red-200/80 dark:border-red-900/40 bg-red-50/80 dark:bg-red-950/30 p-4 text-sm font-medium text-[#FF3B30] backdrop-blur-sm"
         >
           {error}
         </p>
       ) : null}
 
-      <div className="flex flex-col gap-3 border-t border-black/[0.04] pt-5 sm:flex-row-reverse">
+      <div className="flex flex-col gap-3 border-t border-black/[0.04] dark:border-[#38383A] pt-5 sm:flex-row-reverse">
         <button
           type="button"
           onClick={handleCheck}
@@ -229,7 +229,7 @@ export function ScoreEntry({
         <button
           type="button"
           onClick={onBack}
-          className="flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-full border border-black/[0.06] bg-white px-6 py-3 text-base font-semibold text-[#1C1C1E] shadow-xs transition-all duration-200 ease-out active:scale-[0.97] hover:bg-gray-50"
+          className="flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-full border border-black/[0.06] dark:border-[#38383A] bg-white dark:bg-[#2C2C2E] px-6 py-3 text-base font-semibold text-[#1C1C1E] dark:text-[#F2F2F7] shadow-xs transition-all duration-200 ease-out active:scale-[0.97] hover:bg-gray-50 dark:hover:bg-[#38383A]"
         >
           <ArrowLeft className="size-4.5" />
           ย้อนกลับ
