@@ -1,17 +1,12 @@
 "use client";
 
 // "Start game" panel: choose who is in the round and the score multiplier,
-// then hand off to the score-entry step. This component owns the round-setup
-// state and the two-step ('setup' -> 'entry') switch. Nothing in this file
-// touches Firebase.
-//
-// Preset selection:
-// 1. If the URL contains ?preset=id1,id2,id3 (set by Groups.tsx when
-//    "เล่นกลุ่มนี้" is tapped), RoundSetup pre-selects those player ids on
-//    first mount and then replaces the URL to remove the param.
-// 2. If `presetTrigger` is passed from the parent page (e.g. LatestRoundCard
-//    tapping "เล่นกลุ่มเดิมอีกครั้ง"), RoundSetup immediately selects those
-//    player ids and returns to setup mode.
+// then hand off to the score-entry step.
+// Ultra-Premium iOS 18 Aesthetic:
+// - Frosted glass card: bg-white/80 backdrop-blur-2xl border border-black/[0.04]
+// - Apple depth: shadow-[0_8px_30px_rgb(0,0,0,0.06)]
+// - Gradient action button: bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] with shadow-blue-500/20
+// - Apple typography: font-semibold tracking-tight text-[#1C1C1E] & text-[#8E8E93]
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight, Play, Flame } from "lucide-react";
@@ -20,12 +15,8 @@ import { RoundPlayerSelect } from "@/components/RoundPlayerSelect";
 import { ScoreEntry } from "@/components/ScoreEntry";
 import type { HistoryEntry, Player } from "@/types/models";
 
-// A round needs at least two players to compute score differences.
 const MIN_PLAYERS = 2;
 
-// Latest play time (epoch ms) per player id, taken from history. A player
-// absent from every round is left out - callers read a missing id as
-// "never played".
 function lastPlayedByPlayer(history: HistoryEntry[]): Record<string, number> {
   const map: Record<string, number> = {};
   for (const entry of history) {
@@ -45,8 +36,6 @@ export interface PresetTrigger {
   timestamp: number;
 }
 
-// Inner component that uses useSearchParams (requires Suspense boundary in
-// the parent, provided by the RoundSetup export below).
 function RoundSetupInner({
   players,
   history,
@@ -61,11 +50,6 @@ function RoundSetupInner({
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Roster order for the picker only: oldest / never-played first, the most
-  // recently played sink to the bottom so the group that just finished a
-  // round is right above the action button. The -1 sentinel puts
-  // never-played players above anyone with a real (positive) play time, and
-  // sort() is stable so same-round ties keep their original roster order.
   const orderedPlayers = useMemo(() => {
     const lastPlayed = lastPlayedByPlayer(history);
     return [...players].sort((a, b) => {
@@ -79,43 +63,21 @@ function RoundSetupInner({
   const [multiplier, setMultiplier] = useState<number>(1);
   const [isRandom, setIsRandom] = useState(false);
   const [step, setStep] = useState<"setup" | "entry">("setup");
-  // Frozen copy of the chosen players, taken when the round starts so a
-  // roster edit during score entry cannot add or remove a scored player.
   const [roundPlayers, setRoundPlayers] = useState<Player[]>([]);
 
-  // Apply ?preset=id1,id2 on first mount. Filter to ids that are actually
-  // in the current players list (guard: a player deleted since the group
-  // was saved must not appear selected). Then clean the URL immediately so
-  // the param does not persist on refresh or back-navigation.
   useEffect(() => {
     const raw = searchParams.get("preset");
     if (!raw) return;
     const requestedIds = raw.split(",").filter(Boolean);
-    // Select the requested ids as-is. The roster is almost always still
-    // loading on this first client-side mount (usePlayers starts empty and
-    // Firebase emits a tick later), so filtering against `players` here used
-    // to drop every id and silently lose the preset. Validity is enforced
-    // downstream by validSelectedIds, which reacts once players arrive.
     if (requestedIds.length > 0) {
       setSelectedIds(requestedIds);
     }
-    // Remove the param from the URL without adding a history entry so the
-    // user's back button goes to /groups, not back to /?preset=...
     router.replace("/");
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Run once on mount only; searchParams/players/router are stable refs.
+  }, []);
 
-  // Timestamp of the last preset trigger already applied. This effect depends
-  // on `players`, so it re-runs on every live roster update (a name edit, a
-  // saved round). Without this guard it would re-apply the same trigger each
-  // time - overwriting the user's manual selection and, worse, forcing step
-  // back to "setup" while they are mid score-entry. A deferred apply still
-  // works: if players have not loaded when the trigger fires, validIds is
-  // empty, nothing is marked applied, and the next players update retries.
   const appliedTriggerRef = useRef<number | null>(null);
 
-  // Random multiplier pool (x1 - x20). Note: x50 is strictly excluded from random
-  // and can only be selected manually.
   function getRandomMultiplier(): number {
     const rand = Math.random() * 100;
     if (rand < 5) return 1;
@@ -127,7 +89,6 @@ function RoundSetupInner({
     return 20;
   }
 
-  // In-page preset trigger (e.g. from LatestRoundCard "เล่นกลุ่มเดิมอีกครั้ง")
   useEffect(() => {
     if (!presetTrigger || !presetTrigger.ids.length) return;
     if (appliedTriggerRef.current === presetTrigger.timestamp) return;
@@ -137,7 +98,6 @@ function RoundSetupInner({
     if (validIds.length > 0) {
       appliedTriggerRef.current = presetTrigger.timestamp;
       setSelectedIds(validIds);
-      // Auto-randomize multiplier when replaying the same group
       const nextMultiplier = getRandomMultiplier();
       setMultiplier(nextMultiplier);
       setIsRandom(true);
@@ -156,8 +116,6 @@ function RoundSetupInner({
 
   function pickMultiplier(value: number) {
     setMultiplier(value);
-    // An explicit pick clears the randomised mark, like the legacy
-    // onchange="currentRoundIsRandom = false".
     setIsRandom(false);
   }
 
@@ -166,18 +124,12 @@ function RoundSetupInner({
     setIsRandom(true);
   }
 
-  // Ignore ids whose player was deleted from the roster below while still
-  // selected, so the counter and the min-players guard never count someone
-  // who is gone. Legacy prunes the same way on delete and on group replay.
   const validSelectedIds = selectedIds.filter((id) =>
     players.some((player) => player.id === id),
   );
   const enoughPlayers = validSelectedIds.length >= MIN_PLAYERS;
 
   function handleProceed() {
-    // Snapshot in selection order. isRandom is not persisted anywhere
-    // (HistoryEntry has no field for it); it only decides the multiplier
-    // picker's "random" mark in this component.
     const snapshot = validSelectedIds
       .map((id) => players.find((player) => player.id === id))
       .filter((player): player is Player => player !== undefined);
@@ -186,10 +138,6 @@ function RoundSetupInner({
     setStep("entry");
   }
 
-  // After a round is saved: clear the selection and multiplier and return to
-  // setup, matching the legacy reset (selectedPlayerIds = [], multiplier
-  // back to 1, isRandom cleared) - distinct from onBack, which keeps the
-  // current selection so the player can go correct a mistake.
   function resetRound() {
     setSelectedIds([]);
     setMultiplier(1);
@@ -212,15 +160,21 @@ function RoundSetupInner({
   return (
     <section
       id="round-setup-section"
-      className="flex flex-col gap-5 rounded-lg border border-border bg-surface p-5 shadow-card transition-colors hover:border-border-strong"
+      className="flex flex-col gap-6 rounded-3xl border border-black/[0.04] bg-white/80 backdrop-blur-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] transition-all"
     >
-      <h2 className="flex items-center gap-2 text-lg font-semibold">
-        <Play className="size-5 text-accent" />
-        เริ่มเกม
-      </h2>
+      <div className="flex items-center gap-2.5">
+        <span className="grid size-8 place-items-center rounded-xl bg-blue-50 text-[#007AFF]">
+          <Play className="size-4 fill-current" />
+        </span>
+        <h2 className="text-lg font-semibold tracking-tight text-[#1C1C1E]">
+          เริ่มเกม
+        </h2>
+      </div>
 
-      <div className="@container flex flex-col gap-2">
-        <p className="text-sm text-text-muted">1. เลือกผู้เล่นในรอบนี้</p>
+      <div className="@container flex flex-col gap-2.5">
+        <p className="text-xs font-semibold uppercase tracking-wider text-[#8E8E93]">
+          1. เลือกผู้เล่นในรอบนี้
+        </p>
         <RoundPlayerSelect
           players={orderedPlayers}
           loading={loading}
@@ -229,8 +183,10 @@ function RoundSetupInner({
         />
       </div>
 
-      <div className="flex flex-col gap-2">
-        <p className="text-sm text-text-muted">2. ตัวคูณคะแนนรอบนี้</p>
+      <div className="flex flex-col gap-2.5">
+        <p className="text-xs font-semibold uppercase tracking-wider text-[#8E8E93]">
+          2. ตัวคูณคะแนนรอบนี้
+        </p>
         <div className={multiplier >= 20 ? "animate-shake" : ""}>
           <MultiplierPicker
             value={multiplier}
@@ -240,34 +196,30 @@ function RoundSetupInner({
           />
         </div>
         {multiplier === 20 && (
-          <div className="flex flex-col gap-2 animate-shake mt-1">
-            <p className="flex items-center gap-1 text-sm font-semibold text-danger">
+          <div className="flex flex-col gap-1.5 animate-shake mt-2 p-3 bg-red-50/80 rounded-2xl border border-red-200/60 shadow-xs">
+            <p className="flex items-center gap-1.5 text-sm font-semibold text-[#FF3B30]">
               <Flame className="size-4" /> x20 จะเครซี่!!
             </p>
-            <img
-              src="/memes/meme_x20.jpg"
-              alt="Nuclear Explosion Meme"
-              className="w-full max-w-sm rounded-md border border-danger/20 shadow-md"
-            />
           </div>
         )}
       </div>
 
-      <div className="flex flex-col gap-2 border-t border-border pt-4">
-        <p className="text-sm text-text-muted tabular-nums">
-          เลือกแล้ว {validSelectedIds.length} คน | ตัวคูณ x{multiplier}
-        </p>
+      <div className="flex flex-col gap-3 border-t border-black/[0.04] pt-5">
+        <div className="flex items-center justify-between text-xs font-medium text-[#8E8E93] tabular-nums">
+          <span>เลือกแล้ว {validSelectedIds.length} คน</span>
+          <span>ตัวคูณ x{multiplier}</span>
+        </div>
         <button
           type="button"
           onClick={handleProceed}
           disabled={!enoughPlayers}
-          className="flex items-center justify-center gap-2 rounded-md bg-accent px-4 py-2.5 font-semibold text-on-accent transition-all hover:opacity-90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] px-6 py-3.5 text-base font-semibold text-white shadow-md shadow-blue-500/20 transition-all hover:brightness-105 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none"
         >
           ลุยดิวะ!
-          <ArrowRight className="size-4" />
+          <ArrowRight className="size-4.5" />
         </button>
         {!enoughPlayers ? (
-          <p className="text-xs text-text-muted">
+          <p className="text-center text-xs text-[#8E8E93]">
             เลือกผู้เล่นอย่างน้อย {MIN_PLAYERS} คน
           </p>
         ) : null}
@@ -276,9 +228,6 @@ function RoundSetupInner({
   );
 }
 
-// Exported wrapper provides the Suspense boundary required by useSearchParams.
-// The fallback renders the same section shell so layout does not shift while
-// the param is read; null would cause a brief collapse.
 export function RoundSetup({
   players,
   history,
@@ -293,11 +242,15 @@ export function RoundSetup({
   return (
     <Suspense
       fallback={
-        <section className="flex flex-col gap-5 rounded-lg border border-border bg-surface p-5 opacity-50 shadow-card">
-          <h2 className="flex items-center gap-2 text-lg font-semibold">
-            <Play className="size-5 text-accent" />
-            เริ่มเกม
-          </h2>
+        <section className="flex flex-col gap-6 rounded-3xl border border-black/[0.04] bg-white/80 backdrop-blur-2xl p-6 opacity-50 shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
+          <div className="flex items-center gap-2.5">
+            <span className="grid size-8 place-items-center rounded-xl bg-blue-50 text-[#007AFF]">
+              <Play className="size-4 fill-current" />
+            </span>
+            <h2 className="text-lg font-semibold tracking-tight text-[#1C1C1E]">
+              เริ่มเกม
+            </h2>
+          </div>
         </section>
       }
     >

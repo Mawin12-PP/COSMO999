@@ -2,10 +2,9 @@
 
 // Stats page client component. Ported from legacy openStatsModal /
 // renderPlayerStats (reference/legacy-prototype.sanitized.html L1175-1419).
-// Chart colours are read from CSS custom properties at render time so they
-// honour the theme tokens and never hardcode raw hex values.
-// Recharts is loaded via next/dynamic with ssr:false because it uses browser
-// APIs (ResizeObserver, SVG measurement) unavailable on the server.
+// Mobile-first iOS guidelines: min 44x44px touch targets on dropdowns,
+// white rectangular cards (bg-white rounded-2xl p-4 shadow-sm),
+// and responsive grid layouts (2 columns on mobile, 3 on iPad/desktop).
 import { useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import {
@@ -21,23 +20,19 @@ import { usePlayers } from "@/hooks/usePlayers";
 import { formatSignedScore } from "@/lib/format";
 import { computePlayerStats } from "@/lib/stats";
 
-// StatsCharts uses Recharts (browser SVG/ResizeObserver APIs), so it is loaded
-// dynamically with ssr:false to avoid server render issues.
 const StatsCharts = dynamic(
   () => import("@/components/StatsCharts").then((m) => m.StatsCharts),
   {
     ssr: false,
     loading: () => (
       <div className="flex flex-col gap-6">
-        <div className="h-64 rounded-lg border border-border bg-surface p-4 animate-pulse" />
-        <div className="h-64 rounded-lg border border-border bg-surface p-4 animate-pulse" />
+        <div className="h-64 rounded-3xl border border-black/[0.04] bg-white/80 p-4 animate-pulse shadow-sm" />
+        <div className="h-64 rounded-3xl border border-black/[0.04] bg-white/80 p-4 animate-pulse shadow-sm" />
       </div>
     ),
   },
 );
 
-// Stat card: label + large value. `valueClassName` swaps the big-number
-// styling for cards whose value is a row of tags instead.
 function StatCard({
   label,
   children,
@@ -51,14 +46,14 @@ function StatCard({
 }) {
   const toneClass =
     tone === "positive"
-      ? "text-success"
+      ? "text-[#34C759]"
       : tone === "negative"
-        ? "text-danger"
-        : "text-text";
+        ? "text-[#FF3B30]"
+        : "text-[#1C1C1E]";
 
   return (
-    <div className="flex flex-col gap-1 rounded-lg border border-border bg-surface-raised p-4">
-      <span className="text-xs text-text-muted">{label}</span>
+    <div className="flex flex-col gap-1.5 rounded-2xl border border-black/[0.04] bg-white/80 backdrop-blur-xl p-4 sm:p-5 shadow-[0_4px_20px_rgb(0,0,0,0.04)]">
+      <span className="text-xs font-semibold uppercase tracking-wider text-[#8E8E93]">{label}</span>
       <span className={`${valueClassName} ${toneClass}`}>{children}</span>
     </div>
   );
@@ -80,11 +75,13 @@ export function Stats() {
   const selectedPlayer = players.find((p) => p.id === selectedId) ?? null;
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-8">
+    <div className="mx-auto max-w-2xl px-1 sm:px-4 py-4 sm:py-6">
       {/* Page header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold">สถิติ</h1>
-        <p className="mt-1 text-sm text-text-muted">
+        <h1 className="text-2xl font-semibold tracking-tight text-[#1C1C1E] sm:text-3xl">
+          สถิติ
+        </h1>
+        <p className="mt-1 text-sm text-[#8E8E93]">
           ประวัติการเล่นและกราฟคะแนนรายผู้เล่น
         </p>
       </div>
@@ -92,30 +89,30 @@ export function Stats() {
       {/* Global loading / error */}
       {loading ? (
         <div
-          className="flex flex-col items-center gap-3 py-20 text-text-muted"
+          className="flex flex-col items-center gap-3 py-20 text-[#8E8E93]"
           aria-live="polite"
         >
-          <Loader2 className="size-8 animate-spin" aria-hidden />
-          <span className="text-sm">กำลังโหลดข้อมูล...</span>
+          <Loader2 className="size-8 animate-spin text-[#007AFF]" aria-hidden />
+          <span className="text-sm font-medium">กำลังโหลดข้อมูล...</span>
         </div>
       ) : hError ? (
-        <div className="flex flex-col items-center gap-3 py-20 text-danger" role="alert">
+        <div className="flex flex-col items-center gap-3 py-20 text-[#FF3B30]" role="alert">
           <TriangleAlert className="size-8" aria-hidden />
-          <p className="text-sm font-medium">โหลดประวัติไม่สำเร็จ</p>
-          <p className="text-xs text-text-muted">กรุณาตรวจสอบอินเทอร์เน็ตแล้วรีเฟรชหน้า</p>
+          <p className="text-sm font-semibold">โหลดประวัติไม่สำเร็จ</p>
+          <p className="text-xs text-[#8E8E93]">กรุณาตรวจสอบอินเทอร์เน็ตแล้วรีเฟรชหน้า</p>
         </div>
       ) : (
         <>
-          {/* Player selector */}
+          {/* Player selector with min 48px height */}
           <div className="mb-6 flex flex-col gap-2">
-            <label htmlFor="stats-player-select" className="text-sm font-medium">
+            <label htmlFor="stats-player-select" className="text-xs font-semibold uppercase tracking-wider text-[#8E8E93]">
               เลือกผู้เล่น
             </label>
             <select
               id="stats-player-select"
               value={selectedId}
               onChange={(e) => setSelectedId(e.target.value)}
-              className="w-full rounded-md border border-border bg-surface-raised px-3 py-2 text-sm text-text focus:border-border-strong focus:outline-none sm:max-w-xs"
+              className="flex min-h-[48px] w-full rounded-2xl border border-black/[0.06] bg-white px-4 py-3 text-base font-semibold text-[#1C1C1E] shadow-xs focus:border-[#007AFF] focus:outline-none sm:max-w-xs"
             >
               <option value="">เลือกผู้เล่นเพื่อดูสถิติ...</option>
               {players.map((p) => (
@@ -128,53 +125,55 @@ export function Stats() {
 
           {/* No player selected yet */}
           {!selectedId ? (
-            <div className="flex flex-col items-center gap-4 py-20 text-text-muted">
-              <BarChart2 className="size-12 text-border-strong" aria-hidden />
-              <p className="text-sm">เลือกผู้เล่นด้านบนเพื่อดูสถิติ</p>
+            <div className="flex flex-col items-center gap-4 rounded-3xl border border-black/[0.04] bg-white/80 backdrop-blur-2xl p-12 text-center text-[#8E8E93] shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
+              <div className="grid size-14 place-items-center rounded-full bg-blue-50 text-[#007AFF] shadow-xs">
+                <BarChart2 className="size-7" aria-hidden />
+              </div>
+              <p className="text-base font-medium">เลือกผู้เล่นด้านบนเพื่อดูสถิติ</p>
             </div>
           ) : stats === null ? (
-            /* Player has no rounds yet */
-            <div className="flex flex-col items-center gap-4 py-20 text-text-muted">
-              <TrendingUp className="size-12 text-border-strong" aria-hidden />
+            <div className="flex flex-col items-center gap-4 rounded-3xl border border-black/[0.04] bg-white/80 backdrop-blur-2xl p-12 text-center text-[#8E8E93] shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
+              <div className="grid size-14 place-items-center rounded-full bg-black/[0.04] text-[#8E8E93]">
+                <TrendingUp className="size-7" aria-hidden />
+              </div>
               <div className="text-center">
-                <p className="font-semibold text-text">ยังไม่มีประวัติการเล่น</p>
-                <p className="mt-1 text-sm">บันทึกรอบแรกเพื่อเริ่มติดตามสถิติ</p>
+                <p className="font-semibold text-[#1C1C1E]">ยังไม่มีประวัติการเล่น</p>
+                <p className="mt-1 text-sm text-[#8E8E93]">บันทึกรอบแรกเพื่อเริ่มติดตามสถิติ</p>
               </div>
             </div>
           ) : (
-            /* Stats dashboard */
             <div className="reveal flex flex-col gap-6">
               {/* Profile header */}
               {selectedPlayer ? (
-                <div className="flex items-center gap-4 rounded-lg border border-border bg-surface p-4">
-                  <PlayerAvatar player={selectedPlayer} className="size-14 text-xl" />
+                <div className="flex items-center gap-4 rounded-3xl border border-black/[0.04] bg-white/80 backdrop-blur-2xl p-4 sm:p-5 shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
+                  <PlayerAvatar player={selectedPlayer} className="size-14 text-xl shrink-0" />
                   <div>
-                    <p className="text-xs text-text-muted">ข้อมูลสถิติของ</p>
-                    <p className="text-lg font-bold">{selectedPlayer.name}</p>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-[#8E8E93]">ข้อมูลสถิติของ</p>
+                    <p className="text-lg font-bold text-[#1C1C1E]">{selectedPlayer.name}</p>
                     <p
                       className={`text-base font-bold tabular-nums ${
                         stats.totalScore > 0
-                          ? "text-success"
+                          ? "text-[#34C759]"
                           : stats.totalScore < 0
-                            ? "text-danger"
-                            : "text-text-muted"
+                            ? "text-[#FF3B30]"
+                            : "text-[#8E8E93]"
                       }`}
                     >
                       <AnimatedNumber value={stats.totalScore} grouped /> คะแนน
                     </p>
-                    <p className="text-xs tabular-nums text-text-muted">
+                    <p className="text-xs tabular-nums text-[#8E8E93]">
                       (คะแนนดิบ: {formatSignedScore(stats.rawTotal)})
                     </p>
                   </div>
                 </div>
               ) : null}
 
-              {/* Stat cards grid */}
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              {/* Stat cards grid (2 cols on mobile, 3 cols on iPad/desktop) */}
+              <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3">
                 <StatCard label="Win Rate">
                   <span
                     className={
-                      stats.winRate >= 50 ? "text-success" : "text-danger"
+                      stats.winRate >= 50 ? "text-[#34C759]" : "text-[#FF3B30]"
                     }
                   >
                     {stats.winRate.toFixed(1)}%
@@ -190,10 +189,10 @@ export function Stats() {
                   <AnimatedNumber value={stats.worstRound} />
                 </StatCard>
                 <StatCard label="ชนะ / แพ้" tone="neutral">
-                  <span className="text-xl">
-                    <span className="text-success">{stats.wins}</span>
-                    <span className="text-text-muted text-sm"> / </span>
-                    <span className="text-danger">{stats.losses}</span>
+                  <span className="text-xl font-bold">
+                    <span className="text-[#34C759]">{stats.wins}</span>
+                    <span className="text-[#8E8E93] text-sm"> / </span>
+                    <span className="text-[#FF3B30]">{stats.losses}</span>
                   </span>
                 </StatCard>
                 <StatCard
@@ -204,13 +203,13 @@ export function Stats() {
                     stats.multiplierWins.map(({ multiplier, count }) => (
                       <span
                         key={multiplier}
-                        className="rounded-full bg-accent/20 px-2 py-0.5 text-accent"
+                        className="rounded-full bg-blue-50/80 border border-blue-500/20 px-2.5 py-1 text-[#007AFF]"
                       >
                         x{multiplier} ({count})
                       </span>
                     ))
                   ) : (
-                    <span className="text-2xl font-bold text-text-muted">-</span>
+                    <span className="text-2xl font-bold text-[#8E8E93]">-</span>
                   )}
                 </StatCard>
               </div>

@@ -2,9 +2,8 @@
 
 // Step two of starting a round: type each player's raw score, check it, then
 // confirm to atomically save it (players + group + history) to Firebase.
-// The player list here is a snapshot taken when the round began (see
-// RoundSetup.handleProceed) - deleting someone from the roster mid-entry can
-// no longer drop a stray id into the scores.
+// Mobile-first for iPhone/iPad: 48px+ touch targets, generous p-4 padding,
+// active:scale-[0.98] feedback, and crisp iOS typography.
 import { useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
@@ -21,8 +20,6 @@ import { calculateRoundScores, type RoundScoreResult } from "@/lib/scoring";
 import { useHistory } from "@/hooks/useHistory";
 import type { Player } from "@/types/models";
 
-// Confetti only runs client-side and only for a committed save with a
-// positive score, so it is loaded on demand rather than bundled up front.
 async function fireConfetti() {
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   const { default: confetti } = await import("canvas-confetti");
@@ -35,8 +32,6 @@ type SaveState =
   | { status: "saved"; commentary: string }
   | { status: "error"; message: string };
 
-// Empty, "-", or anything non-numeric counts as 0, matching the legacy
-// `parseInt(input.value) || 0`.
 function parseScore(value: string): number {
   const parsed = Number.parseInt(value, 10);
   return Number.isNaN(parsed) ? 0 : parsed;
@@ -56,22 +51,16 @@ export function ScoreEntry({
   players: Player[];
   multiplier: number;
   onBack: () => void;
-  // Clears the round selection and returns to setup, called from the
-  // "เริ่มรอบใหม่" button after a successful save.
   onReset: () => void;
 }) {
-  // Keyed by player id; absent means the field is still empty.
   const [rawInputs, setRawInputs] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
   const [checked, setChecked] = useState<CheckedRound | null>(null);
   const [saveState, setSaveState] = useState<SaveState>({ status: "idle" });
 
   const inputRefs = useRef<Record<string, HTMLInputElement | null>>({});
-  // Commentary needs the round history that predates this save, to detect a
-  // comeback; this is a live subscription so it stays current.
   const { history } = useHistory();
 
-  // Land the cursor in the first field, like the legacy setupScoreInput.
   useEffect(() => {
     const firstId = players[0]?.id;
     if (firstId) inputRefs.current[firstId]?.focus();
@@ -79,11 +68,9 @@ export function ScoreEntry({
 
   function updateScore(id: string, value: string) {
     setRawInputs((current) => ({ ...current, [id]: value }));
-    // Any edit invalidates a previous failed check.
     if (error) setError(null);
   }
 
-  // Enter moves to the next player; the last field just blurs.
   function handleKeyDown(event: React.KeyboardEvent<HTMLInputElement>, index: number) {
     if (event.key !== "Enter") return;
     event.preventDefault();
@@ -104,9 +91,6 @@ export function ScoreEntry({
       multiplier,
     );
 
-    // Zero-sum is guaranteed by the maths for integer input; this is the
-    // legacy defensive assertion kept in place, not an error players hit in
-    // normal use.
     if (result.totalNetScore !== 0) {
       setError(
         `ผลรวมคะแนนสุทธิไม่เท่ากับ 0 (ได้ ${result.totalNetScore}) กรุณาตรวจสอบคะแนนอีกครั้ง`,
@@ -146,63 +130,67 @@ export function ScoreEntry({
 
   if (saveState.status === "saved") {
     return (
-      <section className="reveal flex flex-col items-center gap-4 rounded-lg border border-border bg-surface p-8 text-center shadow-card">
-        <PartyPopper className="size-10 text-accent" />
-        <h2 className="text-lg font-semibold">บันทึกรอบแล้ว</h2>
-        <button
-          type="button"
-          onClick={onReset}
-          className="flex items-center justify-center gap-2 rounded-md bg-accent px-4 py-2.5 font-semibold text-on-accent transition-opacity hover:opacity-90"
-        >
-          <RotateCcw className="size-4" />
-          เริ่มรอบใหม่
-        </button>
-        <a
-          href="https://forms.gle/BicBxvKyLrqoQHj89"
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="แจ้งปัญหา / เสนอไอเดีย (เปิดในแท็บใหม่)"
-          className="flex items-center justify-center gap-2 rounded-md border border-border bg-surface px-4 py-2.5 text-sm font-medium text-text-muted transition-colors hover:border-border-strong hover:text-text"
-        >
-          <MessageSquareHeart className="size-4" />
-          แจ้งปัญหา / เสนอไอเดีย
-        </a>
+      <section className="reveal flex flex-col items-center gap-5 rounded-3xl border border-black/[0.04] bg-white/80 p-8 text-center backdrop-blur-2xl shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
+        <span className="grid size-16 place-items-center rounded-full bg-blue-50 text-[#007AFF] shadow-xs">
+          <PartyPopper className="size-8" />
+        </span>
+        <div className="flex flex-col gap-1">
+          <h2 className="text-xl font-semibold tracking-tight text-[#1C1C1E]">บันทึกรอบแล้ว!</h2>
+          <p className="text-sm text-[#8E8E93]">{saveState.commentary}</p>
+        </div>
+        <div className="flex flex-col gap-2.5 w-full max-w-xs mt-3">
+          <button
+            type="button"
+            onClick={onReset}
+            className="flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] px-6 py-3 text-base font-semibold text-white shadow-md shadow-blue-500/20 transition-all active:scale-95 hover:brightness-105"
+          >
+            <RotateCcw className="size-4.5" />
+            เริ่มรอบใหม่
+          </button>
+          <a
+            href="https://forms.gle/BicBxvKyLrqoQHj89"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="แจ้งปัญหา / เสนอไอเดีย (เปิดในแท็บใหม่)"
+            className="flex min-h-[48px] items-center justify-center gap-2 rounded-full border border-black/[0.06] bg-white px-5 py-2.5 text-sm font-semibold text-[#8E8E93] shadow-xs transition-all active:scale-95 hover:bg-gray-50 hover:text-[#1C1C1E]"
+          >
+            <MessageSquareHeart className="size-4.5" />
+            แจ้งปัญหา / เสนอไอเดีย
+          </a>
+        </div>
       </section>
     );
   }
 
   return (
-    <section className="reveal flex flex-col gap-5 rounded-lg border border-border bg-surface p-5 shadow-card">
-      <div className="flex flex-col gap-1">
-        <h2 className="flex items-center gap-2 text-lg font-semibold">
-          <ClipboardCheck className="size-5 text-accent" />
-          กรอกคะแนนดิบ
-        </h2>
-        <p className="text-sm text-text-muted tabular-nums">
-          {players.length} คน | ตัวคูณ x{multiplier}
-        </p>
+    <section className="reveal flex flex-col gap-6 rounded-3xl border border-black/[0.04] bg-white/80 p-5 sm:p-6 backdrop-blur-2xl shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
+      <div className="flex items-start justify-between">
+        <div className="flex items-center gap-2.5">
+          <span className="grid size-9 place-items-center rounded-full bg-blue-50 text-[#007AFF] shadow-xs">
+            <ClipboardCheck className="size-4.5" />
+          </span>
+          <h2 className="text-lg font-semibold tracking-tight text-[#1C1C1E]">
+            กรอกคะแนนดิบ
+          </h2>
+        </div>
+        <span className="rounded-full bg-black/[0.04] px-3.5 py-1 text-xs font-semibold text-[#8E8E93] tabular-nums">
+          {players.length} คน • x{multiplier}
+        </span>
       </div>
 
-      <ul className="flex flex-col gap-2">
+      <ul className="flex flex-col gap-3">
         {players.map((player, index) => (
           <li
             key={player.id}
-            className="flex items-center gap-3 rounded-lg border border-border bg-surface-raised px-3 py-2.5 focus-within:border-border-strong"
+            className="flex min-h-[56px] items-center gap-3.5 rounded-2xl border border-black/[0.04] bg-white/60 px-4 py-2.5 transition-all focus-within:border-[#007AFF] focus-within:bg-white focus-within:shadow-xs"
           >
-            <PlayerAvatar player={player} className="size-9 text-sm" />
+            <PlayerAvatar player={player} className="size-10 text-sm shrink-0" />
             <label
               htmlFor={`score-${player.id}`}
-              className="min-w-0 flex-1 truncate text-sm font-medium"
+              className="min-w-0 flex-1 truncate text-base font-semibold text-[#1C1C1E]"
             >
               {player.name}
             </label>
-            {/*
-              type="text" with the default text keyboard, not type="number"
-              or inputMode="numeric": a controlled number input drops a lone
-              "-" in several browsers, and the iOS numeric keypad has no minus
-              key at all. Both block entering a negative raw score, which is
-              normal in this game. parseScore does the validation instead.
-            */}
             <input
               id={`score-${player.id}`}
               ref={(node) => {
@@ -214,7 +202,7 @@ export function ScoreEntry({
               value={rawInputs[player.id] ?? ""}
               onChange={(event) => updateScore(player.id, event.target.value)}
               onKeyDown={(event) => handleKeyDown(event, index)}
-              className="w-24 rounded-md border border-border bg-bg px-3 py-2 text-right text-sm tabular-nums text-text outline-none transition-colors placeholder:text-text-muted focus:border-border-strong"
+              className="h-11 w-28 rounded-xl border border-black/[0.06] bg-white px-3.5 py-1.5 text-right text-lg font-bold tabular-nums text-[#1C1C1E] outline-none shadow-xs transition-all placeholder:text-[#8E8E93]/60 focus:border-[#007AFF] focus:ring-2 focus:ring-blue-500/20"
             />
           </li>
         ))}
@@ -223,28 +211,28 @@ export function ScoreEntry({
       {error ? (
         <p
           role="alert"
-          className="rounded-md border border-danger bg-danger/10 px-3 py-2 text-sm text-danger"
+          className="rounded-2xl border border-red-200/80 bg-red-50/80 p-4 text-sm font-medium text-[#FF3B30] backdrop-blur-sm"
         >
           {error}
         </p>
       ) : null}
 
-      <div className="flex flex-col gap-2 border-t border-border pt-4 sm:flex-row-reverse">
+      <div className="flex flex-col gap-3 border-t border-black/[0.04] pt-5 sm:flex-row-reverse">
         <button
           type="button"
           onClick={handleCheck}
-          className="flex flex-1 items-center justify-center gap-2 rounded-md bg-accent px-4 py-2.5 font-semibold text-on-accent transition-opacity hover:opacity-90"
+          className="flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-full bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] px-6 py-3 text-base font-semibold text-white shadow-md shadow-blue-500/20 transition-all active:scale-95 hover:brightness-105"
         >
-          <ClipboardCheck className="size-4" />
+          <ClipboardCheck className="size-4.5" />
           เช็กบิล!
         </button>
         <button
           type="button"
           onClick={onBack}
-          className="flex flex-1 items-center justify-center gap-2 rounded-md border border-border bg-surface px-4 py-2.5 font-medium text-text transition-colors hover:border-border-strong"
+          className="flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-full border border-black/[0.06] bg-white px-6 py-3 text-base font-semibold text-[#1C1C1E] shadow-xs transition-all active:scale-95 hover:bg-gray-50"
         >
-          <ArrowLeft className="size-4" />
-          ย้อนกลับไปแก้การเลือก
+          <ArrowLeft className="size-4.5" />
+          ย้อนกลับ
         </button>
       </div>
 

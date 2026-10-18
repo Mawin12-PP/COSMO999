@@ -1,3 +1,5 @@
+"use client";
+
 // One Hall of Fame card: period title and two summary pills on top, then a
 // VS split view - the period champion on the left, the last-place finisher on
 // the right, and the score gap between them in the middle. Read-only; every
@@ -10,15 +12,13 @@ import type { Player } from "@/types/models";
 
 function MetaPill({ icon: Icon, text }: { icon: LucideIcon; text: string }) {
   return (
-    <span className="flex items-center gap-1 rounded-full border border-border bg-surface-raised px-2.5 py-1 text-xs font-medium text-text-muted">
+    <span className="flex items-center gap-1 rounded-full border border-black/[0.04] bg-white/70 px-2.5 py-1 text-xs font-medium text-[#8E8E93] shadow-2xs">
       <Icon className="size-3.5" aria-hidden />
       {text}
     </span>
   );
 }
 
-// A deleted player keeps their history but not their profile, so the card
-// falls back to a "?" disc and "(ถูกลบ)" like the group score dialog does.
 function HonoreeAvatar({
   player,
   tone,
@@ -33,22 +33,20 @@ function HonoreeAvatar({
   ) : (
     <span
       aria-hidden
-      className={`${className} flex shrink-0 items-center justify-center rounded-full border border-border bg-surface-raised text-text-muted`}
+      className={`${className} flex shrink-0 items-center justify-center rounded-full border border-black/[0.06] bg-black/[0.04] text-[#8E8E93]`}
     >
       ?
     </span>
   );
 
-  // Champion: glowing gold ring. Last place: muted crimson ring and a
-  // greyscale photo, so the loser reads as drained of colour.
   if (tone === "champion") {
     return (
-      <span className="rounded-full ring-2 ring-accent shadow-gold">{avatar}</span>
+      <span className="rounded-full ring-4 ring-blue-500/20 shadow-xs">{avatar}</span>
     );
   }
   return (
-    <span className="rounded-full ring-2 ring-danger/50">
-      <span className="block rounded-full grayscale">{avatar}</span>
+    <span className="rounded-full ring-2 ring-red-300/80">
+      <span className="block rounded-full grayscale opacity-80">{avatar}</span>
     </span>
   );
 }
@@ -75,8 +73,8 @@ function Honoree({
   return (
     <div role="group" aria-label={label} className="flex min-w-0 flex-col items-center gap-1.5 text-center">
       <p
-        className={`flex flex-wrap items-center justify-center gap-1 text-[11px] font-semibold ${
-          isChampion ? "text-accent" : "text-danger"
+        className={`flex flex-wrap items-center justify-center gap-1 text-[11px] font-bold uppercase tracking-wider ${
+          isChampion ? "text-[#007AFF]" : "text-[#FF3B30]"
         }`}
       >
         <Icon className="size-3.5 shrink-0" aria-hidden />
@@ -94,14 +92,14 @@ function Honoree({
       </div>
       <div className="flex w-full min-w-0 flex-col items-center">
         {ids.map((id) => (
-          <p key={id} className="w-full truncate text-sm font-semibold">
+          <p key={id} className="w-full truncate text-sm font-semibold text-[#1C1C1E]">
             {players.find((p) => p.id === id)?.name ?? "(ถูกลบ)"}
           </p>
         ))}
       </div>
       <p
         className={`text-sm font-bold tabular-nums ${
-          isChampion ? "text-success" : "text-danger"
+          isChampion ? "text-[#34C759]" : "text-[#FF3B30]"
         }`}
       >
         {formatSignedScore(score)} แต้ม
@@ -123,18 +121,18 @@ export function HallOfFameCard({
 
   return (
     <li
-      className="reveal flex flex-col gap-4 rounded-lg border border-border bg-surface p-4 shadow-card"
+      className="reveal flex flex-col gap-4 rounded-3xl border border-black/[0.04] bg-white/80 backdrop-blur-2xl p-5 shadow-[0_8px_30px_rgb(0,0,0,0.06)]"
       style={{ animationDelay: `${delayMs}ms` }}
     >
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 className="text-base font-bold">งวด {result.period.label}</h3>
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-black/[0.04] pb-3">
+        <h3 className="text-base font-semibold tracking-tight text-[#1C1C1E]">งวด {result.period.label}</h3>
         <div className="flex items-center gap-2">
           <MetaPill icon={Gamepad2} text={`${formatNumber(result.roundCount)} รอบ`} />
           <MetaPill icon={Users} text={`${formatNumber(result.playerCount)} คน`} />
         </div>
       </div>
 
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-4">
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-4 py-2">
         <Honoree
           tone="champion"
           icon={Crown}
@@ -143,11 +141,11 @@ export function HallOfFameCard({
           players={players}
           score={result.championScore}
         />
-        <div className="flex flex-col items-center gap-0.5 text-center">
-          <span className="text-lg font-black tracking-widest text-accent">VS</span>
-          <span className="text-[11px] text-text-muted">
+        <div className="flex flex-col items-center gap-0.5 text-center px-2">
+          <span className="text-base font-black tracking-widest text-[#007AFF]">VS</span>
+          <span className="text-[11px] text-[#8E8E93]">
             ผลต่าง{" "}
-            <span className="whitespace-nowrap">{formatNumber(gap)} แต้ม</span>
+            <span className="font-semibold whitespace-nowrap text-[#1C1C1E]">{formatNumber(gap)}</span>
           </span>
         </div>
         <Honoree

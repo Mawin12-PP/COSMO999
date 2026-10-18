@@ -1,8 +1,8 @@
 "use client";
 
 // Create-player form: Thai name plus an optional profile image that is
-// downscaled in the browser before it is written. The live players listener
-// picks up the new row on its own, so there is no success callback here.
+// downscaled in the browser before it is written.
+// Mobile-first for iPhone/iPad: 48px+ touch targets, generous padding, active states.
 import { useRef, useState } from "react";
 import { ImagePlus, Loader2, UserPlus } from "lucide-react";
 import { fileToResizedDataUrl } from "@/lib/image";
@@ -42,12 +42,17 @@ export function CreatePlayerForm() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col gap-4 rounded-lg border border-border bg-surface p-5 shadow-card"
+      className="flex flex-col gap-4 rounded-3xl border border-black/[0.04] bg-white/80 p-5 sm:p-6 backdrop-blur-2xl shadow-[0_8px_30px_rgb(0,0,0,0.06)]"
     >
-      <h2 className="text-lg font-semibold">เพิ่มผู้เล่นใหม่</h2>
+      <div className="flex items-center gap-2.5">
+        <span className="grid size-8 place-items-center rounded-full bg-blue-50 text-[#007AFF] shadow-xs">
+          <UserPlus className="size-4" />
+        </span>
+        <h2 className="text-base font-semibold tracking-tight text-[#1C1C1E]">เพิ่มผู้เล่นใหม่</h2>
+      </div>
 
       <label className="flex flex-col gap-1.5 text-sm">
-        <span className="text-text-muted">ชื่อผู้เล่น</span>
+        <span className="text-xs font-semibold uppercase tracking-wider text-[#8E8E93]">ชื่อผู้เล่น</span>
         <input
           type="text"
           value={name}
@@ -56,18 +61,18 @@ export function CreatePlayerForm() {
             setError(null);
           }}
           placeholder="เช่น สมชาย (ตัวตึง)"
-          className="rounded-md border border-border bg-bg px-3 py-2 text-base outline-none focus:border-border-strong"
+          className="min-h-[48px] rounded-xl border border-black/[0.06] bg-white/70 px-4 py-3 text-base text-[#1C1C1E] outline-none transition-all placeholder:text-[#8E8E93]/60 focus:border-[#007AFF] focus:bg-white focus:ring-2 focus:ring-blue-500/20"
         />
       </label>
 
       <div className="flex flex-col gap-1.5 text-sm">
-        <span className="text-text-muted">รูปโปรไฟล์ (ไม่บังคับ)</span>
+        <span className="text-xs font-semibold uppercase tracking-wider text-[#8E8E93]">รูปโปรไฟล์ (ไม่บังคับ)</span>
         <button
           type="button"
           onClick={() => fileRef.current?.click()}
-          className="flex items-center gap-2 self-start rounded-md border border-border bg-surface-raised px-3 py-2 text-sm text-accent transition-colors hover:border-border-strong"
+          className="flex min-h-[44px] items-center gap-2 self-start rounded-xl border border-black/[0.06] bg-white/70 px-4 py-2.5 text-sm font-semibold text-[#007AFF] transition-all active:scale-95 hover:bg-white"
         >
-          <ImagePlus className="size-4" />
+          <ImagePlus className="size-4.5" />
           {fileName ?? "เลือกรูป"}
         </button>
         <input
@@ -81,17 +86,17 @@ export function CreatePlayerForm() {
         />
       </div>
 
-      {error ? <p className="text-sm text-danger">{error}</p> : null}
+      {error ? <p className="text-sm font-medium text-[#FF3B30]">{error}</p> : null}
 
       <button
         type="submit"
         disabled={pending}
-        className="flex items-center justify-center gap-2 rounded-md bg-accent px-4 py-2.5 font-semibold text-on-accent transition-opacity hover:opacity-90 disabled:opacity-60"
+        className="mt-1 flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] px-6 py-3 text-base font-semibold text-white shadow-md shadow-blue-500/20 transition-all active:scale-95 hover:brightness-105 disabled:opacity-50"
       >
         {pending ? (
-          <Loader2 className="size-4 animate-spin" />
+          <Loader2 className="size-4.5 animate-spin" />
         ) : (
-          <UserPlus className="size-4" />
+          <UserPlus className="size-4.5" />
         )}
         เชิญตัวตึงเข้าตี้
       </button>

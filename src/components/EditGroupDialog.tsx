@@ -1,11 +1,9 @@
 "use client";
 
 // Edit group dialog: rename or delete a group shortcut. Ported from the
-// legacy editGroup (reference/legacy-prototype.sanitized.html L1530-1546)
-// which used prompt()/confirm() - replaced here with an accessible native
-// <dialog> matching the PreviewDialog pattern.
-// Deletion keeps history entries intact (per legacy behaviour); only the
-// groups array entry is removed.
+// legacy editGroup (reference/legacy-prototype.sanitized.html L1530-1546).
+// Mobile-first iOS guidelines: min 44px+ touch targets on close button & actions,
+// active:scale-95 feedback, and backdrop blur.
 import { useEffect, useRef, useState } from "react";
 import { Loader2, Trash2, X } from "lucide-react";
 import type { Group } from "@/types/models";
@@ -19,9 +17,7 @@ export function EditGroupDialog({
   onClose,
 }: {
   group: Group;
-  // True while the async write is in flight - disables all controls.
   busy: boolean;
-  // Inline error from a failed write, or null when none.
   error: string | null;
   onRename: (newName: string) => void;
   onDelete: () => void;
@@ -29,8 +25,6 @@ export function EditGroupDialog({
 }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [nameValue, setNameValue] = useState(group.name);
-  // Track which action triggered the busy state so the right button shows
-  // the spinner: "rename" | "delete" | null.
   const [activeAction, setActiveAction] = useState<"rename" | "delete" | null>(null);
 
   useEffect(() => {
@@ -73,14 +67,14 @@ export function EditGroupDialog({
         if (event.target === event.currentTarget) dismiss();
       }}
       aria-labelledby="edit-group-title"
-      className="m-auto w-[min(26rem,calc(100vw-2rem))] rounded-lg border border-border-strong bg-surface p-0 text-text shadow-gold backdrop:bg-black/60"
+      className="m-auto w-[min(26rem,calc(100vw-2rem))] rounded-3xl border border-black/[0.04] bg-white/90 p-0 text-[#1C1C1E] backdrop-blur-2xl shadow-[0_20px_50px_rgb(0,0,0,0.15)] backdrop:bg-black/30 backdrop:backdrop-blur-sm"
     >
-      <div className="flex flex-col gap-5 p-5">
+      <div className="flex flex-col gap-5 p-5 sm:p-6">
         {/* Header */}
         <div className="flex items-start justify-between gap-3">
           <h2
             id="edit-group-title"
-            className="text-base font-semibold leading-snug"
+            className="text-base font-semibold leading-snug text-[#1C1C1E]"
           >
             แก้ไขกลุ่ม
           </h2>
@@ -89,7 +83,7 @@ export function EditGroupDialog({
             onClick={dismiss}
             disabled={busy}
             aria-label="ปิด"
-            className="-m-1.5 shrink-0 rounded-md p-1.5 text-text-muted transition-colors hover:bg-surface-raised hover:text-text disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex size-11 min-h-[44px] min-w-[44px] items-center justify-center -mr-2 -mt-2 rounded-full text-[#8E8E93] transition-all active:scale-90 hover:bg-black/[0.04] hover:text-[#1C1C1E] disabled:cursor-not-allowed disabled:opacity-50"
           >
             <X className="size-5" />
           </button>
@@ -99,17 +93,17 @@ export function EditGroupDialog({
         {error ? (
           <p
             role="alert"
-            className="rounded-md border border-danger bg-danger/10 px-3 py-2 text-sm text-danger"
+            className="rounded-2xl border border-red-200/80 bg-red-50/80 p-3 text-sm text-[#FF3B30] backdrop-blur-sm"
           >
             {error}
           </p>
         ) : null}
 
         {/* Rename section */}
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2.5">
           <label
             htmlFor="edit-group-name"
-            className="text-sm font-medium"
+            className="text-xs font-semibold uppercase tracking-wider text-[#8E8E93]"
           >
             ชื่อกลุ่ม
           </label>
@@ -120,39 +114,39 @@ export function EditGroupDialog({
             onChange={(e) => setNameValue(e.target.value)}
             disabled={busy}
             maxLength={80}
-            className="rounded-md border border-border bg-surface-raised px-3 py-2 text-sm text-text placeholder-text-muted transition-colors focus:border-border-strong focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+            className="min-h-[48px] rounded-xl border border-black/[0.06] bg-white/70 px-4 py-3 text-base text-[#1C1C1E] placeholder-[#8E8E93]/60 transition-all focus:border-[#007AFF] focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
           />
           <button
             type="button"
             onClick={handleRename}
             disabled={busy || !nameChanged}
-            className="flex items-center justify-center gap-2 rounded-md bg-accent px-4 py-2 text-sm font-semibold text-on-accent transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] px-6 py-3 text-base font-semibold text-white shadow-md shadow-blue-500/20 transition-all active:scale-95 hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-40"
           >
             {busy && activeAction === "rename" ? (
-              <Loader2 className="size-4 animate-spin" aria-hidden />
+              <Loader2 className="size-4.5 animate-spin" aria-hidden />
             ) : null}
             {busy && activeAction === "rename" ? "กำลังบันทึก..." : "บันทึกชื่อใหม่"}
           </button>
         </div>
 
         {/* Divider */}
-        <div className="border-t border-border" />
+        <div className="border-t border-black/[0.04]" />
 
         {/* Delete section */}
-        <div className="flex flex-col gap-2">
-          <p className="text-xs text-text-muted">
+        <div className="flex flex-col gap-2.5">
+          <p className="text-xs text-[#8E8E93]">
             ลบทางลัดกลุ่มนี้ออกจากรายการ — ประวัติการเล่นเดิมยังคงอยู่
           </p>
           <button
             type="button"
             onClick={handleDelete}
             disabled={busy}
-            className="flex items-center justify-center gap-2 rounded-md border border-danger bg-danger/10 px-4 py-2 text-sm font-semibold text-danger transition-colors hover:bg-danger hover:text-on-danger disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex min-h-[48px] items-center justify-center gap-2 rounded-full border border-red-200/80 bg-red-50/80 px-6 py-3 text-base font-semibold text-[#FF3B30] transition-all active:scale-95 hover:bg-red-100/80 disabled:cursor-not-allowed disabled:opacity-40"
           >
             {busy && activeAction === "delete" ? (
-              <Loader2 className="size-4 animate-spin" aria-hidden />
+              <Loader2 className="size-4.5 animate-spin" aria-hidden />
             ) : (
-              <Trash2 className="size-4" aria-hidden />
+              <Trash2 className="size-4.5" aria-hidden />
             )}
             {busy && activeAction === "delete"
               ? "กำลังลบ..."

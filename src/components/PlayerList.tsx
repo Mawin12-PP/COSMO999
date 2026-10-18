@@ -1,8 +1,8 @@
 "use client";
 
-// Roster of players with per-row edit and delete. Reads nothing itself -
-// the parent owns the usePlayers subscription and passes the list down.
-// Writes go straight to src/lib/players; the listener refreshes the list.
+// Roster of players with per-row edit and delete.
+// Mobile-first iOS guidelines: min 44x44px touch targets on all buttons,
+// active:scale-90 touch feedback, generous padding, and solid white cards.
 import { useRef, useState } from "react";
 import { Check, Loader2, Pencil, Trash2, X } from "lucide-react";
 import { PlayerAvatar } from "@/components/PlayerAvatar";
@@ -19,8 +19,6 @@ function PlayerRow({ player }: { player: Player }) {
   const fileRef = useRef<HTMLInputElement>(null);
 
   function enterEdit() {
-    // Seed the buffer here, not from useState: the row never remounts, so a
-    // rename from another device would otherwise be reverted on save.
     setName(player.name);
     setFileName(null);
     setError(null);
@@ -69,9 +67,9 @@ function PlayerRow({ player }: { player: Player }) {
   }
 
   return (
-    <li className="rounded-lg border border-border bg-surface p-4 shadow-card">
+    <li className="rounded-2xl border border-black/[0.04] bg-white/80 backdrop-blur-xl p-4 shadow-[0_4px_20px_rgb(0,0,0,0.04)] transition-all">
       <div className="flex items-center gap-3">
-        <PlayerAvatar player={player} />
+        <PlayerAvatar player={player} className="size-11 text-base shrink-0" />
 
         {mode === "edit" ? (
           <input
@@ -82,10 +80,10 @@ function PlayerRow({ player }: { player: Player }) {
               setName(event.target.value);
               setError(null);
             }}
-            className="min-w-0 flex-1 rounded-md border border-border bg-bg px-3 py-2 text-base outline-none focus:border-border-strong"
+            className="min-h-[44px] min-w-0 flex-1 rounded-xl border border-black/[0.08] bg-white/90 px-3.5 py-2 text-base font-semibold text-[#1C1C1E] outline-none focus:border-[#007AFF] focus:ring-2 focus:ring-blue-500/20"
           />
         ) : (
-          <p className="min-w-0 flex-1 truncate font-medium">{player.name}</p>
+          <p className="min-w-0 flex-1 truncate text-base font-semibold text-[#1C1C1E]">{player.name}</p>
         )}
 
         <div className="flex shrink-0 items-center gap-1">
@@ -95,17 +93,17 @@ function PlayerRow({ player }: { player: Player }) {
                 type="button"
                 onClick={enterEdit}
                 aria-label={`แก้ไข ${player.name}`}
-                className="rounded-md p-2 text-text-muted transition-colors hover:bg-surface-raised hover:text-accent"
+                className="flex size-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-xl text-[#8E8E93] transition-all active:scale-90 active:bg-blue-50 active:text-[#007AFF] hover:bg-blue-50 hover:text-[#007AFF]"
               >
-                <Pencil className="size-4" />
+                <Pencil className="size-4.5" />
               </button>
               <button
                 type="button"
                 onClick={() => setMode("confirm-delete")}
                 aria-label={`ลบ ${player.name}`}
-                className="rounded-md p-2 text-text-muted transition-colors hover:bg-surface-raised hover:text-danger"
+                className="flex size-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-xl text-[#8E8E93] transition-all active:scale-90 active:bg-red-50 active:text-[#FF3B30] hover:bg-red-50 hover:text-[#FF3B30]"
               >
-                <Trash2 className="size-4" />
+                <Trash2 className="size-4.5" />
               </button>
             </>
           ) : null}
@@ -117,12 +115,12 @@ function PlayerRow({ player }: { player: Player }) {
                 onClick={handleSave}
                 disabled={pending}
                 aria-label="บันทึก"
-                className="rounded-md p-2 text-accent transition-colors hover:bg-surface-raised disabled:opacity-60"
+                className="flex size-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-xl bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] text-white shadow-xs transition-all active:scale-90 hover:brightness-105 disabled:opacity-50"
               >
                 {pending ? (
-                  <Loader2 className="size-4 animate-spin" />
+                  <Loader2 className="size-4.5 animate-spin" />
                 ) : (
-                  <Check className="size-4" />
+                  <Check className="size-5 stroke-[2.5]" />
                 )}
               </button>
               <button
@@ -130,9 +128,9 @@ function PlayerRow({ player }: { player: Player }) {
                 onClick={resetToView}
                 disabled={pending}
                 aria-label="ยกเลิก"
-                className="rounded-md p-2 text-text-muted transition-colors hover:bg-surface-raised disabled:opacity-60"
+                className="flex size-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-xl text-[#8E8E93] transition-all active:scale-90 hover:bg-gray-100 disabled:opacity-50"
               >
-                <X className="size-4" />
+                <X className="size-5" />
               </button>
             </>
           ) : null}
@@ -140,11 +138,11 @@ function PlayerRow({ player }: { player: Player }) {
       </div>
 
       {mode === "edit" ? (
-        <div className="mt-3 flex flex-col gap-2 text-sm">
+        <div className="mt-3 flex flex-col gap-2 border-t border-black/[0.04] pt-3">
           <button
             type="button"
             onClick={() => fileRef.current?.click()}
-            className="self-start rounded-md border border-border bg-surface-raised px-3 py-1.5 text-accent transition-colors hover:border-border-strong"
+            className="flex min-h-[44px] items-center self-start rounded-xl border border-black/[0.06] bg-white/70 px-4 py-2 text-xs font-semibold text-[#007AFF] transition-all active:scale-95 hover:bg-white"
           >
             {fileName ?? "เปลี่ยนรูป"}
           </button>
@@ -161,22 +159,22 @@ function PlayerRow({ player }: { player: Player }) {
       ) : null}
 
       {mode === "confirm-delete" ? (
-        <div className="mt-3 flex flex-col gap-3 rounded-md border border-danger-strong bg-bg p-3 text-sm">
-          <p>
-            ลบ <span className="font-semibold">{player.name}</span> ?
+        <div className="mt-3 flex flex-col gap-3 rounded-2xl border border-red-200/80 bg-red-50/80 p-4 text-sm backdrop-blur-sm">
+          <p className="text-[#1C1C1E]">
+            ลบ <span className="font-bold text-[#FF3B30]">{player.name}</span> ?
             คะแนนรวมของผู้เล่นคนนี้จะหายไปด้วย
           </p>
-          <div className="flex gap-2">
+          <div className="flex gap-2.5">
             <button
               type="button"
               onClick={handleDelete}
               disabled={pending}
-              className="flex items-center gap-1.5 rounded-md bg-danger px-3 py-1.5 font-semibold text-on-danger transition-opacity hover:opacity-90 disabled:opacity-60"
+              className="flex min-h-[44px] items-center gap-1.5 rounded-full bg-[#FF3B30] px-5 py-2 text-xs font-semibold text-white shadow-sm shadow-red-500/20 transition-all active:scale-95 hover:bg-[#E0342A] disabled:opacity-50"
             >
               {pending ? (
-                <Loader2 className="size-4 animate-spin" />
+                <Loader2 className="size-3.5 animate-spin" />
               ) : (
-                <Trash2 className="size-4" />
+                <Trash2 className="size-3.5" />
               )}
               ลบเลย
             </button>
@@ -184,7 +182,7 @@ function PlayerRow({ player }: { player: Player }) {
               type="button"
               onClick={resetToView}
               disabled={pending}
-              className="rounded-md border border-border px-3 py-1.5 transition-colors hover:bg-surface-raised disabled:opacity-60"
+              className="flex min-h-[44px] items-center rounded-full border border-black/[0.06] bg-white px-5 py-2 text-xs font-medium text-[#1C1C1E] shadow-2xs transition-all active:scale-95 hover:bg-gray-50 disabled:opacity-50"
             >
               ยกเลิก
             </button>
@@ -192,7 +190,7 @@ function PlayerRow({ player }: { player: Player }) {
         </div>
       ) : null}
 
-      {error ? <p className="mt-2 text-sm text-danger">{error}</p> : null}
+      {error ? <p className="mt-2 text-sm font-medium text-[#FF3B30]">{error}</p> : null}
     </li>
   );
 }
@@ -205,12 +203,12 @@ export function PlayerList({
   loading: boolean;
 }) {
   if (loading) {
-    return <p className="text-sm text-text-muted">กำลังโหลดรายชื่อผู้เล่น...</p>;
+    return <p className="text-sm text-[#8E8E93]">กำลังโหลดรายชื่อผู้เล่น...</p>;
   }
 
   if (players.length === 0) {
     return (
-      <p className="rounded-lg border border-border bg-surface p-4 text-sm text-text-muted">
+      <p className="rounded-2xl border border-black/[0.04] bg-white/80 backdrop-blur-xl p-6 text-center text-sm text-[#8E8E93] shadow-[0_4px_20px_rgb(0,0,0,0.04)]">
         ยังไม่มีผู้เล่น เพิ่มคนแรกได้จากแบบฟอร์มด้านบน
       </p>
     );

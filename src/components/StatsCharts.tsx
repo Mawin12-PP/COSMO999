@@ -15,16 +15,6 @@ import {
 } from "recharts";
 import type { RoundDataPoint, CumulativeDataPoint } from "@/lib/stats";
 
-// Read a CSS custom property value from the document root at call time.
-function cssVar(name: string, fallback: string): string {
-  if (typeof window === "undefined") return fallback;
-  return (
-    getComputedStyle(document.documentElement).getPropertyValue(name).trim() ||
-    fallback
-  );
-}
-
-// Whether the visitor has requested reduced motion.
 function prefersReducedMotion(): boolean {
   return (
     typeof window !== "undefined" &&
@@ -34,9 +24,9 @@ function prefersReducedMotion(): boolean {
 
 // Colour for a single-round score based on sign.
 function roundDotColour(score: number): string {
-  if (score > 0) return cssVar("--color-success", "#3ecf7f");
-  if (score < 0) return cssVar("--color-danger", "#c62330");
-  return cssVar("--color-ivory-400", "#a8a291");
+  if (score > 0) return "#34C759";
+  if (score < 0) return "#FF3B30";
+  return "#8E8E93";
 }
 
 // Custom dot renderer for the round-score line chart.
@@ -53,9 +43,9 @@ function RoundDot(props: {
     <circle
       cx={cx}
       cy={cy}
-      r={5}
+      r={4.5}
       fill={fill}
-      stroke={cssVar("--color-felt-900", "#0a2318")}
+      stroke="#FFFFFF"
       strokeWidth={2}
     />
   );
@@ -76,15 +66,15 @@ function RoundScoreTooltip({
   }
   const score = payload[0].value;
   return (
-    <div className="pointer-events-none flex flex-col gap-1 rounded-lg border border-border-strong bg-surface-raised px-3 py-2 shadow-card">
-      <span className="text-xs font-medium text-text-muted">{label}</span>
+    <div className="pointer-events-none flex flex-col gap-1 rounded-2xl border border-black/[0.06] bg-white/90 backdrop-blur-md px-3.5 py-2 shadow-lg">
+      <span className="text-xs font-semibold text-[#8E8E93]">{label}</span>
       <span
         className={`text-sm font-bold tabular-nums ${
           score > 0
-            ? "text-success"
+            ? "text-[#34C759]"
             : score < 0
-              ? "text-danger"
-              : "text-text-muted"
+              ? "text-[#FF3B30]"
+              : "text-[#8E8E93]"
         }`}
       >
         {score > 0 ? `+${score.toLocaleString()}` : score.toLocaleString()} คะแนน
@@ -108,15 +98,15 @@ function CumulativeScoreTooltip({
   }
   const cumulative = payload[0].value;
   return (
-    <div className="pointer-events-none flex flex-col gap-1 rounded-lg border border-border-strong bg-surface-raised px-3 py-2 shadow-card">
-      <span className="text-xs font-medium text-text-muted">{label}</span>
+    <div className="pointer-events-none flex flex-col gap-1 rounded-2xl border border-black/[0.06] bg-white/90 backdrop-blur-md px-3.5 py-2 shadow-lg">
+      <span className="text-xs font-semibold text-[#8E8E93]">{label}</span>
       <span
         className={`text-sm font-bold tabular-nums ${
           cumulative > 0
-            ? "text-success"
+            ? "text-[#34C759]"
             : cumulative < 0
-              ? "text-danger"
-              : "text-text-muted"
+              ? "text-[#FF3B30]"
+              : "text-[#8E8E93]"
         }`}
       >
         สะสม: {cumulative > 0 ? `+${cumulative.toLocaleString()}` : cumulative.toLocaleString()} คะแนน
@@ -136,41 +126,37 @@ export function StatsCharts({
   roundData,
   cumulativeData,
   totalRounds,
-  totalScore,
 }: StatsChartsProps) {
-  const borderColour = cssVar("--color-felt-700", "#14472f");
-  const successColour = cssVar("--color-success", "#3ecf7f");
-  const dangerColour = cssVar("--color-danger", "#c62330");
-  const mutedColour = cssVar("--color-ivory-400", "#a8a291");
-  const goldColour = cssVar("--color-gold-400", "#e6c878");
-  const feltColour = cssVar("--color-felt-900", "#0a2318");
+  const gridColour = "#E5E5EA";
+  const mutedColour = "#8E8E93";
+  const iosBlue = "#007AFF";
   const noAnimate = prefersReducedMotion();
-
-  const cumulativeTone = totalScore >= 0 ? successColour : dangerColour;
 
   return (
     <div className="flex flex-col gap-6">
       {/* Chart 1: Per-round scores */}
-      <section className="rounded-lg border border-border bg-surface p-4">
-        <div className="mb-3 flex items-center gap-2">
-          <Trophy className="size-4 text-accent" aria-hidden />
-          <h2 className="text-sm font-semibold">คะแนนรายรอบ</h2>
+      <section className="rounded-3xl border border-black/[0.04] bg-white/80 backdrop-blur-2xl p-5 shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
+        <div className="mb-4 flex items-center gap-2">
+          <span className="grid size-7 place-items-center rounded-full bg-blue-50 text-[#007AFF] shadow-xs">
+            <Trophy className="size-4" aria-hidden />
+          </span>
+          <h2 className="text-sm font-semibold text-[#1C1C1E]">คะแนนรายรอบ</h2>
           {roundData.length < totalRounds ? (
-            <span className="ml-auto text-xs text-text-muted">
+            <span className="ml-auto text-xs font-medium text-[#8E8E93]">
               {roundData.length} รอบล่าสุด
             </span>
           ) : null}
         </div>
         <div className="touch-pan-y">
-          <ResponsiveContainer width="100%" height={200}>
+          <ResponsiveContainer width="100%" height={220}>
             <LineChart
               data={roundData}
               margin={{ top: 20, right: 16, bottom: 8, left: 0 }}
             >
               <CartesianGrid
                 strokeDasharray="3 3"
-                stroke={borderColour}
-                opacity={0.4}
+                stroke={gridColour}
+                opacity={0.8}
               />
               <XAxis
                 dataKey="label"
@@ -183,7 +169,7 @@ export function StatsCharts({
               <Tooltip
                 content={<RoundScoreTooltip />}
                 cursor={{
-                  stroke: borderColour,
+                  stroke: gridColour,
                   strokeWidth: 1.5,
                   strokeDasharray: "3 3",
                 }}
@@ -191,13 +177,13 @@ export function StatsCharts({
               <Line
                 type="monotone"
                 dataKey="score"
-                stroke={mutedColour}
-                strokeWidth={2}
+                stroke={iosBlue}
+                strokeWidth={2.5}
                 dot={<RoundDot />}
                 activeDot={{
-                  r: 7,
-                  fill: goldColour,
-                  stroke: feltColour,
+                  r: 6,
+                  fill: iosBlue,
+                  stroke: "#FFFFFF",
                   strokeWidth: 2,
                 }}
                 isAnimationActive={!noAnimate}
@@ -208,13 +194,15 @@ export function StatsCharts({
       </section>
 
       {/* Chart 2: Cumulative */}
-      <section className="rounded-lg border border-border bg-surface p-4">
-        <div className="mb-3 flex items-center gap-2">
-          <TrendingUp className="size-4 text-accent" aria-hidden />
-          <h2 className="text-sm font-semibold">คะแนนสะสม</h2>
+      <section className="rounded-3xl border border-black/[0.04] bg-white/80 backdrop-blur-2xl p-5 shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
+        <div className="mb-4 flex items-center gap-2">
+          <span className="grid size-7 place-items-center rounded-full bg-blue-50 text-[#007AFF] shadow-xs">
+            <TrendingUp className="size-4" aria-hidden />
+          </span>
+          <h2 className="text-sm font-semibold text-[#1C1C1E]">คะแนนสะสม</h2>
         </div>
         <div className="touch-pan-y">
-          <ResponsiveContainer width="100%" height={200}>
+          <ResponsiveContainer width="100%" height={220}>
             <AreaChart
               data={cumulativeData}
               margin={{ top: 20, right: 16, bottom: 8, left: 0 }}
@@ -223,20 +211,20 @@ export function StatsCharts({
                 <linearGradient id="cumGradient" x1="0" y1="0" x2="0" y2="1">
                   <stop
                     offset="5%"
-                    stopColor={cumulativeTone}
-                    stopOpacity={0.35}
+                    stopColor={iosBlue}
+                    stopOpacity={0.25}
                   />
                   <stop
                     offset="95%"
-                    stopColor={cumulativeTone}
+                    stopColor={iosBlue}
                     stopOpacity={0.0}
                   />
                 </linearGradient>
               </defs>
               <CartesianGrid
                 strokeDasharray="3 3"
-                stroke={borderColour}
-                opacity={0.4}
+                stroke={gridColour}
+                opacity={0.8}
               />
               <XAxis
                 dataKey="label"
@@ -249,7 +237,7 @@ export function StatsCharts({
               <Tooltip
                 content={<CumulativeScoreTooltip />}
                 cursor={{
-                  stroke: borderColour,
+                  stroke: gridColour,
                   strokeWidth: 1.5,
                   strokeDasharray: "3 3",
                 }}
@@ -257,19 +245,19 @@ export function StatsCharts({
               <Area
                 type="monotone"
                 dataKey="cumulative"
-                stroke={cumulativeTone}
+                stroke={iosBlue}
                 strokeWidth={3}
                 fill="url(#cumGradient)"
                 dot={{
-                  fill: goldColour,
-                  stroke: feltColour,
+                  fill: iosBlue,
+                  stroke: "#FFFFFF",
                   strokeWidth: 2,
-                  r: 4,
+                  r: 3.5,
                 }}
                 activeDot={{
-                  r: 7,
-                  fill: goldColour,
-                  stroke: feltColour,
+                  r: 6,
+                  fill: iosBlue,
+                  stroke: "#FFFFFF",
                   strokeWidth: 2,
                 }}
                 isAnimationActive={!noAnimate}

@@ -1,10 +1,8 @@
 "use client";
 
-// Generic accessible confirm dialog. Built on the native <dialog> element
-// (same pattern as PreviewDialog) so Esc-to-close, backdrop, focus trap,
-// and focus return are handled by the platform. Never uses confirm() /
-// alert() / prompt(). Destructive variant renders the primary button in
-// --color-danger so irreversible actions are visually distinct.
+// Generic accessible confirm dialog styled according to Apple iOS guidelines.
+// Mobile-first iOS: min 44x44px touch targets on close button, min 48px action buttons,
+// active:scale-95 feedback, and backdrop blur.
 import { useEffect, useRef } from "react";
 import { AlertTriangle, Loader2, X } from "lucide-react";
 
@@ -23,20 +21,14 @@ export function ConfirmDialog({
   description: string;
   confirmLabel: string;
   cancelLabel?: string;
-  // When true the confirm button uses the danger colour palette to signal
-  // that the action cannot be undone (e.g. undo a round).
   destructive?: boolean;
-  // True while the async action is in flight - disables both buttons.
   busy?: boolean;
-  // Inline error message from a failed write, or null when none.
   error?: string | null;
   onConfirm: () => void;
   onClose: () => void;
 }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
 
-  // showModal() grants the top layer, backdrop, and focus trap. The guard
-  // prevents the double-invoke in React Strict Mode double-effect.
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
@@ -46,8 +38,6 @@ export function ConfirmDialog({
     };
   }, []);
 
-  // Every dismiss path runs dismiss(): close() first so the browser hands
-  // focus back to the trigger element, then call onClose to unmount.
   function dismiss() {
     if (busy) return;
     dialogRef.current?.close();
@@ -55,8 +45,8 @@ export function ConfirmDialog({
   }
 
   const confirmButtonClass = destructive
-    ? "flex flex-1 items-center justify-center gap-2 rounded-md bg-danger px-4 py-2.5 font-semibold text-on-danger transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-    : "flex flex-1 items-center justify-center gap-2 rounded-md bg-accent px-4 py-2.5 font-semibold text-on-accent transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50";
+    ? "flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-full bg-[#FF3B30] px-6 py-3 text-base font-semibold text-white shadow-md shadow-red-500/20 transition-all active:scale-95 hover:bg-[#D70015] disabled:cursor-not-allowed disabled:opacity-50"
+    : "flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-full bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] px-6 py-3 text-base font-semibold text-white shadow-md shadow-blue-500/20 transition-all active:scale-95 hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50";
 
   return (
     <dialog
@@ -65,25 +55,25 @@ export function ConfirmDialog({
         event.preventDefault();
         dismiss();
       }}
-      // Click on the ::backdrop lands on the <dialog> element itself; clicks
-      // on the panel content do not bubble up here as currentTarget.
       onClick={(event) => {
         if (event.target === event.currentTarget) dismiss();
       }}
       aria-labelledby="confirm-dialog-title"
       aria-describedby="confirm-dialog-desc"
-      className="m-auto w-[min(24rem,calc(100vw-2rem))] rounded-lg border border-border-strong bg-surface p-0 text-text shadow-gold backdrop:bg-black/60"
+      className="m-auto w-[min(24rem,calc(100vw-2rem))] rounded-3xl border border-black/[0.04] bg-white/90 p-0 text-[#1C1C1E] backdrop-blur-2xl shadow-[0_20px_50px_rgb(0,0,0,0.15)] backdrop:bg-black/30 backdrop:backdrop-blur-sm"
     >
-      <div className="flex flex-col gap-4 p-5">
+      <div className="flex flex-col gap-5 p-5 sm:p-6">
         {/* Header */}
         <div className="flex items-start justify-between gap-3">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             {destructive && (
-              <AlertTriangle className="size-5 shrink-0 text-danger" aria-hidden />
+              <span className="grid size-8 place-items-center rounded-full bg-red-50 text-[#FF3B30] shadow-xs">
+                <AlertTriangle className="size-4 shrink-0" aria-hidden />
+              </span>
             )}
             <h2
               id="confirm-dialog-title"
-              className="text-base font-semibold leading-snug"
+              className="text-base font-semibold leading-snug text-[#1C1C1E]"
             >
               {title}
             </h2>
@@ -93,7 +83,7 @@ export function ConfirmDialog({
             onClick={dismiss}
             disabled={busy}
             aria-label="ปิด"
-            className="-m-1.5 shrink-0 rounded-md p-1.5 text-text-muted transition-colors hover:bg-surface-raised hover:text-text disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex size-11 min-h-[44px] min-w-[44px] items-center justify-center -mr-2 -mt-2 rounded-full text-[#8E8E93] transition-all active:scale-90 hover:bg-black/[0.04] hover:text-[#1C1C1E] disabled:cursor-not-allowed disabled:opacity-50"
           >
             <X className="size-5" />
           </button>
@@ -102,7 +92,7 @@ export function ConfirmDialog({
         {/* Body */}
         <p
           id="confirm-dialog-desc"
-          className="text-sm text-text-muted leading-relaxed"
+          className="text-sm leading-relaxed text-[#8E8E93]"
         >
           {description}
         </p>
@@ -111,14 +101,14 @@ export function ConfirmDialog({
         {error ? (
           <p
             role="alert"
-            className="rounded-md border border-danger bg-danger/10 px-3 py-2 text-sm text-danger"
+            className="rounded-2xl border border-red-200/80 bg-red-50/80 p-3 text-sm text-[#FF3B30] backdrop-blur-sm"
           >
             {error}
           </p>
         ) : null}
 
         {/* Action buttons */}
-        <div className="flex flex-col gap-2 sm:flex-row-reverse">
+        <div className="flex flex-col gap-2.5 sm:flex-row-reverse pt-2">
           <button
             type="button"
             onClick={onConfirm}
@@ -126,7 +116,7 @@ export function ConfirmDialog({
             className={confirmButtonClass}
           >
             {busy ? (
-              <Loader2 className="size-4 animate-spin" aria-hidden />
+              <Loader2 className="size-4.5 animate-spin" aria-hidden />
             ) : null}
             {busy ? "กำลังดำเนินการ..." : confirmLabel}
           </button>
@@ -134,7 +124,7 @@ export function ConfirmDialog({
             type="button"
             onClick={dismiss}
             disabled={busy}
-            className="flex flex-1 items-center justify-center rounded-md border border-border bg-surface px-4 py-2.5 font-medium text-text transition-colors hover:border-border-strong disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex min-h-[48px] flex-1 items-center justify-center rounded-full border border-black/[0.06] bg-white px-6 py-3 text-base font-semibold text-[#1C1C1E] shadow-xs transition-all active:scale-95 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {cancelLabel}
           </button>

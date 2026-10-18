@@ -1,24 +1,18 @@
 "use client";
 
-// Round preview. Confirmation step between score entry and the write:
-// shows every player's raw and net score plus the net total, which is 0 by
-// construction. Built on the native <dialog> element so Esc-to-close, the
-// modal backdrop, focus containment, and focus return are handled by the
-// platform rather than hand-rolled. Mounted only while the preview is open
-// (ScoreEntry gates it); the confirm button triggers ScoreEntry's atomic
-// save, this component itself touches no Firebase.
+// Round preview. Confirmation step between score entry and the write.
+// Mobile-first iOS guidelines: min 44x44px touch targets on close icon & 48px buttons,
+// active:scale-95 feedback, and backdrop blur.
 import { useEffect, useRef } from "react";
 import { Check, X } from "lucide-react";
 import { PlayerAvatar } from "@/components/PlayerAvatar";
 import type { RoundScoreResult } from "@/lib/scoring";
 import type { Player } from "@/types/models";
 
-// Colour + sign for a net figure. Gold is deliberately not used here: it is
-// the control colour, so a plus score must not look like a button.
 function netTone(net: number): string {
-  if (net > 0) return "text-success";
-  if (net < 0) return "text-danger";
-  return "text-text-muted";
+  if (net > 0) return "text-[#34C759]";
+  if (net < 0) return "text-[#FF3B30]";
+  return "text-[#8E8E93]";
 }
 
 export function PreviewDialog({
@@ -35,18 +29,13 @@ export function PreviewDialog({
   rawScores: Record<string, number>;
   result: RoundScoreResult;
   multiplier: number;
-  // True while the atomic save is in flight - disables both buttons.
   saving: boolean;
-  // Inline error from a failed/uncommitted save, or null when none.
   error: string | null;
   onClose: () => void;
   onConfirm: () => void;
 }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
 
-  // showModal() grants the top layer, backdrop and focus trap. The guard and
-  // the cleanup keep it correct when React re-runs the effect in development;
-  // `close` is intentionally not wired to onClose (see dismiss()).
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
@@ -56,13 +45,6 @@ export function PreviewDialog({
     };
   }, []);
 
-  // Every dismiss path runs this: close() first, while the <dialog> is still
-  // in the DOM, so the browser hands focus back to the trigger; then ask the
-  // parent to unmount us. Doing it in this order (rather than letting the
-  // effect cleanup call close() after the unmount) is what makes focus return
-  // work. Esc arrives here via onCancel with the native close suppressed.
-  // A save in flight must not be dismissable, matching the legacy disabled
-  // cancel button while confirmAndSaveRound runs.
   function dismiss() {
     if (saving) return;
     dialogRef.current?.close();
@@ -76,29 +58,27 @@ export function PreviewDialog({
         event.preventDefault();
         dismiss();
       }}
-      // Click on the ::backdrop lands on the dialog element itself; clicks on
-      // the panel below do not bubble up to here as currentTarget.
       onClick={(event) => {
         if (event.target === event.currentTarget) dismiss();
       }}
       aria-labelledby="preview-title"
-      className="m-auto w-[min(28rem,calc(100vw-2rem))] rounded-lg border border-border-strong bg-surface p-0 text-text shadow-gold backdrop:bg-black/60"
+      className="m-auto w-[min(28rem,calc(100vw-2rem))] rounded-3xl border border-black/[0.04] bg-white/90 p-0 text-[#1C1C1E] backdrop-blur-2xl shadow-[0_20px_50px_rgb(0,0,0,0.15)] backdrop:bg-black/30 backdrop:backdrop-blur-sm"
     >
-      <div className="flex flex-col gap-4 p-5">
+      <div className="flex flex-col gap-5 p-5 sm:p-6">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h2 id="preview-title" className="text-lg font-semibold">
+            <h2 id="preview-title" className="text-lg font-semibold tracking-tight text-[#1C1C1E]">
               ตรวจสอบคะแนนก่อนบันทึก
             </h2>
-            <p className="mt-0.5 text-sm text-text-muted tabular-nums">
-              ตัวคูณรอบนี้ x{multiplier}
+            <p className="mt-0.5 text-xs text-[#8E8E93] tabular-nums">
+              ตัวคูณรอบนี้ <span className="font-semibold text-[#007AFF]">x{multiplier}</span>
             </p>
           </div>
           <button
             type="button"
             onClick={dismiss}
             aria-label="ปิด"
-            className="-m-1.5 shrink-0 rounded-md p-1.5 text-text-muted transition-colors hover:bg-surface-raised hover:text-text"
+            className="flex size-11 min-h-[44px] min-w-[44px] items-center justify-center -mr-2 -mt-2 rounded-full text-[#8E8E93] transition-all active:scale-90 hover:bg-black/[0.04] hover:text-[#1C1C1E]"
           >
             <X className="size-5" />
           </button>
@@ -112,17 +92,17 @@ export function PreviewDialog({
             return (
               <li
                 key={player.id}
-                className="flex items-center gap-3 rounded-md border border-border bg-surface-raised px-3 py-2.5"
+                className="flex min-h-[48px] items-center gap-3 rounded-2xl border border-black/[0.04] bg-white/70 px-3.5 py-2.5 shadow-2xs"
               >
-                <PlayerAvatar player={player} className="size-9 text-sm" />
-                <span className="min-w-0 flex-1 truncate text-sm font-medium">
+                <PlayerAvatar player={player} className="size-9 text-sm shrink-0" />
+                <span className="min-w-0 flex-1 truncate text-sm font-semibold text-[#1C1C1E]">
                   {player.name}
                 </span>
-                <span className="shrink-0 text-right text-xs text-text-muted tabular-nums">
+                <span className="shrink-0 text-right text-xs text-[#8E8E93] tabular-nums">
                   ดิบ {raw}
                 </span>
                 <span
-                  className={`w-16 shrink-0 text-right text-sm font-semibold tabular-nums ${netTone(net)}`}
+                  className={`w-16 shrink-0 text-right text-sm font-bold tabular-nums ${netTone(net)}`}
                 >
                   {sign}
                   {net}
@@ -132,9 +112,9 @@ export function PreviewDialog({
           })}
         </ul>
 
-        <div className="flex items-center justify-between rounded-md border border-border-strong bg-surface-raised px-3 py-2.5">
-          <span className="text-sm font-medium">รวมสุทธิ</span>
-          <span className="text-base font-bold tabular-nums text-text-muted">
+        <div className="flex items-center justify-between rounded-2xl border border-black/[0.04] bg-black/[0.02] px-4 py-3">
+          <span className="text-sm font-semibold text-[#1C1C1E]">รวมสุทธิ</span>
+          <span className="text-base font-bold tabular-nums text-[#8E8E93]">
             {result.totalNetScore}
           </span>
         </div>
@@ -142,27 +122,27 @@ export function PreviewDialog({
         {error ? (
           <p
             role="alert"
-            className="rounded-md border border-danger bg-danger/10 px-3 py-2 text-sm text-danger"
+            className="rounded-2xl border border-red-200/80 bg-red-50/80 p-3 text-sm text-[#FF3B30] backdrop-blur-sm"
           >
             {error}
           </p>
         ) : null}
 
-        <div className="flex flex-col gap-2 sm:flex-row-reverse">
+        <div className="flex flex-col gap-2.5 sm:flex-row-reverse pt-1">
           <button
             type="button"
             onClick={onConfirm}
             disabled={saving}
-            className="flex flex-1 items-center justify-center gap-2 rounded-md bg-accent px-4 py-2.5 font-semibold text-on-accent transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-full bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] px-6 py-3 text-base font-semibold text-white shadow-md shadow-blue-500/20 transition-all active:scale-95 hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            <Check className="size-4" />
+            <Check className="size-4.5" />
             {saving ? "กำลังบันทึก..." : "ปิดจ๊อบ! ประจานเลย"}
           </button>
           <button
             type="button"
             onClick={dismiss}
             disabled={saving}
-            className="flex flex-1 items-center justify-center rounded-md border border-border bg-surface px-4 py-2.5 font-medium text-text transition-colors hover:border-border-strong disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex min-h-[48px] flex-1 items-center justify-center rounded-full border border-black/[0.06] bg-white px-6 py-3 text-base font-semibold text-[#1C1C1E] shadow-xs transition-all active:scale-95 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
           >
             กลับไปแก้
           </button>

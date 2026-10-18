@@ -2,11 +2,8 @@
 
 // Per-group leaderboard dialog. Ported from legacy showGroupScore
 // (reference/legacy-prototype.sanitized.html L1484-1526).
-// Read-only: shows each member's accumulated score within this group,
-// sorted highest-first, with the group's round count, per-member win/loss
-// record and nickname badges (computed in lib/groupStats.ts). Deleted players
-// are shown as "(ถูกลบ)".
-// Built on native <dialog> (same pattern as PreviewDialog).
+// Mobile-first iOS guidelines: min 44px+ touch targets on close button, min 48px close action,
+// active:scale-95 feedback, and iOS Grouped List.
 import { useEffect, useMemo, useRef } from "react";
 import {
   BarChart2,
@@ -22,11 +19,10 @@ import { formatNumber } from "@/lib/format";
 import { computeGroupStats } from "@/lib/groupStats";
 import type { Group, HistoryEntry, Player } from "@/types/models";
 
-// Colour token for a numeric score value.
 function scoreTone(score: number): string {
-  if (score > 0) return "text-success";
-  if (score < 0) return "text-danger";
-  return "text-text-muted";
+  if (score > 0) return "text-[#34C759]";
+  if (score < 0) return "text-[#FF3B30]";
+  return "text-[#8E8E93]";
 }
 
 function formatScore(score: number): string {
@@ -34,12 +30,11 @@ function formatScore(score: number): string {
   return `${score}`;
 }
 
-// Rank badge colour: gold / silver / bronze / plain for the rest.
 function rankTone(rank: number): string {
-  if (rank === 1) return "text-accent font-bold";
-  if (rank === 2) return "text-rank-silver font-semibold";
-  if (rank === 3) return "text-rank-bronze font-semibold";
-  return "text-text-muted";
+  if (rank === 1) return "text-[#007AFF] font-bold";
+  if (rank === 2) return "text-[#8E8E93] font-semibold";
+  if (rank === 3) return "text-[#C4975A] font-semibold";
+  return "text-[#8E8E93]";
 }
 
 function Badge({
@@ -69,8 +64,6 @@ export function GroupScoreDialog({
 }: {
   group: Group;
   players: Player[];
-  // null while history is still loading (or failed to load): the score list
-  // renders as before and the round/win-loss/badge extras are left out.
   history: HistoryEntry[] | null;
   onClose: () => void;
 }) {
@@ -94,8 +87,6 @@ export function GroupScoreDialog({
     onClose();
   }
 
-  // Build ranked list: map playerIds to score + player data, sort by score
-  // descending. Guard: scores object may be sparse if player was added late.
   const ranked = group.playerIds
     .map((pId) => {
       const player = players.find((p) => p.id === pId) ?? null;
@@ -115,20 +106,22 @@ export function GroupScoreDialog({
         if (event.target === event.currentTarget) dismiss();
       }}
       aria-labelledby="group-score-title"
-      className="m-auto max-h-[calc(100dvh-2rem)] w-[min(26rem,calc(100vw-2rem))] overflow-y-auto rounded-lg border border-border-strong bg-surface p-0 text-text shadow-gold backdrop:bg-black/60"
+      className="m-auto max-h-[calc(100dvh-2rem)] w-[min(26rem,calc(100vw-2rem))] overflow-y-auto rounded-3xl border border-black/[0.04] bg-white/90 p-0 text-[#1C1C1E] backdrop-blur-2xl shadow-[0_20px_50px_rgb(0,0,0,0.15)] backdrop:bg-black/30 backdrop:backdrop-blur-sm"
     >
-      <div className="flex flex-col gap-4 p-5">
+      <div className="flex flex-col gap-5 p-5 sm:p-6">
         {/* Header */}
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <BarChart2 className="size-5 shrink-0 text-accent" aria-hidden />
-              <h2 id="group-score-title" className="text-base font-semibold leading-snug">
+              <span className="grid size-8 place-items-center rounded-full bg-blue-50 text-[#007AFF] shadow-xs">
+                <BarChart2 className="size-4 shrink-0" aria-hidden />
+              </span>
+              <h2 id="group-score-title" className="text-base font-semibold leading-snug text-[#1C1C1E]">
                 คะแนนรวมกลุ่ม: {group.name}
               </h2>
             </div>
             {stats ? (
-              <p className="mt-1 flex items-center gap-1.5 text-xs text-text-muted">
+              <p className="mt-1 flex items-center gap-1.5 text-xs text-[#8E8E93]">
                 <Gamepad2 className="size-3.5 shrink-0" aria-hidden />
                 ดวลกันไปแล้วทั้งหมด {formatNumber(stats.totalRounds)} รอบ
               </p>
@@ -138,14 +131,14 @@ export function GroupScoreDialog({
             type="button"
             onClick={dismiss}
             aria-label="ปิด"
-            className="-m-1.5 shrink-0 rounded-md p-1.5 text-text-muted transition-colors hover:bg-surface-raised hover:text-text"
+            className="flex size-11 min-h-[44px] min-w-[44px] items-center justify-center -mr-2 -mt-2 rounded-full text-[#8E8E93] transition-all active:scale-90 hover:bg-black/[0.04] hover:text-[#1C1C1E]"
           >
             <X className="size-5" />
           </button>
         </div>
 
-        {/* Ranked list */}
-        <ol className="flex flex-col gap-2">
+        {/* Ranked iOS Grouped List */}
+        <ol className="rounded-2xl border border-black/[0.04] bg-white/80 backdrop-blur-xl shadow-xs overflow-hidden divide-y divide-black/[0.04]">
           {ranked.map(({ pId, player, score }, index) => {
             const rank = index + 1;
             const record = stats?.records[pId];
@@ -155,7 +148,7 @@ export function GroupScoreDialog({
             return (
               <li
                 key={pId}
-                className="flex items-center gap-3 rounded-md border border-border bg-surface-raised px-3 py-2.5"
+                className="flex min-h-[52px] items-center gap-3 p-3.5 transition-colors hover:bg-black/[0.02] active:bg-black/[0.04]"
               >
                 {/* Rank number */}
                 <span
@@ -164,18 +157,18 @@ export function GroupScoreDialog({
                   {rank}
                 </span>
 
-                {/* Avatar or placeholder for deleted player */}
+                {/* Avatar */}
                 {player ? (
-                  <PlayerAvatar player={player} className="size-8 text-xs" />
+                  <PlayerAvatar player={player} className="size-9 text-xs shrink-0" />
                 ) : (
-                  <span className="flex size-8 shrink-0 items-center justify-center rounded-full border border-border bg-surface-raised text-xs text-text-muted">
+                  <span className="flex size-9 shrink-0 items-center justify-center rounded-full border border-black/[0.06] bg-black/[0.04] text-xs text-[#8E8E93]">
                     ?
                   </span>
                 )}
 
                 {/* Name, nickname badges, win/loss record */}
                 <div className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-medium">
+                  <span className="block truncate text-sm font-semibold text-[#1C1C1E]">
                     {player ? player.name : "(ถูกลบ)"}
                   </span>
                   {isLeader || isLastPlace || isNemesis ? (
@@ -184,27 +177,27 @@ export function GroupScoreDialog({
                         <Badge
                           icon={Crown}
                           label="เจ้ามือประจำกลุ่ม"
-                          className="bg-accent/20 text-accent"
+                          className="bg-blue-50/80 border border-blue-500/20 text-[#007AFF]"
                         />
                       ) : null}
                       {isLastPlace ? (
                         <Badge
                           icon={PiggyBank}
                           label="หมูแจกแต้ม"
-                          className="bg-danger/15 text-danger"
+                          className="bg-red-50/80 border border-red-500/20 text-[#FF3B30]"
                         />
                       ) : null}
                       {isNemesis ? (
                         <Badge
                           icon={Target}
                           label="มือปราบแชมป์"
-                          className="bg-text/10 text-text"
+                          className="bg-black/[0.04] text-[#1C1C1E]"
                         />
                       ) : null}
                     </div>
                   ) : null}
                   {record ? (
-                    <p className="mt-0.5 text-xs tabular-nums text-text-muted">
+                    <p className="mt-0.5 text-xs tabular-nums text-[#8E8E93]">
                       ชนะ {record.wins} • แพ้ {record.losses}
                       {record.winRate !== null
                         ? ` (${Math.round(record.winRate)}%)`
@@ -228,7 +221,7 @@ export function GroupScoreDialog({
         <button
           type="button"
           onClick={dismiss}
-          className="flex w-full items-center justify-center rounded-md border border-border bg-surface px-4 py-2.5 font-medium text-text transition-colors hover:border-border-strong"
+          className="flex min-h-[48px] w-full items-center justify-center rounded-full border border-black/[0.06] bg-white px-6 py-3 text-base font-semibold text-[#1C1C1E] shadow-xs transition-all active:scale-95 hover:bg-gray-50"
         >
           ปิด
         </button>

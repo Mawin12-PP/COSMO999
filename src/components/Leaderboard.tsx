@@ -1,11 +1,9 @@
 "use client";
 
 // Real-time leaderboard: top-3 podium (Kahoot-style), a roast callout for
-// the lowest scorer, and a plain ranked list for everyone else. Scores are
-// derived from `history` for the selected view (current period / all-time /
-// a past period) - read-only, this component and everything it renders
-// never writes to Firebase. A second tab (Hall of Fame) derives past-period
-// champions and last-place finishers from the same history - also read-only.
+// the lowest scorer, and an iOS Grouped List for everyone else.
+// Mobile-first iOS guidelines: min 44px touch targets on tabs and controls,
+// active:scale-95 feedback, and iOS Grouped List.
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Activity,
@@ -44,24 +42,18 @@ import {
 } from "@/lib/titles";
 import type { Player } from "@/types/models";
 
-// Matches the JS animation duration in AnimatedNumber / --duration-slow, so
-// the pulse class clears right as the CSS keyframe finishes.
 const PULSE_DURATION_MS = 520;
 
 function scoreTone(score: number): string {
-  if (score > 0) return "text-success";
-  if (score < 0) return "text-danger";
-  return "text-text-muted";
+  if (score > 0) return "text-[#34C759]";
+  if (score < 0) return "text-[#FF3B30]";
+  return "text-[#8E8E93]";
 }
 
 function formatSigned(score: number): string {
   return score > 0 ? `+${score}` : `${score}`;
 }
 
-// Tracks which players' view score just changed (a live update landed from
-// elsewhere) and reports back the ids to flash for one pulse cycle.
-// Switching the active view itself is not a live update - the baseline is
-// re-synced silently on a view change so it never triggers a false pulse.
 function usePulseOnChange(
   scores: Record<string, number>,
   viewKey: string,
@@ -111,36 +103,29 @@ function usePulseOnChange(
 }
 
 function LatestScoreLabel({ latestScore }: { latestScore: number | null }) {
-  // Firebase drops a key entirely when it is written as null (RTDB's
-  // "null deletes the field" rule - see createPlayer in lib/players.ts), so
-  // a never-scored player reads back with latestScore missing (undefined)
-  // at runtime even though the type only declares number | null.
   if (latestScore == null) {
     return (
-      <p className="text-xs text-text-muted">รอบล่าสุด ยังไม่ได้เล่น</p>
+      <p className="text-xs text-[#8E8E93]">รอบล่าสุด ยังไม่ได้เล่น</p>
     );
   }
   return (
-    <p className="text-xs text-text-muted">
+    <p className="text-xs text-[#8E8E93]">
       รอบล่าสุด{" "}
-      <span className={scoreTone(latestScore)}>
+      <span className={`font-semibold ${scoreTone(latestScore)}`}>
         {formatSigned(latestScore)}
       </span>
     </p>
   );
 }
 
-// Accumulated Hall of Fame trophy count, shown next to a player's name
-// wherever they appear on the ranked list. Derived from getTrophyCounts -
-// purely a count of past periods won, unrelated to the currently active view.
 function TrophyBadge({ count }: { count: number }) {
   if (count <= 0) return null;
   return (
     <span
-      className="flex shrink-0 items-center gap-1 rounded-full bg-accent/20 px-2 py-0.5 text-[10px] font-bold text-accent"
+      className="flex shrink-0 items-center gap-1 rounded-full bg-blue-50/80 border border-blue-500/20 px-2 py-0.5 text-[10px] font-bold text-[#007AFF]"
       aria-label={`เป็นเซียนไพ่ประจำงวดสะสม ${count} ครั้ง`}
     >
-      <Crown className="size-3" aria-hidden /> x{count}
+      <Crown className="size-3 fill-current" aria-hidden /> x{count}
     </span>
   );
 }
@@ -168,10 +153,10 @@ function PersonalTitleBadge({
 }) {
   const Icon = TITLE_ICON_MAP[title.iconName] ?? Sparkles;
   const toneClasses = {
-    accent: "bg-accent/20 text-accent",
-    danger: "bg-danger/20 text-danger",
-    success: "bg-emerald-400/20 text-emerald-400",
-    muted: "bg-surface-raised text-text-muted",
+    accent: "bg-blue-50/80 border border-blue-500/20 text-[#007AFF]",
+    danger: "bg-red-50/80 border border-red-500/20 text-[#FF3B30]",
+    success: "bg-green-50/80 border border-green-500/20 text-[#34C759]",
+    muted: "bg-black/[0.04] text-[#8E8E93]",
   }[title.tone];
 
   return (
@@ -187,22 +172,25 @@ function PersonalTitleBadge({
 
 const PODIUM_STYLE: Record<
   1 | 2 | 3,
-  { pedestal: string; height: string; avatar: string }
+  { pedestal: string; height: string; avatar: string; ring: string }
 > = {
   1: {
-    pedestal: "bg-accent",
+    pedestal: "bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] shadow-md shadow-blue-500/20",
     height: "h-28 sm:h-36",
     avatar: "size-20 text-2xl sm:size-24",
+    ring: "ring-4 ring-blue-500/20 shadow-xs",
   },
   2: {
-    pedestal: "bg-rank-silver",
+    pedestal: "bg-gradient-to-b from-[#A0A0A5] to-[#8E8E93] shadow-sm",
     height: "h-20 sm:h-24",
     avatar: "size-16 text-xl sm:size-20",
+    ring: "ring-2 ring-gray-300 shadow-xs",
   },
   3: {
-    pedestal: "bg-rank-bronze",
+    pedestal: "bg-gradient-to-b from-[#D4A366] to-[#B38344] shadow-sm",
     height: "h-16 sm:h-20",
     avatar: "size-16 text-xl sm:size-20",
+    ring: "ring-2 ring-amber-300 shadow-xs",
   },
 };
 
@@ -231,24 +219,17 @@ function PodiumCard({
     >
       <div className="flex flex-col items-center gap-1 relative">
         {rank === 1 ? (
-          <Crown className="size-6 text-accent" />
+          <Crown className="size-6 text-[#007AFF] fill-[#007AFF] drop-shadow-sm" />
         ) : (
           <span className="h-6" aria-hidden />
         )}
-        <span className={rank === 1 ? "rounded-full shadow-gold" : ""}>
+        <span className={`rounded-full ${style.ring}`}>
           <PlayerAvatar player={player} className={style.avatar} />
         </span>
-        {rank === 1 && (
-          <img
-            src="/memes/meme_mvp.jpg"
-            alt="MVP Meme"
-            className="absolute -right-6 -bottom-2 size-12 rounded-full border-2 border-accent object-cover rotate-12 shadow-md"
-          />
-        )}
       </div>
 
       <div className="flex flex-col items-center gap-0.5">
-        <p className="w-full truncate text-center text-sm font-semibold sm:text-base">
+        <p className="w-full truncate text-center text-sm font-semibold tracking-tight text-[#1C1C1E] sm:text-base">
           {player.name}
         </p>
         <TrophyBadge count={championCount} />
@@ -263,9 +244,9 @@ function PodiumCard({
       ) : null}
 
       <div
-        className={`flex w-full items-center justify-center rounded-t-lg shadow-card ${style.pedestal} ${style.height} ${pulsing ? "pulse-highlight" : ""}`}
+        className={`flex w-full items-center justify-center rounded-t-2xl shadow-sm ${style.pedestal} ${style.height} ${pulsing ? "pulse-highlight" : ""}`}
       >
-        <span className="text-2xl font-black text-on-accent">{rank}</span>
+        <span className="text-2xl font-black text-white">{rank}</span>
       </div>
     </div>
   );
@@ -287,7 +268,7 @@ function Podium({
 }) {
   const slots: Array<1 | 2 | 3> = [2, 1, 3];
   return (
-    <div className="flex items-end justify-center gap-3 sm:gap-5">
+    <div className="flex items-end justify-center gap-3 sm:gap-6 pt-3 pb-1">
       {slots.map((rank) => {
         const entry = entries[rank - 1];
         if (!entry) return null;
@@ -319,24 +300,17 @@ function RoastCallout({
 }) {
   return (
     <div
-      className={`reveal flex items-center gap-3 rounded-lg border border-danger/40 bg-surface p-4 shadow-card ${pulsing ? "pulse-highlight" : ""}`}
+      className={`reveal flex items-center gap-3.5 rounded-3xl border border-red-200/80 bg-white/80 backdrop-blur-2xl p-4 shadow-[0_8px_30px_rgb(0,0,0,0.06)] ${pulsing ? "pulse-highlight" : ""}`}
     >
-      <span className="grid size-11 shrink-0 place-items-center rounded-full bg-danger/15 text-danger">
+      <span className="grid size-11 shrink-0 place-items-center rounded-full bg-red-50 text-[#FF3B30] shadow-2xs">
         <Banknote className="size-5" />
       </span>
-      <div className="relative">
-        <PlayerAvatar player={player} className="size-11 text-lg" />
-        <img
-          src="/memes/meme_atm.jpg"
-          alt="Crying Cat ATM"
-          className="absolute -right-2 -bottom-2 size-6 rounded-full border border-danger object-cover -rotate-12"
-        />
-      </div>
+      <PlayerAvatar player={player} className="size-11 text-lg shrink-0" />
       <div className="min-w-0 flex-1">
-        <p className="text-xs font-semibold tracking-wide text-danger">
+        <p className="text-xs font-bold uppercase tracking-wider text-[#FF3B30]">
           หมูแจกแต้ม
         </p>
-        <p className="truncate font-semibold">{player.name}</p>
+        <p className="truncate font-bold text-[#1C1C1E]">{player.name}</p>
       </div>
       <AnimatedNumber
         value={score}
@@ -354,7 +328,6 @@ function LeaderboardRow({
   personalTitle,
   showLatestScore,
   pulsing,
-  delayMs,
 }: {
   player: Player;
   score: number;
@@ -363,20 +336,18 @@ function LeaderboardRow({
   personalTitle: PersonalTitle;
   showLatestScore: boolean;
   pulsing: boolean;
-  delayMs: number;
 }) {
   return (
-    <li
-      className={`reveal flex items-center gap-3 rounded-lg border border-border bg-surface p-3 ${pulsing ? "pulse-highlight" : ""}`}
-      style={{ animationDelay: `${delayMs}ms` }}
+    <div
+      className={`flex min-h-[56px] items-center gap-3.5 p-3.5 sm:px-4 sm:py-3 transition-colors hover:bg-black/[0.02] active:bg-black/[0.04] ${pulsing ? "pulse-highlight" : ""}`}
     >
-      <span className="grid size-8 shrink-0 place-items-center rounded-full border border-border-strong bg-surface-raised text-sm font-semibold text-text-muted">
+      <span className="grid size-7 shrink-0 place-items-center rounded-full bg-black/[0.04] text-xs font-bold text-[#8E8E93]">
         {rank}
       </span>
-      <PlayerAvatar player={player} className="size-10 text-base" />
+      <PlayerAvatar player={player} className="size-10 text-base shrink-0" />
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5 flex-wrap">
-          <p className="truncate font-medium">{player.name}</p>
+          <p className="truncate font-semibold text-[#1C1C1E]">{player.name}</p>
           <TrophyBadge count={championCount} />
           <PersonalTitleBadge title={personalTitle} />
         </div>
@@ -388,7 +359,7 @@ function LeaderboardRow({
         value={score}
         className={`text-base font-bold tabular-nums ${scoreTone(score)}`}
       />
-    </li>
+    </div>
   );
 }
 
@@ -404,19 +375,19 @@ function StateMessage({
   tone?: "accent" | "danger";
 }) {
   return (
-    <div className="reveal flex min-h-[50dvh] flex-col items-center justify-center gap-3 text-center">
+    <div className="reveal flex min-h-[45dvh] flex-col items-center justify-center gap-4 rounded-3xl border border-black/[0.04] bg-white/80 backdrop-blur-2xl p-8 text-center shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
       <span
-        className={`grid size-16 place-items-center rounded-full border bg-surface-raised ${
+        className={`grid size-16 place-items-center rounded-full ${
           tone === "danger"
-            ? "border-danger-strong text-danger"
-            : "border-border-strong text-accent shadow-gold"
+            ? "bg-red-50 text-[#FF3B30]"
+            : "bg-blue-50 text-[#007AFF]"
         }`}
       >
         <Icon className="size-8" />
       </span>
-      <div className="flex flex-col gap-1.5">
-        <h2 className="text-xl font-bold tracking-tight">{title}</h2>
-        <p className="mx-auto max-w-xs text-sm text-text-muted">
+      <div className="flex flex-col gap-1">
+        <h2 className="text-xl font-semibold tracking-tight text-[#1C1C1E]">{title}</h2>
+        <p className="mx-auto max-w-xs text-sm text-[#8E8E93]">
           {description}
         </p>
       </div>
@@ -427,29 +398,27 @@ function StateMessage({
 function LeaderboardSkeleton() {
   return (
     <div className="reveal flex flex-col gap-6">
-      <p className="text-sm text-text-muted">กำลังโหลดอันดับ...</p>
+      <p className="text-sm text-[#8E8E93]">กำลังโหลดอันดับ...</p>
       <div className="flex items-end justify-center gap-3 sm:gap-5">
         {([2, 1, 3] as const).map((rank) => (
           <div key={rank} className="flex w-24 flex-col items-center gap-2 sm:w-28">
-            <div className="size-16 animate-pulse rounded-full bg-surface-raised sm:size-20" />
-            <div className="h-3 w-16 animate-pulse rounded bg-surface-raised" />
+            <div className="size-16 animate-pulse rounded-full bg-black/[0.06] sm:size-20" />
+            <div className="h-3 w-16 animate-pulse rounded-full bg-black/[0.06]" />
             <div
-              className={`w-full animate-pulse rounded-t-lg bg-surface-raised ${PODIUM_STYLE[rank].height}`}
+              className={`w-full animate-pulse rounded-t-2xl bg-black/[0.06] ${PODIUM_STYLE[rank].height}`}
             />
           </div>
         ))}
       </div>
-      <div className="flex flex-col gap-2">
+      <div className="rounded-3xl border border-black/[0.04] bg-white/80 backdrop-blur-2xl shadow-[0_8px_30px_rgb(0,0,0,0.06)] overflow-hidden divide-y divide-black/[0.04]">
         {[0, 1, 2].map((i) => (
-          <div key={i} className="h-16 animate-pulse rounded-lg bg-surface-raised" />
+          <div key={i} className="h-16 animate-pulse bg-black/[0.02]" />
         ))}
       </div>
     </div>
   );
 }
 
-// View switcher: a segmented "current period / all-time" toggle plus a
-// dropdown for past periods that actually have rounds in them.
 function ViewSwitcher({
   viewKey,
   onChange,
@@ -465,16 +434,16 @@ function ViewSwitcher({
     viewKey !== "all" && viewKey !== currentPeriodKey;
 
   return (
-    <div className="reveal flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-      <div className="inline-flex w-fit gap-1 rounded-md border border-border bg-surface-raised p-1">
+    <div className="reveal flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="inline-flex w-fit gap-1 rounded-full bg-black/[0.06] p-1 shadow-2xs">
         <button
           type="button"
           aria-pressed={viewKey === currentPeriodKey}
           onClick={() => onChange(currentPeriodKey)}
-          className={`rounded px-3 py-1.5 text-sm font-semibold transition-colors ${
+          className={`flex min-h-[44px] items-center rounded-full px-5 py-2 text-sm font-semibold transition-all active:scale-95 ${
             viewKey === currentPeriodKey
-              ? "bg-accent text-on-accent"
-              : "text-text-muted hover:text-text"
+              ? "bg-white text-[#1C1C1E] shadow-sm"
+              : "text-[#8E8E93] hover:text-[#1C1C1E]"
           }`}
         >
           งวดนี้
@@ -483,10 +452,10 @@ function ViewSwitcher({
           type="button"
           aria-pressed={viewKey === "all"}
           onClick={() => onChange("all")}
-          className={`rounded px-3 py-1.5 text-sm font-semibold transition-colors ${
+          className={`flex min-h-[44px] items-center rounded-full px-5 py-2 text-sm font-semibold transition-all active:scale-95 ${
             viewKey === "all"
-              ? "bg-accent text-on-accent"
-              : "text-text-muted hover:text-text"
+              ? "bg-white text-[#1C1C1E] shadow-sm"
+              : "text-[#8E8E93] hover:text-[#1C1C1E]"
           }`}
         >
           ตลอดกาล
@@ -500,7 +469,7 @@ function ViewSwitcher({
           onChange={(e) => {
             if (e.target.value) onChange(e.target.value);
           }}
-          className="rounded-md border border-border bg-surface-raised px-3 py-2 text-sm text-text focus:border-border-strong focus:outline-none"
+          className="min-h-[44px] rounded-full border border-black/[0.06] bg-white px-5 py-2 text-sm font-semibold text-[#1C1C1E] shadow-xs focus:border-[#007AFF] focus:outline-none"
         >
           <option value="">ดูงวดย้อนหลัง...</option>
           {pastPeriods.map((period) => (
@@ -516,9 +485,6 @@ function ViewSwitcher({
 
 type LeaderboardTab = "ranking" | "hall-of-fame";
 
-// Primary tab switch for this page: the live ranking view (podium, roast,
-// list) versus the derived Hall of Fame (past-period champions). Both read
-// from the same players/history subscriptions already loaded by Leaderboard.
 function TabSwitcher({
   activeTab,
   onChange,
@@ -532,20 +498,20 @@ function TabSwitcher({
   ];
 
   return (
-    <div className="reveal inline-flex w-full gap-1 rounded-md border border-border bg-surface-raised p-1 sm:w-fit">
+    <div className="reveal inline-flex w-full gap-1 rounded-full bg-black/[0.06] p-1 shadow-2xs sm:w-fit">
       {tabs.map(({ key, label, icon: Icon }) => (
         <button
           key={key}
           type="button"
           aria-pressed={activeTab === key}
           onClick={() => onChange(key)}
-          className={`flex flex-1 items-center justify-center gap-1.5 rounded px-3 py-1.5 text-sm font-semibold transition-colors sm:flex-none sm:px-4 ${
+          className={`flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-all active:scale-95 sm:flex-none ${
             activeTab === key
-              ? "bg-accent text-on-accent"
-              : "text-text-muted hover:text-text"
+              ? "bg-white text-[#1C1C1E] shadow-sm"
+              : "text-[#8E8E93] hover:text-[#1C1C1E]"
           }`}
         >
-          <Icon className="size-4" aria-hidden />
+          <Icon className="size-4.5" aria-hidden />
           {label}
         </button>
       ))}
@@ -563,10 +529,10 @@ function HallOfFame({
   return (
     <div className="flex flex-col gap-6">
       <header className="reveal">
-        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+        <h1 className="text-2xl font-semibold tracking-tight text-[#1C1C1E] sm:text-3xl">
           ทำเนียบเกียรติยศ
         </h1>
-        <p className="text-sm text-text-muted">
+        <p className="mt-1 text-sm text-[#8E8E93]">
           แชมป์และอันดับสุดท้ายประจำแต่ละงวดที่จบแล้ว เรียงจากล่าสุด
         </p>
       </header>
@@ -622,9 +588,6 @@ export function Leaderboard() {
     () => aggregatePeriod(history, viewKey),
     [history, viewKey],
   );
-  // Period views hide players with no round in that period (they would
-  // only add 0-score noise). A player who played and finished on exactly 0
-  // is in `scores` and stays. The all-time view keeps everyone.
   const visiblePlayers = useMemo(
     () =>
       viewKey === "all"
@@ -693,17 +656,11 @@ export function Leaderboard() {
   );
 
   if (isViewEmpty) {
-    // No history at all means every view would be empty, so that gets the
-    // "nobody has played yet" CTA. A single empty period (while other
-    // periods do have data) gets a neutral, period-agnostic empty state -
-    // it must stay period-agnostic because the active view can be a past
-    // period too (its last round can be undone from the history page while
-    // this view is still open).
     return (
       <div className="flex flex-col gap-6">
         {tabSwitcher}
         <header className="reveal">
-          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+          <h1 className="text-2xl font-semibold tracking-tight text-[#1C1C1E] sm:text-3xl">
             อันดับ
           </h1>
         </header>
@@ -770,10 +727,10 @@ export function Leaderboard() {
     <div className="flex flex-col gap-6">
       {tabSwitcher}
       <header className="reveal">
-        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+        <h1 className="text-2xl font-semibold tracking-tight text-[#1C1C1E] sm:text-3xl">
           อันดับ
         </h1>
-        <p className="text-sm text-text-muted">
+        <p className="mt-1 text-sm text-[#8E8E93]">
           {viewKey === "all"
             ? "จัดอันดับสายไพ่ประจำวง เรียงจากคะแนนรวมมากไปน้อย"
             : `งวด ${activePeriod?.label ?? ""}`}
@@ -781,7 +738,6 @@ export function Leaderboard() {
       </header>
 
       {viewSwitcher}
-
 
       <Podium
         entries={podiumEntries}
@@ -798,21 +754,25 @@ export function Leaderboard() {
       ) : null}
 
       {restEntries.length > 0 ? (
-        <ul className="flex flex-col gap-2">
-          {restEntries.map((entry, index) => (
-            <LeaderboardRow
-              key={entry.player.id}
-              player={entry.player}
-              score={entry.score}
-              championCount={entry.championCount}
-              rank={index + 4}
-              personalTitle={entry.personalTitle}
-              showLatestScore={showLatestScore}
-              pulsing={pulsingIds.has(entry.player.id)}
-              delayMs={index * 60}
-            />
-          ))}
-        </ul>
+        <div className="flex flex-col gap-2">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-[#8E8E93] px-1">
+            อันดับอื่น ๆ
+          </h2>
+          <div className="rounded-3xl border border-black/[0.04] bg-white/80 backdrop-blur-2xl shadow-[0_8px_30px_rgb(0,0,0,0.06)] overflow-hidden divide-y divide-black/[0.04]">
+            {restEntries.map((entry, index) => (
+              <LeaderboardRow
+                key={entry.player.id}
+                player={entry.player}
+                score={entry.score}
+                championCount={entry.championCount}
+                rank={index + 4}
+                personalTitle={entry.personalTitle}
+                showLatestScore={showLatestScore}
+                pulsing={pulsingIds.has(entry.player.id)}
+              />
+            ))}
+          </div>
+        </div>
       ) : null}
     </div>
   );
