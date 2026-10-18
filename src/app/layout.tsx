@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Prompt } from "next/font/google";
-import { Spade } from "lucide-react";
 import { AppNav } from "@/components/AppNav";
+import PlayingCardIcon from "@/components/PlayingCardIcon";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import "./globals.css";
@@ -49,12 +49,19 @@ export default function RootLayout({
               <header className="reveal sticky top-0 z-50 border-b border-black/[0.04] dark:border-[#38383A] bg-white/70 dark:bg-[#1C1C1E]/70 backdrop-blur-xl pt-[env(safe-area-inset-top)]">
                 <div className="mx-auto flex w-full max-w-5xl items-center justify-between px-4 py-3 sm:px-6">
                   <div className="flex items-center gap-3">
-                    <span className="grid size-9 place-items-center rounded-xl bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] text-white shadow-lg shadow-blue-500/25">
-                      <Spade className="size-5" />
-                    </span>
-                    <div className="leading-tight">
-                      <p className="text-lg font-semibold tracking-tight text-[#1C1C1E] dark:text-[#F2F2F7]">COSMO999</p>
-                      <p className="text-xs font-medium text-[#8E8E93] dark:text-[#98989D]">โต๊ะไพ่ดัมมี่</p>
+                    {/* Dual Card Logo */}
+                    <div className="flex -space-x-3">
+                      <div className="rotate-[-10deg] shadow-sm z-10">
+                        <PlayingCardIcon rank="2" suit="club" />
+                      </div>
+                      <div className="rotate-[10deg] shadow-md z-20">
+                        <PlayingCardIcon rank="Q" suit="spade" />
+                      </div>
+                    </div>
+                    {/* Title */}
+                    <div className="flex flex-col">
+                      <span className="text-xl font-bold tracking-tight text-[#1C1C1E] dark:text-[#F2F2F7]">COSMO999</span>
+                      <span className="text-xs text-[#8E8E93]">โต๊ะไพ่ดัมมี่</span>
                     </div>
                   </div>
 

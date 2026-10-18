@@ -8,11 +8,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  ChartColumnBig,
+  ChartLine,
+  CirclePlay,
   History,
-  Spade,
   Trophy,
-  Users,
+  UsersRound,
   type LucideIcon,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -24,11 +24,11 @@ type NavItem = {
 };
 
 const NAV_ITEMS: NavItem[] = [
-  { href: "/", label: "เล่น", icon: Spade },
+  { href: "/", label: "เล่น", icon: CirclePlay },
   { href: "/leaderboard", label: "อันดับ", icon: Trophy },
   { href: "/history", label: "ประวัติ", icon: History },
-  { href: "/groups", label: "ขาประจำ", icon: Users },
-  { href: "/stats", label: "สถิติ", icon: ChartColumnBig },
+  { href: "/groups", label: "ขาประจำ", icon: UsersRound },
+  { href: "/stats", label: "สถิติ", icon: ChartLine },
 ];
 
 function isActive(pathname: string, href: string): boolean {
@@ -45,7 +45,7 @@ export function AppNav() {
       className="fixed inset-x-0 bottom-0 z-40 border-t border-gray-200 dark:border-[#38383A] bg-white/80 dark:bg-[#1C1C1E]/80 backdrop-blur-2xl shadow-[0_-4px_20px_rgb(0,0,0,0.03)] md:sticky md:inset-x-auto md:bottom-auto md:top-0 md:h-dvh md:w-60 md:shrink-0 md:border-t-0 md:border-r md:border-gray-200 dark:md:border-[#38383A] md:bg-[#F2F2F7]/70 dark:md:bg-[#000000]/70 md:shadow-none"
     >
       <div className="flex md:h-full md:flex-col md:justify-between">
-        {/* Top section: navigation links */}
+        {/* Navigation links */}
         <ul className="flex flex-1 items-center justify-around px-2 pt-1 pb-[max(0.5rem,env(safe-area-inset-bottom))] md:flex-none md:flex-col md:justify-start md:gap-2 md:px-3.5 md:pt-6 md:pb-2">
           {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
             const active = isActive(pathname, href);
