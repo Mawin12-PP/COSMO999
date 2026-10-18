@@ -50,11 +50,11 @@ export default function RootLayout({
                 <div className="mx-auto flex w-full max-w-5xl items-center justify-between px-4 py-3 sm:px-6">
                   <div className="flex items-center gap-3">
                     {/* Dual Card Logo */}
-                    <div className="flex -space-x-3">
-                      <div className="rotate-[-10deg] shadow-sm z-10">
+                    <div className="relative flex items-center -space-x-3 bg-transparent border-none shadow-none">
+                      <div className="rotate-[-10deg] z-10">
                         <PlayingCardIcon rank="2" suit="club" />
                       </div>
-                      <div className="rotate-[10deg] shadow-md z-20">
+                      <div className="rotate-[10deg] z-20">
                         <PlayingCardIcon rank="Q" suit="spade" />
                       </div>
                     </div>
