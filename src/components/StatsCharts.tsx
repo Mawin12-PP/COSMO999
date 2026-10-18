@@ -135,7 +135,7 @@ export function StatsCharts({
   return (
     <div className="flex flex-col gap-6">
       {/* Chart 1: Per-round scores */}
-      <section className="rounded-3xl border border-black/[0.04] bg-white/80 backdrop-blur-2xl p-5 shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
+      <section className="rounded-[20px] border border-black/[0.04] bg-white p-5 sm:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
         <div className="mb-4 flex items-center gap-2">
           <span className="grid size-7 place-items-center rounded-full bg-blue-50 text-[#007AFF] shadow-xs">
             <Trophy className="size-4" aria-hidden />
@@ -194,7 +194,7 @@ export function StatsCharts({
       </section>
 
       {/* Chart 2: Cumulative */}
-      <section className="rounded-3xl border border-black/[0.04] bg-white/80 backdrop-blur-2xl p-5 shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
+      <section className="rounded-[20px] border border-black/[0.04] bg-white p-5 sm:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
         <div className="mb-4 flex items-center gap-2">
           <span className="grid size-7 place-items-center rounded-full bg-blue-50 text-[#007AFF] shadow-xs">
             <TrendingUp className="size-4" aria-hidden />

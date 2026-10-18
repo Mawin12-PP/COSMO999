@@ -66,7 +66,7 @@ export function LatestRoundCard({
   return (
     <section
       aria-labelledby="latest-round-title"
-      className="reveal flex flex-col gap-5 rounded-3xl border border-black/[0.04] bg-white/80 p-5 sm:p-6 backdrop-blur-2xl shadow-[0_8px_30px_rgb(0,0,0,0.06)] transition-all"
+      className="reveal flex flex-col gap-5 rounded-[20px] border border-black/[0.04] bg-white p-5 sm:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all"
     >
       {/* Header */}
       <div className="flex items-start justify-between gap-3">
@@ -112,7 +112,7 @@ export function LatestRoundCard({
                   ? "border-green-300/60 bg-green-50/70 shadow-2xs"
                   : isLoser
                     ? "border-red-300/60 bg-red-50/70 shadow-2xs"
-                    : "border-black/[0.04] bg-white/70 shadow-2xs"
+                    : "border-black/[0.04] bg-gray-50/80 shadow-2xs"
               }`}
             >
               {player ? (
@@ -179,7 +179,7 @@ export function LatestRoundCard({
               setPenalty(`กรรมตามสนอง! ${loserPlayer.name} ต้อง: ${randomTask}`);
             }
           }}
-          className="flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-full border border-red-200/80 bg-red-50/70 px-5 py-3 text-sm font-semibold text-[#FF3B30] transition-all active:scale-95 hover:bg-red-100/80"
+          className="flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-full border border-red-200/80 bg-red-50/70 px-5 py-3 text-sm font-semibold text-[#FF3B30] transition-all duration-200 ease-out active:scale-[0.97] hover:bg-red-100/80"
         >
           <Dices className="size-4.5" aria-hidden />
           สุ่มบทลงโทษ
@@ -188,7 +188,7 @@ export function LatestRoundCard({
         <button
           type="button"
           onClick={handlePlayAgain}
-          className="flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-full bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] px-5 py-3 text-sm font-semibold text-white shadow-md shadow-blue-500/20 transition-all active:scale-95 hover:brightness-105"
+          className="flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-full bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/25 transition-all duration-200 ease-out active:scale-[0.97] hover:opacity-90"
         >
           <RotateCcw className="size-4.5" aria-hidden />
           เล่นกลุ่มเดิม

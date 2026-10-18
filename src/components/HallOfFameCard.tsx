@@ -121,7 +121,7 @@ export function HallOfFameCard({
 
   return (
     <li
-      className="reveal flex flex-col gap-4 rounded-3xl border border-black/[0.04] bg-white/80 backdrop-blur-2xl p-5 shadow-[0_8px_30px_rgb(0,0,0,0.06)]"
+      className="reveal flex flex-col gap-4 rounded-[20px] border border-black/[0.04] bg-white p-5 sm:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)]"
       style={{ animationDelay: `${delayMs}ms` }}
     >
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-black/[0.04] pb-3">

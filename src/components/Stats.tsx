@@ -26,8 +26,8 @@ const StatsCharts = dynamic(
     ssr: false,
     loading: () => (
       <div className="flex flex-col gap-6">
-        <div className="h-64 rounded-3xl border border-black/[0.04] bg-white/80 p-4 animate-pulse shadow-sm" />
-        <div className="h-64 rounded-3xl border border-black/[0.04] bg-white/80 p-4 animate-pulse shadow-sm" />
+        <div className="h-64 rounded-[20px] border border-black/[0.04] bg-white p-4 animate-pulse shadow-sm" />
+        <div className="h-64 rounded-[20px] border border-black/[0.04] bg-white p-4 animate-pulse shadow-sm" />
       </div>
     ),
   },
@@ -52,7 +52,7 @@ function StatCard({
         : "text-[#1C1C1E]";
 
   return (
-    <div className="flex flex-col gap-1.5 rounded-2xl border border-black/[0.04] bg-white/80 backdrop-blur-xl p-4 sm:p-5 shadow-[0_4px_20px_rgb(0,0,0,0.04)]">
+    <div className="flex flex-col gap-1.5 rounded-[20px] border border-black/[0.04] bg-white p-4 sm:p-5 shadow-[0_4px_20px_rgb(0,0,0,0.03)]">
       <span className="text-xs font-semibold uppercase tracking-wider text-[#8E8E93]">{label}</span>
       <span className={`${valueClassName} ${toneClass}`}>{children}</span>
     </div>
@@ -125,14 +125,14 @@ export function Stats() {
 
           {/* No player selected yet */}
           {!selectedId ? (
-            <div className="flex flex-col items-center gap-4 rounded-3xl border border-black/[0.04] bg-white/80 backdrop-blur-2xl p-12 text-center text-[#8E8E93] shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
+            <div className="flex flex-col items-center gap-4 rounded-[20px] border border-black/[0.04] bg-white p-12 text-center text-[#8E8E93] shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
               <div className="grid size-14 place-items-center rounded-full bg-blue-50 text-[#007AFF] shadow-xs">
                 <BarChart2 className="size-7" aria-hidden />
               </div>
               <p className="text-base font-medium">เลือกผู้เล่นด้านบนเพื่อดูสถิติ</p>
             </div>
           ) : stats === null ? (
-            <div className="flex flex-col items-center gap-4 rounded-3xl border border-black/[0.04] bg-white/80 backdrop-blur-2xl p-12 text-center text-[#8E8E93] shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
+            <div className="flex flex-col items-center gap-4 rounded-[20px] border border-black/[0.04] bg-white p-12 text-center text-[#8E8E93] shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
               <div className="grid size-14 place-items-center rounded-full bg-black/[0.04] text-[#8E8E93]">
                 <TrendingUp className="size-7" aria-hidden />
               </div>
@@ -145,7 +145,7 @@ export function Stats() {
             <div className="reveal flex flex-col gap-6">
               {/* Profile header */}
               {selectedPlayer ? (
-                <div className="flex items-center gap-4 rounded-3xl border border-black/[0.04] bg-white/80 backdrop-blur-2xl p-4 sm:p-5 shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
+                <div className="flex items-center gap-4 rounded-[20px] border border-black/[0.04] bg-white p-4 sm:p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
                   <PlayerAvatar player={selectedPlayer} className="size-14 text-xl shrink-0" />
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-wider text-[#8E8E93]">ข้อมูลสถิติของ</p>

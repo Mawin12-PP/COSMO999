@@ -130,7 +130,7 @@ export function ScoreEntry({
 
   if (saveState.status === "saved") {
     return (
-      <section className="reveal flex flex-col items-center gap-5 rounded-3xl border border-black/[0.04] bg-white/80 p-8 text-center backdrop-blur-2xl shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
+      <section className="reveal flex flex-col items-center gap-5 rounded-[20px] border border-black/[0.04] bg-white p-8 text-center shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
         <span className="grid size-16 place-items-center rounded-full bg-blue-50 text-[#007AFF] shadow-xs">
           <PartyPopper className="size-8" />
         </span>
@@ -142,7 +142,7 @@ export function ScoreEntry({
           <button
             type="button"
             onClick={onReset}
-            className="flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] px-6 py-3 text-base font-semibold text-white shadow-md shadow-blue-500/20 transition-all active:scale-95 hover:brightness-105"
+            className="flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] px-6 py-3 text-base font-semibold text-white shadow-lg shadow-blue-500/25 transition-all duration-200 ease-out active:scale-[0.97] hover:opacity-90"
           >
             <RotateCcw className="size-4.5" />
             เริ่มรอบใหม่
@@ -152,7 +152,7 @@ export function ScoreEntry({
             target="_blank"
             rel="noopener noreferrer"
             aria-label="แจ้งปัญหา / เสนอไอเดีย (เปิดในแท็บใหม่)"
-            className="flex min-h-[48px] items-center justify-center gap-2 rounded-full border border-black/[0.06] bg-white px-5 py-2.5 text-sm font-semibold text-[#8E8E93] shadow-xs transition-all active:scale-95 hover:bg-gray-50 hover:text-[#1C1C1E]"
+            className="flex min-h-[48px] items-center justify-center gap-2 rounded-full border border-black/[0.06] bg-white px-5 py-2.5 text-sm font-semibold text-[#8E8E93] shadow-xs transition-all duration-200 ease-out active:scale-[0.97] hover:bg-gray-50 hover:text-[#1C1C1E]"
           >
             <MessageSquareHeart className="size-4.5" />
             แจ้งปัญหา / เสนอไอเดีย
@@ -163,7 +163,7 @@ export function ScoreEntry({
   }
 
   return (
-    <section className="reveal flex flex-col gap-6 rounded-3xl border border-black/[0.04] bg-white/80 p-5 sm:p-6 backdrop-blur-2xl shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
+    <section className="reveal flex flex-col gap-6 rounded-[20px] border border-black/[0.04] bg-white p-5 sm:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-2.5">
           <span className="grid size-9 place-items-center rounded-full bg-blue-50 text-[#007AFF] shadow-xs">
@@ -178,11 +178,11 @@ export function ScoreEntry({
         </span>
       </div>
 
-      <ul className="flex flex-col gap-3">
+      <ul className="overflow-hidden rounded-[16px] border border-black/[0.04] divide-y divide-gray-100/80 bg-white">
         {players.map((player, index) => (
           <li
             key={player.id}
-            className="flex min-h-[56px] items-center gap-3.5 rounded-2xl border border-black/[0.04] bg-white/60 px-4 py-2.5 transition-all focus-within:border-[#007AFF] focus-within:bg-white focus-within:shadow-xs"
+            className="flex min-h-[56px] items-center gap-3.5 px-4 py-3 transition-colors hover:bg-gray-50/60 focus-within:bg-blue-50/20"
           >
             <PlayerAvatar player={player} className="size-10 text-sm shrink-0" />
             <label
@@ -221,7 +221,7 @@ export function ScoreEntry({
         <button
           type="button"
           onClick={handleCheck}
-          className="flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-full bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] px-6 py-3 text-base font-semibold text-white shadow-md shadow-blue-500/20 transition-all active:scale-95 hover:brightness-105"
+          className="flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-full bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] px-6 py-3 text-base font-semibold text-white shadow-lg shadow-blue-500/25 transition-all duration-200 ease-out active:scale-[0.97] hover:opacity-90"
         >
           <ClipboardCheck className="size-4.5" />
           เช็กบิล!
@@ -229,7 +229,7 @@ export function ScoreEntry({
         <button
           type="button"
           onClick={onBack}
-          className="flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-full border border-black/[0.06] bg-white px-6 py-3 text-base font-semibold text-[#1C1C1E] shadow-xs transition-all active:scale-95 hover:bg-gray-50"
+          className="flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-full border border-black/[0.06] bg-white px-6 py-3 text-base font-semibold text-[#1C1C1E] shadow-xs transition-all duration-200 ease-out active:scale-[0.97] hover:bg-gray-50"
         >
           <ArrowLeft className="size-4.5" />
           ย้อนกลับ

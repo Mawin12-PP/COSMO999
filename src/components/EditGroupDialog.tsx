@@ -67,7 +67,7 @@ export function EditGroupDialog({
         if (event.target === event.currentTarget) dismiss();
       }}
       aria-labelledby="edit-group-title"
-      className="m-auto w-[min(26rem,calc(100vw-2rem))] rounded-3xl border border-black/[0.04] bg-white/90 p-0 text-[#1C1C1E] backdrop-blur-2xl shadow-[0_20px_50px_rgb(0,0,0,0.15)] backdrop:bg-black/30 backdrop:backdrop-blur-sm"
+      className="m-auto w-[min(26rem,calc(100vw-2rem))] rounded-[20px] border border-black/[0.04] bg-white p-0 text-[#1C1C1E] shadow-2xl backdrop:bg-black/30 backdrop:backdrop-blur-sm"
     >
       <div className="flex flex-col gap-5 p-5 sm:p-6">
         {/* Header */}
@@ -83,7 +83,7 @@ export function EditGroupDialog({
             onClick={dismiss}
             disabled={busy}
             aria-label="ปิด"
-            className="flex size-11 min-h-[44px] min-w-[44px] items-center justify-center -mr-2 -mt-2 rounded-full text-[#8E8E93] transition-all active:scale-90 hover:bg-black/[0.04] hover:text-[#1C1C1E] disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex size-11 min-h-[44px] min-w-[44px] items-center justify-center -mr-2 -mt-2 rounded-full text-[#8E8E93] transition-all duration-200 ease-out active:scale-[0.97] hover:bg-black/[0.04] hover:text-[#1C1C1E] disabled:cursor-not-allowed disabled:opacity-50"
           >
             <X className="size-5" />
           </button>
@@ -120,7 +120,7 @@ export function EditGroupDialog({
             type="button"
             onClick={handleRename}
             disabled={busy || !nameChanged}
-            className="flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] px-6 py-3 text-base font-semibold text-white shadow-md shadow-blue-500/20 transition-all active:scale-95 hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-40"
+            className="flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] px-6 py-3 text-base font-semibold text-white shadow-lg shadow-blue-500/25 transition-all duration-200 ease-out active:scale-[0.97] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
           >
             {busy && activeAction === "rename" ? (
               <Loader2 className="size-4.5 animate-spin" aria-hidden />
@@ -141,7 +141,7 @@ export function EditGroupDialog({
             type="button"
             onClick={handleDelete}
             disabled={busy}
-            className="flex min-h-[48px] items-center justify-center gap-2 rounded-full border border-red-200/80 bg-red-50/80 px-6 py-3 text-base font-semibold text-[#FF3B30] transition-all active:scale-95 hover:bg-red-100/80 disabled:cursor-not-allowed disabled:opacity-40"
+            className="flex min-h-[48px] items-center justify-center gap-2 rounded-full border border-red-200/80 bg-red-50/80 px-6 py-3 text-base font-semibold text-[#FF3B30] transition-all duration-200 ease-out active:scale-[0.97] hover:bg-red-100/80 disabled:cursor-not-allowed disabled:opacity-40"
           >
             {busy && activeAction === "delete" ? (
               <Loader2 className="size-4.5 animate-spin" aria-hidden />

@@ -69,10 +69,10 @@ export function MultiplierPicker({
               onClick={() => onChange(m)}
               disabled={rolling}
               aria-pressed={active}
-              className={`flex h-12 min-w-[54px] sm:min-w-[62px] items-center justify-center rounded-2xl px-3.5 py-2.5 text-base font-bold tabular-nums transition-all active:scale-95 disabled:opacity-50 ${
+              className={`flex h-12 min-w-[54px] sm:min-w-[62px] items-center justify-center rounded-2xl px-3.5 py-2.5 text-base font-bold tabular-nums transition-all duration-200 ease-out active:scale-[0.97] disabled:opacity-50 ${
                 active
-                  ? "bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] text-white shadow-md shadow-blue-500/20 border-0"
-                  : "bg-white border border-gray-200 text-gray-800 shadow-sm active:bg-gray-100 hover:bg-gray-50"
+                  ? "bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] text-white shadow-md shadow-blue-500/20 border-0 hover:opacity-90"
+                  : "bg-white border border-gray-200 text-gray-800 shadow-sm hover:bg-gray-50 active:bg-gray-100"
               }`}
             >
               x{m}
@@ -85,10 +85,10 @@ export function MultiplierPicker({
           onClick={handleRandomize}
           disabled={rolling}
           aria-pressed={isRandom}
-          className={`flex h-12 items-center justify-center gap-2 rounded-2xl px-5 py-2.5 text-base font-bold transition-all active:scale-95 disabled:opacity-70 ${
+          className={`flex h-12 items-center justify-center gap-2 rounded-2xl px-5 py-2.5 text-base font-bold transition-all duration-200 ease-out active:scale-[0.97] disabled:opacity-70 ${
             isRandom
-              ? "bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] text-white shadow-md shadow-blue-500/20 border-0"
-              : "bg-white border border-gray-200 text-[#007AFF] shadow-sm active:bg-blue-50 hover:bg-blue-50/50"
+              ? "bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] text-white shadow-md shadow-blue-500/20 border-0 hover:opacity-90"
+              : "bg-white border border-gray-200 text-[#007AFF] shadow-sm hover:bg-blue-50/50 active:bg-blue-50"
           }`}
         >
           <Dices key={rollId} className={`size-5 ${rolling ? "dice-tumble" : ""}`} />

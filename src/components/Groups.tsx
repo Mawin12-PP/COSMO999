@@ -52,7 +52,7 @@ function GroupCard({
   }
 
   return (
-    <article className="reveal flex flex-col justify-between gap-5 rounded-3xl border border-black/[0.04] bg-white/80 p-5 sm:p-6 backdrop-blur-2xl shadow-[0_8px_30px_rgb(0,0,0,0.06)] transition-all">
+    <article className="reveal flex flex-col justify-between gap-5 rounded-[20px] border border-black/[0.04] bg-white p-5 sm:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all">
       {/* Group name + member list */}
       <div className="flex items-start gap-3.5">
         <span className="grid size-10 shrink-0 place-items-center rounded-full bg-blue-50 text-[#007AFF] shadow-xs">
@@ -79,7 +79,7 @@ function GroupCard({
         <button
           type="button"
           onClick={handlePlay}
-          className="flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] px-6 py-3 text-base font-semibold text-white shadow-md shadow-blue-500/20 transition-all active:scale-95 hover:brightness-105"
+          className="flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] px-6 py-3 text-base font-semibold text-white shadow-lg shadow-blue-500/25 transition-all duration-200 ease-out active:scale-[0.97] hover:opacity-90"
         >
           <Play className="size-4.5 fill-current" aria-hidden />
           เล่นกลุ่มนี้
@@ -90,14 +90,14 @@ function GroupCard({
           <button
             type="button"
             onClick={() => onScore(group.id)}
-            className="flex min-h-[44px] flex-1 items-center justify-center gap-1.5 rounded-full border border-black/[0.06] bg-white px-4 py-2.5 text-sm font-semibold text-[#1C1C1E] shadow-2xs transition-all active:scale-95 hover:bg-gray-50"
+            className="flex min-h-[44px] flex-1 items-center justify-center gap-1.5 rounded-full border border-black/[0.06] bg-white px-4 py-2.5 text-sm font-semibold text-[#1C1C1E] shadow-2xs transition-all duration-200 ease-out active:scale-[0.97] hover:bg-gray-50"
           >
             ดูคะแนน
           </button>
           <button
             type="button"
             onClick={() => onEdit(group.id)}
-            className="flex size-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-black/[0.06] bg-white text-[#8E8E93] shadow-2xs transition-all active:scale-95 hover:bg-gray-50 hover:text-[#1C1C1E]"
+            className="flex size-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-black/[0.06] bg-white text-[#8E8E93] shadow-2xs transition-all duration-200 ease-out active:scale-[0.97] hover:bg-gray-50 hover:text-[#1C1C1E]"
             aria-label={`แก้ไขกลุ่ม ${group.name}`}
           >
             <Pencil className="size-4.5" aria-hidden />
@@ -207,7 +207,7 @@ export function Groups() {
           </p>
         </div>
       ) : groups.length === 0 ? (
-        <div className="flex flex-col items-center gap-4 rounded-3xl border border-black/[0.04] bg-white/80 backdrop-blur-2xl p-12 text-center text-[#8E8E93] shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
+        <div className="flex flex-col items-center gap-4 rounded-[20px] border border-black/[0.04] bg-white p-12 text-center text-[#8E8E93] shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
           <div className="grid size-14 place-items-center rounded-full bg-black/[0.04] text-[#8E8E93]">
             <ClipboardList className="size-7" aria-hidden />
           </div>

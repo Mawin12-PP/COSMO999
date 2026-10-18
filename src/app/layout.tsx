@@ -37,10 +37,10 @@ export default function RootLayout({
           <AppNav />
 
           <div className="flex min-h-dvh flex-1 flex-col">
-            {/* iOS 18 Frosted Glass Header */}
-            <header className="reveal sticky top-0 z-30 border-b border-black/[0.04] bg-white/75 backdrop-blur-2xl pt-[env(safe-area-inset-top)]">
+            {/* iOS Frosted Glass Header */}
+            <header className="reveal sticky top-0 z-50 border-b border-black/[0.04] bg-white/70 backdrop-blur-xl pt-[env(safe-area-inset-top)]">
               <div className="mx-auto flex w-full max-w-5xl items-center gap-3 px-4 py-3 sm:px-6">
-                <span className="grid size-9 place-items-center rounded-xl bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] text-white shadow-md shadow-blue-500/20">
+                <span className="grid size-9 place-items-center rounded-xl bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] text-white shadow-lg shadow-blue-500/25">
                   <Spade className="size-5" />
                 </span>
                 <div className="leading-tight">

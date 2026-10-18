@@ -43,7 +43,7 @@ function HistoryRow({
   const timeStr = new Date(entry.timestamp).toLocaleString("th-TH");
 
   return (
-    <article className="flex flex-col gap-3.5 p-4 sm:p-5 transition-colors hover:bg-black/[0.02]">
+    <article className="flex flex-col gap-3.5 p-4 sm:p-5 transition-colors hover:bg-gray-50/60">
       {/* Header row: time + group name + multiplier badge */}
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="flex flex-col gap-0.5">
@@ -67,7 +67,7 @@ function HistoryRow({
           return (
             <li
               key={pId}
-              className="flex min-h-[36px] items-center gap-2 rounded-xl border border-black/[0.04] bg-white/70 px-3 py-1.5 shadow-2xs"
+              className="flex min-h-[36px] items-center gap-2 rounded-xl border border-black/[0.04] bg-white px-3 py-1.5 shadow-2xs"
             >
               {player ? (
                 <PlayerAvatar player={player} className="size-6 text-xs shrink-0" />
@@ -90,7 +90,7 @@ function HistoryRow({
         <button
           type="button"
           onClick={() => onUndo(entry.id)}
-          className="flex min-h-[44px] items-center gap-2 rounded-full border border-black/[0.06] bg-white/70 px-4 py-2 text-xs font-semibold text-[#8E8E93] shadow-2xs transition-all active:scale-95 hover:border-red-200 hover:bg-red-50 hover:text-[#FF3B30]"
+          className="flex min-h-[44px] items-center gap-2 rounded-full border border-black/[0.06] bg-white px-4 py-2 text-xs font-semibold text-[#8E8E93] shadow-2xs transition-all duration-200 ease-out active:scale-[0.97] hover:border-red-200 hover:bg-red-50 hover:text-[#FF3B30]"
         >
           <Undo2 className="size-4" aria-hidden />
           ยกเลิกผลรอบนี้
@@ -176,7 +176,7 @@ export function History() {
             setRecalcError(null);
             setRecalcPending(true);
           }}
-          className="flex min-h-[44px] items-center gap-2 rounded-full border border-black/[0.06] bg-white/80 backdrop-blur-md px-4 py-2.5 text-xs font-semibold text-[#8E8E93] shadow-xs transition-all active:scale-95 hover:bg-white hover:text-[#1C1C1E]"
+          className="flex min-h-[44px] items-center gap-2 rounded-full border border-black/[0.06] bg-white px-4 py-2.5 text-xs font-semibold text-[#8E8E93] shadow-xs transition-all duration-200 ease-out active:scale-[0.97] hover:bg-gray-50 hover:text-[#1C1C1E]"
         >
           <RefreshCw className="size-4" aria-hidden />
           คำนวณคะแนนใหม่จากประวัติ
@@ -205,7 +205,7 @@ export function History() {
           </p>
         </div>
       ) : sorted.length === 0 ? (
-        <div className="flex flex-col items-center gap-4 rounded-3xl border border-black/[0.04] bg-white/80 backdrop-blur-2xl p-12 text-center shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
+        <div className="flex flex-col items-center gap-4 rounded-[20px] border border-black/[0.04] bg-white p-12 text-center shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
           <div className="grid size-14 place-items-center rounded-full bg-black/[0.04] text-[#8E8E93]">
             <ClipboardList className="size-7" aria-hidden />
           </div>
@@ -218,7 +218,7 @@ export function History() {
         </div>
       ) : (
         /* iOS Grouped List */
-        <div className="rounded-3xl border border-black/[0.04] bg-white/80 backdrop-blur-2xl shadow-[0_8px_30px_rgb(0,0,0,0.06)] overflow-hidden divide-y divide-black/[0.04]">
+        <div className="rounded-[20px] border border-black/[0.04] bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden divide-y divide-gray-100/80">
           {sorted.map((entry) => (
             <HistoryRow
               key={entry.id}

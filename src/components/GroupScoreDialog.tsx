@@ -106,7 +106,7 @@ export function GroupScoreDialog({
         if (event.target === event.currentTarget) dismiss();
       }}
       aria-labelledby="group-score-title"
-      className="m-auto max-h-[calc(100dvh-2rem)] w-[min(26rem,calc(100vw-2rem))] overflow-y-auto rounded-3xl border border-black/[0.04] bg-white/90 p-0 text-[#1C1C1E] backdrop-blur-2xl shadow-[0_20px_50px_rgb(0,0,0,0.15)] backdrop:bg-black/30 backdrop:backdrop-blur-sm"
+      className="m-auto max-h-[calc(100dvh-2rem)] w-[min(26rem,calc(100vw-2rem))] overflow-y-auto rounded-[20px] border border-black/[0.04] bg-white p-0 text-[#1C1C1E] shadow-2xl backdrop:bg-black/30 backdrop:backdrop-blur-sm"
     >
       <div className="flex flex-col gap-5 p-5 sm:p-6">
         {/* Header */}
@@ -131,14 +131,14 @@ export function GroupScoreDialog({
             type="button"
             onClick={dismiss}
             aria-label="ปิด"
-            className="flex size-11 min-h-[44px] min-w-[44px] items-center justify-center -mr-2 -mt-2 rounded-full text-[#8E8E93] transition-all active:scale-90 hover:bg-black/[0.04] hover:text-[#1C1C1E]"
+            className="flex size-11 min-h-[44px] min-w-[44px] items-center justify-center -mr-2 -mt-2 rounded-full text-[#8E8E93] transition-all duration-200 ease-out active:scale-[0.97] hover:bg-black/[0.04] hover:text-[#1C1C1E]"
           >
             <X className="size-5" />
           </button>
         </div>
 
         {/* Ranked iOS Grouped List */}
-        <ol className="rounded-2xl border border-black/[0.04] bg-white/80 backdrop-blur-xl shadow-xs overflow-hidden divide-y divide-black/[0.04]">
+        <ol className="rounded-[16px] border border-black/[0.04] bg-white shadow-2xs overflow-hidden divide-y divide-gray-100/80">
           {ranked.map(({ pId, player, score }, index) => {
             const rank = index + 1;
             const record = stats?.records[pId];
@@ -148,7 +148,7 @@ export function GroupScoreDialog({
             return (
               <li
                 key={pId}
-                className="flex min-h-[52px] items-center gap-3 p-3.5 transition-colors hover:bg-black/[0.02] active:bg-black/[0.04]"
+                className="flex min-h-[52px] items-center gap-3 p-3.5 transition-colors hover:bg-gray-50/60 active:bg-gray-100/60"
               >
                 {/* Rank number */}
                 <span
@@ -221,7 +221,7 @@ export function GroupScoreDialog({
         <button
           type="button"
           onClick={dismiss}
-          className="flex min-h-[48px] w-full items-center justify-center rounded-full border border-black/[0.06] bg-white px-6 py-3 text-base font-semibold text-[#1C1C1E] shadow-xs transition-all active:scale-95 hover:bg-gray-50"
+          className="flex min-h-[48px] w-full items-center justify-center rounded-full border border-black/[0.06] bg-white px-6 py-3 text-base font-semibold text-[#1C1C1E] shadow-xs transition-all duration-200 ease-out active:scale-[0.97] hover:bg-gray-50"
         >
           ปิด
         </button>

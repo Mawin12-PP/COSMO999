@@ -160,7 +160,7 @@ function RoundSetupInner({
   return (
     <section
       id="round-setup-section"
-      className="flex flex-col gap-6 rounded-3xl border border-black/[0.04] bg-white/80 backdrop-blur-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] transition-all"
+      className="flex flex-col gap-6 rounded-[20px] border border-black/[0.04] bg-white p-5 sm:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all"
     >
       <div className="flex items-center gap-2.5">
         <span className="grid size-8 place-items-center rounded-xl bg-blue-50 text-[#007AFF]">
@@ -213,7 +213,7 @@ function RoundSetupInner({
           type="button"
           onClick={handleProceed}
           disabled={!enoughPlayers}
-          className="flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] px-6 py-3.5 text-base font-semibold text-white shadow-md shadow-blue-500/20 transition-all hover:brightness-105 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none"
+          className="flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] px-6 py-3.5 text-base font-semibold text-white shadow-lg shadow-blue-500/25 transition-all duration-200 ease-out hover:opacity-90 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none"
         >
           ลุยดิวะ!
           <ArrowRight className="size-4.5" />
@@ -242,7 +242,7 @@ export function RoundSetup({
   return (
     <Suspense
       fallback={
-        <section className="flex flex-col gap-6 rounded-3xl border border-black/[0.04] bg-white/80 backdrop-blur-2xl p-6 opacity-50 shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
+        <section className="flex flex-col gap-6 rounded-[20px] border border-black/[0.04] bg-white p-5 sm:p-6 opacity-50 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
           <div className="flex items-center gap-2.5">
             <span className="grid size-8 place-items-center rounded-xl bg-blue-50 text-[#007AFF]">
               <Play className="size-4 fill-current" />

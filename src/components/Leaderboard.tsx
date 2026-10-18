@@ -175,7 +175,7 @@ const PODIUM_STYLE: Record<
   { pedestal: string; height: string; avatar: string; ring: string }
 > = {
   1: {
-    pedestal: "bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] shadow-md shadow-blue-500/20",
+    pedestal: "bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] shadow-lg shadow-blue-500/25",
     height: "h-28 sm:h-36",
     avatar: "size-20 text-2xl sm:size-24",
     ring: "ring-4 ring-blue-500/20 shadow-xs",
@@ -300,7 +300,7 @@ function RoastCallout({
 }) {
   return (
     <div
-      className={`reveal flex items-center gap-3.5 rounded-3xl border border-red-200/80 bg-white/80 backdrop-blur-2xl p-4 shadow-[0_8px_30px_rgb(0,0,0,0.06)] ${pulsing ? "pulse-highlight" : ""}`}
+      className={`reveal flex items-center gap-3.5 rounded-[20px] border border-red-200/80 bg-white p-4 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ${pulsing ? "pulse-highlight" : ""}`}
     >
       <span className="grid size-11 shrink-0 place-items-center rounded-full bg-red-50 text-[#FF3B30] shadow-2xs">
         <Banknote className="size-5" />
@@ -339,7 +339,7 @@ function LeaderboardRow({
 }) {
   return (
     <div
-      className={`flex min-h-[56px] items-center gap-3.5 p-3.5 sm:px-4 sm:py-3 transition-colors hover:bg-black/[0.02] active:bg-black/[0.04] ${pulsing ? "pulse-highlight" : ""}`}
+      className={`flex min-h-[56px] items-center gap-3.5 p-3.5 sm:px-4 sm:py-3 transition-colors hover:bg-gray-50/60 active:bg-gray-100/60 ${pulsing ? "pulse-highlight" : ""}`}
     >
       <span className="grid size-7 shrink-0 place-items-center rounded-full bg-black/[0.04] text-xs font-bold text-[#8E8E93]">
         {rank}
@@ -375,7 +375,7 @@ function StateMessage({
   tone?: "accent" | "danger";
 }) {
   return (
-    <div className="reveal flex min-h-[45dvh] flex-col items-center justify-center gap-4 rounded-3xl border border-black/[0.04] bg-white/80 backdrop-blur-2xl p-8 text-center shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
+    <div className="reveal flex min-h-[45dvh] flex-col items-center justify-center gap-4 rounded-[20px] border border-black/[0.04] bg-white p-8 text-center shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
       <span
         className={`grid size-16 place-items-center rounded-full ${
           tone === "danger"
@@ -410,7 +410,7 @@ function LeaderboardSkeleton() {
           </div>
         ))}
       </div>
-      <div className="rounded-3xl border border-black/[0.04] bg-white/80 backdrop-blur-2xl shadow-[0_8px_30px_rgb(0,0,0,0.06)] overflow-hidden divide-y divide-black/[0.04]">
+      <div className="rounded-[20px] border border-black/[0.04] bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden divide-y divide-gray-100/80">
         {[0, 1, 2].map((i) => (
           <div key={i} className="h-16 animate-pulse bg-black/[0.02]" />
         ))}
@@ -440,7 +440,7 @@ function ViewSwitcher({
           type="button"
           aria-pressed={viewKey === currentPeriodKey}
           onClick={() => onChange(currentPeriodKey)}
-          className={`flex min-h-[44px] items-center rounded-full px-5 py-2 text-sm font-semibold transition-all active:scale-95 ${
+          className={`flex min-h-[44px] items-center rounded-full px-5 py-2 text-sm font-semibold transition-all duration-200 ease-out active:scale-[0.97] ${
             viewKey === currentPeriodKey
               ? "bg-white text-[#1C1C1E] shadow-sm"
               : "text-[#8E8E93] hover:text-[#1C1C1E]"
@@ -452,7 +452,7 @@ function ViewSwitcher({
           type="button"
           aria-pressed={viewKey === "all"}
           onClick={() => onChange("all")}
-          className={`flex min-h-[44px] items-center rounded-full px-5 py-2 text-sm font-semibold transition-all active:scale-95 ${
+          className={`flex min-h-[44px] items-center rounded-full px-5 py-2 text-sm font-semibold transition-all duration-200 ease-out active:scale-[0.97] ${
             viewKey === "all"
               ? "bg-white text-[#1C1C1E] shadow-sm"
               : "text-[#8E8E93] hover:text-[#1C1C1E]"
@@ -469,7 +469,7 @@ function ViewSwitcher({
           onChange={(e) => {
             if (e.target.value) onChange(e.target.value);
           }}
-          className="min-h-[44px] rounded-full border border-black/[0.06] bg-white px-5 py-2 text-sm font-semibold text-[#1C1C1E] shadow-xs focus:border-[#007AFF] focus:outline-none"
+          className="min-h-[44px] rounded-full border border-black/[0.06] bg-white px-5 py-2 text-sm font-semibold text-[#1C1C1E] shadow-xs transition-all duration-200 ease-out focus:border-[#007AFF] focus:outline-none"
         >
           <option value="">ดูงวดย้อนหลัง...</option>
           {pastPeriods.map((period) => (
@@ -505,7 +505,7 @@ function TabSwitcher({
           type="button"
           aria-pressed={activeTab === key}
           onClick={() => onChange(key)}
-          className={`flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-all active:scale-95 sm:flex-none ${
+          className={`flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-all duration-200 ease-out active:scale-[0.97] sm:flex-none ${
             activeTab === key
               ? "bg-white text-[#1C1C1E] shadow-sm"
               : "text-[#8E8E93] hover:text-[#1C1C1E]"
@@ -758,7 +758,7 @@ export function Leaderboard() {
           <h2 className="text-xs font-semibold uppercase tracking-wider text-[#8E8E93] px-1">
             อันดับอื่น ๆ
           </h2>
-          <div className="rounded-3xl border border-black/[0.04] bg-white/80 backdrop-blur-2xl shadow-[0_8px_30px_rgb(0,0,0,0.06)] overflow-hidden divide-y divide-black/[0.04]">
+          <div className="rounded-[20px] border border-black/[0.04] bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden divide-y divide-gray-100/80">
             {restEntries.map((entry, index) => (
               <LeaderboardRow
                 key={entry.player.id}

@@ -42,7 +42,7 @@ export function CreatePlayerForm() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col gap-4 rounded-3xl border border-black/[0.04] bg-white/80 p-5 sm:p-6 backdrop-blur-2xl shadow-[0_8px_30px_rgb(0,0,0,0.06)]"
+      className="flex flex-col gap-4 rounded-[20px] border border-black/[0.04] bg-white p-5 sm:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)]"
     >
       <div className="flex items-center gap-2.5">
         <span className="grid size-8 place-items-center rounded-full bg-blue-50 text-[#007AFF] shadow-xs">
@@ -61,7 +61,7 @@ export function CreatePlayerForm() {
             setError(null);
           }}
           placeholder="เช่น สมชาย (ตัวตึง)"
-          className="min-h-[48px] rounded-xl border border-black/[0.06] bg-white/70 px-4 py-3 text-base text-[#1C1C1E] outline-none transition-all placeholder:text-[#8E8E93]/60 focus:border-[#007AFF] focus:bg-white focus:ring-2 focus:ring-blue-500/20"
+          className="min-h-[48px] rounded-xl border border-black/[0.06] bg-gray-50/80 px-4 py-3 text-base text-[#1C1C1E] outline-none transition-all placeholder:text-[#8E8E93]/60 focus:border-[#007AFF] focus:bg-white focus:ring-2 focus:ring-blue-500/20"
         />
       </label>
 
@@ -70,7 +70,7 @@ export function CreatePlayerForm() {
         <button
           type="button"
           onClick={() => fileRef.current?.click()}
-          className="flex min-h-[44px] items-center gap-2 self-start rounded-xl border border-black/[0.06] bg-white/70 px-4 py-2.5 text-sm font-semibold text-[#007AFF] transition-all active:scale-95 hover:bg-white"
+          className="flex min-h-[44px] items-center gap-2 self-start rounded-xl border border-black/[0.06] bg-gray-50/80 px-4 py-2.5 text-sm font-semibold text-[#007AFF] transition-all duration-200 ease-out active:scale-[0.97] hover:bg-white"
         >
           <ImagePlus className="size-4.5" />
           {fileName ?? "เลือกรูป"}
@@ -91,7 +91,7 @@ export function CreatePlayerForm() {
       <button
         type="submit"
         disabled={pending}
-        className="mt-1 flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] px-6 py-3 text-base font-semibold text-white shadow-md shadow-blue-500/20 transition-all active:scale-95 hover:brightness-105 disabled:opacity-50"
+        className="mt-1 flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] px-6 py-3 text-base font-semibold text-white shadow-lg shadow-blue-500/25 transition-all duration-200 ease-out active:scale-[0.97] hover:opacity-90 disabled:opacity-50 disabled:shadow-none"
       >
         {pending ? (
           <Loader2 className="size-4.5 animate-spin" />

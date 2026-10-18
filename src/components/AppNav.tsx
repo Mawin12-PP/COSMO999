@@ -51,7 +51,7 @@ export function AppNav() {
               <Link
                 href={href}
                 aria-current={active ? "page" : undefined}
-                className={`group relative flex min-h-[48px] flex-col items-center justify-center gap-1 rounded-xl px-2 py-1 text-[11px] font-semibold transition-all active:scale-95 md:min-h-[44px] md:flex-row md:justify-start md:gap-3 md:px-4 md:py-3 md:text-sm ${
+                className={`group relative flex min-h-[48px] flex-col items-center justify-center gap-1 rounded-xl px-2 py-1 text-[11px] font-semibold transition-all duration-200 ease-out active:scale-[0.97] md:min-h-[44px] md:flex-row md:justify-start md:gap-3 md:px-4 md:py-3 md:text-sm ${
                   active
                     ? "bg-white shadow-sm text-[#007AFF] border border-black/[0.03]"
                     : "text-[#8E8E93] hover:text-[#1C1C1E] active:bg-black/[0.03]"
