@@ -145,7 +145,7 @@ export function getPersonalTitle(
   totalRanked: number,
   maxRoundsInGroup?: number,
   options?: PersonalTitleOptions,
-): PersonalTitle {
+): PersonalTitle | null {
   const isAllTime = options?.isAllTime ?? false;
   const championCount = options?.championCount ?? 0;
   const maxChampionCountInGroup = options?.maxChampionCountInGroup ?? 0;
@@ -252,32 +252,5 @@ export function getPersonalTitle(
     };
   }
 
-  // 6. สถานะทั่วไปตามคะแนน: ทรงยังดี / ติดลบนิดหน่อย
-  if (stat.netScore > 0) {
-    return {
-      id: "positive_score",
-      title: "ทรงยังดี",
-      description: `แต้มรวมสุทธิเป็นบวก (+${stat.netScore}) มีกำไรติดมือ`,
-      iconName: "Sparkles",
-      tone: "accent",
-    };
-  }
-
-  if (stat.netScore < 0) {
-    return {
-      id: "negative_score",
-      title: "ติดลบนิดหน่อย",
-      description: `แต้มรวมติดลบ (${stat.netScore}) ยังพอแก้ตัวได้`,
-      iconName: "PiggyBank",
-      tone: "danger",
-    };
-  }
-
-  return {
-    id: "spectator",
-    title: "รอดูเชิง",
-    description: "ยังไม่ได้ลงสนาม นั่งสังเกตการณ์เพื่อนร่วมวง",
-    iconName: "Ghost",
-    tone: "muted",
-  };
+  return null;
 }

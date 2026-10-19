@@ -19,6 +19,14 @@ function formatScore(score: number): string {
   return `${score}`;
 }
 
+export function getPlayerGridCols(count: number): string {
+  if (count === 2) return "grid-cols-2";
+  if (count === 3) return "grid-cols-1 sm:grid-cols-3";
+  if (count === 4) return "grid-cols-2 sm:grid-cols-4";
+  if (count === 5) return "grid-cols-2 sm:grid-cols-5";
+  return "grid-cols-2 sm:grid-cols-3";
+}
+
 export function LatestRoundCard({
   history,
   players,
@@ -92,7 +100,7 @@ export function LatestRoundCard({
 
 
       {/* Player Scores Grid */}
-      <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+      <div className={`grid gap-2.5 ${getPlayerGridCols(entries.length)}`}>
         {entries.map(([pId, score]) => {
           const player = players.find((p) => p.id === pId);
           const maxScore = Math.max(...entries.map((e) => e[1]));

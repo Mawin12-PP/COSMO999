@@ -15,6 +15,7 @@ import {
   Undo2,
 } from "lucide-react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { getPlayerGridCols } from "@/components/LatestRoundCard";
 import { PlayerAvatar } from "@/components/PlayerAvatar";
 import { useHistory } from "@/hooks/useHistory";
 import { usePlayers } from "@/hooks/usePlayers";
@@ -66,22 +67,24 @@ function HistoryRow({
       </div>
 
       {/* Per-player score chips */}
-      <ul className="flex flex-wrap gap-2">
+      <ul className={`grid gap-2 ${getPlayerGridCols(Object.keys(entry.playerScores).length)}`}>
         {Object.entries(entry.playerScores).map(([pId, score]) => {
           const player = players.find((p) => p.id === pId);
           return (
             <li
               key={pId}
-              className="flex min-h-[36px] items-center gap-2 rounded-full border border-black/[0.04] dark:border-white/[0.06] bg-[#F2F2F7] dark:bg-[#2C2C2E] px-3 py-1.5 shadow-2xs transition-transform active:scale-[0.98]"
+              className="flex min-h-[36px] items-center justify-between gap-1.5 sm:gap-2 rounded-full border border-black/[0.04] dark:border-white/[0.06] bg-[#F2F2F7] dark:bg-[#2C2C2E] px-2.5 sm:px-3 py-1.5 shadow-2xs transition-transform active:scale-[0.98] min-w-0"
             >
-              {player ? (
-                <PlayerAvatar player={player} className="size-6 text-xs shrink-0" />
-              ) : null}
-              <span className="text-xs font-medium text-[#1C1C1E] dark:text-[#F2F2F7]">
-                {player ? player.name : "(ถูกลบ)"}
-              </span>
+              <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1">
+                {player ? (
+                  <PlayerAvatar player={player} className="size-6 text-xs shrink-0" />
+                ) : null}
+                <span className="truncate text-xs font-medium text-[#1C1C1E] dark:text-[#F2F2F7]">
+                  {player ? player.name : "(ถูกลบ)"}
+                </span>
+              </div>
               <span
-                className={`text-xs font-bold tabular-nums ${scoreTone(score)}`}
+                className={`text-xs font-bold tabular-nums shrink-0 ${scoreTone(score)}`}
               >
                 {formatScore(score)}
               </span>

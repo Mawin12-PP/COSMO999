@@ -130,9 +130,10 @@ function PersonalTitleBadge({
   title,
   className = "",
 }: {
-  title: PersonalTitle;
+  title: PersonalTitle | null;
   className?: string;
 }) {
+  if (!title) return null;
   const Icon = TITLE_ICON_MAP[title.iconName] ?? Sparkles;
   const toneClasses = {
     accent: "bg-blue-50/80 border border-blue-500/20 text-[#007AFF]",
@@ -188,7 +189,7 @@ function PodiumCard({
   player: Player;
   score: number;
   championCount: number;
-  personalTitle: PersonalTitle;
+  personalTitle: PersonalTitle | null;
   pulsing: boolean;
 }) {
   const style = PODIUM_STYLE[rank];
@@ -247,7 +248,7 @@ function Podium({
     player: Player;
     score: number;
     championCount: number;
-    personalTitle: PersonalTitle;
+    personalTitle: PersonalTitle | null;
   }>;
   pulsingIds: Set<string>;
 }) {
@@ -316,7 +317,7 @@ function LeaderboardRow({
   score: number;
   championCount: number;
   rank: number;
-  personalTitle: PersonalTitle;
+  personalTitle: PersonalTitle | null;
   pulsing: boolean;
 }) {
   return (

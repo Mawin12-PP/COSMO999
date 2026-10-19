@@ -9,8 +9,8 @@ import { useRouter } from "next/navigation";
 import {
   ClipboardList,
   Loader2,
-  Pencil,
   Play,
+  Trash2,
   TriangleAlert,
 } from "lucide-react";
 import { EditGroupDialog } from "@/components/EditGroupDialog";
@@ -19,8 +19,40 @@ import { PlayerAvatar } from "@/components/PlayerAvatar";
 import { useGroups } from "@/hooks/useGroups";
 import { useHistory } from "@/hooks/useHistory";
 import { usePlayers } from "@/hooks/usePlayers";
-import { deleteGroup, renameGroup } from "@/lib/groups";
+import { deleteGroup } from "@/lib/groups";
 import type { Group, Player } from "@/types/models";
+
+function GroupAvatarItem({ player }: { player: Player }) {
+  const [showTooltip, setShowTooltip] = useState(false);
+
+  return (
+    <div
+      className="relative shrink-0"
+      onMouseEnter={() => setShowTooltip(true)}
+      onMouseLeave={() => setShowTooltip(false)}
+    >
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          setShowTooltip((prev) => !prev);
+        }}
+        className="rounded-full focus:outline-none focus:ring-2 focus:ring-[#007AFF]/40 cursor-pointer block"
+        aria-label={player.name}
+      >
+        <PlayerAvatar player={player} className="size-11 text-base shadow-xs" />
+      </button>
+
+      {/* Floating Name Tooltip */}
+      {showTooltip && (
+        <div className="absolute -top-9 left-1/2 -translate-x-1/2 pointer-events-none z-30 whitespace-nowrap rounded-lg bg-[#1C1C1E] dark:bg-white px-2.5 py-1 text-xs font-semibold text-white dark:text-[#1C1C1E] shadow-lg animate-in fade-in zoom-in-95 duration-100">
+          {player.name}
+          <div className="absolute left-1/2 top-full -translate-x-1/2 border-4 border-transparent border-t-[#1C1C1E] dark:border-t-white" />
+        </div>
+      )}
+    </div>
+  );
+}
 
 function GroupCard({
   group,
@@ -59,11 +91,7 @@ function GroupCard({
               </span>
             );
           }
-          return (
-            <div key={player.id} className="relative shrink-0" title={player.name}>
-              <PlayerAvatar player={player} className="size-11 text-base shadow-xs" />
-            </div>
-          );
+          return <GroupAvatarItem key={player.id} player={player} />;
         })}
       </div>
 
@@ -86,7 +114,7 @@ function GroupCard({
           เล่นกลุ่มนี้
         </button>
 
-        {/* Secondary row: score + edit */}
+        {/* Secondary row: score + delete */}
         <div className="flex gap-2">
           <button
             type="button"
@@ -98,10 +126,10 @@ function GroupCard({
           <button
             type="button"
             onClick={() => onEdit(group.id)}
-            className="flex size-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-black/[0.06] dark:border-[#38383A] bg-white dark:bg-[#2C2C2E] text-[#8E8E93] dark:text-[#98989D] shadow-2xs transition-all duration-200 ease-out active:scale-[0.97] hover:bg-gray-50 dark:hover:bg-[#38383A] hover:text-[#1C1C1E] dark:hover:text-[#F2F2F7]"
-            aria-label={`แก้ไขกลุ่ม ${group.name}`}
+            className="flex size-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-black/[0.06] dark:border-[#38383A] bg-white dark:bg-[#2C2C2E] text-[#8E8E93] dark:text-[#98989D] shadow-2xs transition-all duration-200 ease-out active:scale-[0.97] hover:bg-red-50 dark:hover:bg-red-950/30 hover:border-red-200 dark:hover:border-red-900/40 hover:text-[#FF3B30] dark:hover:text-[#FF453A]"
+            aria-label="ลบกลุ่มขาประจำ"
           >
-            <Pencil className="size-4.5" aria-hidden />
+            <Trash2 className="size-4.5" aria-hidden />
           </button>
         </div>
       </div>
@@ -131,19 +159,6 @@ export function Groups() {
     return null;
   }
 
-  async function handleRename(newName: string) {
-    if (!editGroupId) return;
-    setEditBusy(true);
-    setEditError(null);
-    try {
-      await renameGroup(editGroupId, newName);
-      setEditGroupId(null);
-    } catch {
-      setEditError("เปลี่ยนชื่อไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองใหม่");
-    } finally {
-      setEditBusy(false);
-    }
-  }
 
   async function handleDelete() {
     if (!editGroupId) return;
@@ -255,7 +270,6 @@ export function Groups() {
           group={editGroup}
           busy={editBusy}
           error={editError}
-          onRename={handleRename}
           onDelete={handleDelete}
           onClose={handleEditClose}
         />

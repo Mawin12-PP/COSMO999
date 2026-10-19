@@ -4,28 +4,24 @@
 // legacy editGroup (reference/legacy-prototype.sanitized.html L1530-1546).
 // Mobile-first iOS guidelines: min 44px+ touch targets on close button & actions,
 // active:scale-95 feedback, and backdrop blur.
-import { useEffect, useRef, useState } from "react";
-import { Loader2, Trash2, X } from "lucide-react";
+import { useEffect, useRef } from "react";
+import { Loader2, Trash2 } from "lucide-react";
 import type { Group } from "@/types/models";
 
 export function EditGroupDialog({
-  group,
   busy,
   error,
-  onRename,
   onDelete,
   onClose,
 }: {
-  group: Group;
+  group?: Group;
   busy: boolean;
   error: string | null;
-  onRename: (newName: string) => void;
+  onRename?: (newName: string) => void;
   onDelete: () => void;
   onClose: () => void;
 }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
-  const [nameValue, setNameValue] = useState(group.name);
-  const [activeAction, setActiveAction] = useState<"rename" | "delete" | null>(null);
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -42,20 +38,6 @@ export function EditGroupDialog({
     onClose();
   }
 
-  function handleRename() {
-    const trimmed = nameValue.trim();
-    if (!trimmed || trimmed === group.name) return;
-    setActiveAction("rename");
-    onRename(trimmed);
-  }
-
-  function handleDelete() {
-    setActiveAction("delete");
-    onDelete();
-  }
-
-  const nameChanged = nameValue.trim() !== "" && nameValue.trim() !== group.name;
-
   return (
     <dialog
       ref={dialogRef}
@@ -66,91 +48,61 @@ export function EditGroupDialog({
       onClick={(event) => {
         if (event.target === event.currentTarget) dismiss();
       }}
-      aria-labelledby="edit-group-title"
-      className="m-auto w-[min(26rem,calc(100vw-2rem))] rounded-[20px] border border-black/[0.04] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] p-0 text-[#1C1C1E] dark:text-[#F2F2F7] shadow-2xl backdrop:bg-black/40 backdrop:backdrop-blur-sm"
+      aria-labelledby="delete-group-title"
+      className="m-auto w-[min(24rem,calc(100vw-2rem))] rounded-[24px] border border-black/[0.04] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] p-0 text-[#1C1C1E] dark:text-[#F2F2F7] shadow-2xl backdrop:bg-black/40 backdrop:backdrop-blur-sm"
     >
-      <div className="flex flex-col gap-5 p-5 sm:p-6">
-        {/* Header */}
-        <div className="flex items-start justify-between gap-3">
+      <div className="flex flex-col gap-4 p-5 sm:p-6 text-center items-center">
+        {/* Warning Icon */}
+        <span className="grid size-14 place-items-center rounded-full bg-red-50 dark:bg-red-950/40 text-[#FF3B30] shadow-2xs">
+          <Trash2 className="size-6" />
+        </span>
+
+        {/* Title & Description */}
+        <div className="flex flex-col gap-1.5">
           <h2
-            id="edit-group-title"
-            className="text-base font-semibold leading-snug text-[#1C1C1E] dark:text-[#F2F2F7]"
+            id="delete-group-title"
+            className="text-lg font-semibold tracking-tight text-[#1C1C1E] dark:text-[#F2F2F7]"
           >
-            แก้ไขกลุ่ม
+            ลบกลุ่มขาประจำ?
           </h2>
-          <button
-            type="button"
-            onClick={dismiss}
-            disabled={busy}
-            aria-label="ปิด"
-            className="flex size-11 min-h-[44px] min-w-[44px] items-center justify-center -mr-2 -mt-2 rounded-full text-[#8E8E93] dark:text-[#98989D] transition-all duration-200 ease-out active:scale-[0.97] hover:bg-black/[0.04] hover:text-[#1C1C1E] dark:hover:bg-white/[0.06] dark:hover:text-[#F2F2F7] disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <X className="size-5" />
-          </button>
+          <p className="text-xs text-[#8E8E93] dark:text-[#98989D] leading-relaxed max-w-xs">
+            กลุ่มนี้จะถูกนำออกจากรายการขาประจำ แต่ประวัติการเล่นเดิมและคะแนนสะสมจะยังคงอยู่ตามปกติ
+          </p>
         </div>
 
         {/* Inline error */}
         {error ? (
           <p
             role="alert"
-            className="rounded-2xl border border-red-200/80 dark:border-red-500/30 bg-red-50/80 dark:bg-red-500/10 p-3 text-sm text-[#FF3B30] dark:text-[#FF453A] backdrop-blur-sm"
+            className="w-full rounded-2xl border border-red-200/80 dark:border-red-500/30 bg-red-50/80 dark:bg-red-500/10 p-3 text-xs text-[#FF3B30] dark:text-[#FF453A] backdrop-blur-sm"
           >
             {error}
           </p>
         ) : null}
 
-        {/* Rename section */}
-        <div className="flex flex-col gap-2.5">
-          <label
-            htmlFor="edit-group-name"
-            className="text-xs font-semibold uppercase tracking-wider text-[#8E8E93] dark:text-[#98989D]"
-          >
-            ชื่อกลุ่ม
-          </label>
-          <input
-            id="edit-group-name"
-            type="text"
-            value={nameValue}
-            onChange={(e) => setNameValue(e.target.value)}
-            disabled={busy}
-            maxLength={80}
-            className="min-h-[48px] rounded-xl border border-black/[0.06] dark:border-[#38383A] bg-white/70 dark:bg-[#2C2C2E] px-4 py-3 text-base text-[#1C1C1E] dark:text-[#F2F2F7] placeholder-[#8E8E93]/60 dark:placeholder-[#98989D]/60 transition-all focus:border-[#007AFF] focus:bg-white dark:focus:bg-[#2C2C2E] focus:ring-2 focus:ring-blue-500/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-          />
+        {/* Action buttons */}
+        <div className="flex flex-col w-full gap-2 pt-2">
           <button
             type="button"
-            onClick={handleRename}
-            disabled={busy || !nameChanged}
-            className="flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] px-6 py-3 text-base font-semibold text-white shadow-lg shadow-blue-500/25 transition-all duration-200 ease-out active:scale-[0.97] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            {busy && activeAction === "rename" ? (
-              <Loader2 className="size-4.5 animate-spin" aria-hidden />
-            ) : null}
-            {busy && activeAction === "rename" ? "กำลังบันทึก..." : "บันทึกชื่อใหม่"}
-          </button>
-        </div>
-
-        {/* Divider */}
-        <div className="border-t border-black/[0.04] dark:border-[#38383A]" />
-
-        {/* Delete section */}
-        <div className="flex flex-col gap-2.5">
-          <p className="text-xs text-[#8E8E93] dark:text-[#98989D]">
-            ลบทางลัดกลุ่มนี้ออกจากรายการ — ประวัติการเล่นเดิมยังคงอยู่
-          </p>
-          <button
-            type="button"
-            onClick={handleDelete}
+            onClick={onDelete}
             disabled={busy}
-            className="flex min-h-[48px] items-center justify-center gap-2 rounded-full border border-red-200/80 dark:border-red-500/30 bg-red-50/80 dark:bg-red-500/10 px-6 py-3 text-base font-semibold text-[#FF3B30] dark:text-[#FF453A] transition-all duration-200 ease-out active:scale-[0.97] hover:bg-red-100/80 dark:hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-40"
+            className="flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full bg-[#FF3B30] hover:bg-[#FF3B30]/90 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-red-500/25 transition-all duration-200 ease-out active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {busy && activeAction === "delete" ? (
+            {busy ? (
               <Loader2 className="size-4.5 animate-spin" aria-hidden />
             ) : (
               <Trash2 className="size-4.5" aria-hidden />
             )}
-            {busy && activeAction === "delete"
-              ? "กำลังลบ..."
-              : "ลบทางลัดกลุ่มนี้"}
+            {busy ? "กำลังลบ..." : "ยืนยันลบกลุ่มนี้"}
+          </button>
+
+          <button
+            type="button"
+            onClick={dismiss}
+            disabled={busy}
+            className="flex min-h-[44px] w-full items-center justify-center rounded-full border border-black/[0.06] dark:border-[#38383A] bg-white dark:bg-[#2C2C2E] px-4 py-2.5 text-sm font-semibold text-[#1C1C1E] dark:text-[#F2F2F7] shadow-2xs transition-all duration-200 ease-out active:scale-[0.97] hover:bg-gray-50 dark:hover:bg-[#38383A] disabled:opacity-50"
+          >
+            ยกเลิก
           </button>
         </div>
       </div>
