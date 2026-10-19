@@ -46,7 +46,8 @@ export function LatestRoundCard({
   if (!latestMatch) return null;
 
   const playerScores = latestMatch.playerScores || {};
-  const entries = Object.entries(playerScores);
+  // Sort player scores descending (มากไปน้อย)
+  const entries = Object.entries(playerScores).sort((a, b) => b[1] - a[1]);
 
   function handlePlayAgain() {
     setErrorMsg(null);
@@ -146,9 +147,9 @@ export function LatestRoundCard({
 
       {/* Random Penalty Box */}
       {penalty ? (
-        <div className="flex flex-col gap-2 rounded-2xl border border-red-200/80 dark:border-red-900/50 bg-red-50/80 dark:bg-red-950/30 p-4 text-[#FF3B30] backdrop-blur-sm">
+        <div className="flex flex-col gap-2 rounded-2xl border border-purple-200/80 dark:border-purple-900/50 bg-purple-50/80 dark:bg-purple-950/30 p-4 text-[#AF52DE] dark:text-[#BF5AF2] backdrop-blur-sm">
           <div className="flex items-start gap-2.5 text-xs">
-            <Dices className="mt-0.5 size-4.5 shrink-0 text-[#FF3B30]" aria-hidden />
+            <Dices className="mt-0.5 size-4.5 shrink-0 text-[#AF52DE] dark:text-[#BF5AF2]" aria-hidden />
             <p className="font-semibold leading-relaxed">{penalty}</p>
           </div>
         </div>
@@ -185,7 +186,7 @@ export function LatestRoundCard({
               setPenalty(`${loserPlayer.name} ต้อง: ${randomTask}`);
             }
           }}
-          className="flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-full border border-red-200/80 dark:border-red-900/50 bg-red-50/70 dark:bg-red-950/30 px-5 py-3 text-sm font-semibold text-[#FF3B30] transition-all duration-200 ease-out active:scale-[0.97] hover:bg-red-100/80 dark:hover:bg-red-950/50"
+          className="flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-full border border-purple-200/80 dark:border-purple-900/50 bg-purple-50/70 dark:bg-purple-950/30 px-5 py-3 text-sm font-semibold text-[#AF52DE] dark:text-[#BF5AF2] transition-all duration-200 ease-out active:scale-[0.97] hover:bg-purple-100/80 dark:hover:bg-purple-950/50"
         >
           <Dices className="size-4.5" aria-hidden />
           สุ่มบทลงโทษ

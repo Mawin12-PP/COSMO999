@@ -119,7 +119,7 @@ export function PlayerList({
           htmlFor="player-edit-select"
           className="block text-xs font-semibold uppercase tracking-wider text-[#8E8E93] dark:text-[#98989D]"
         >
-          เลือกผู้เล่นที่ต้องการแก้ไข
+          เลือกผู้เล่น
         </label>
 
         <div className="relative">
@@ -132,7 +132,7 @@ export function PlayerList({
             className="flex min-h-[48px] w-full appearance-none items-center rounded-xl border border-black/[0.08] dark:border-[#38383A] bg-[#F2F2F7]/60 dark:bg-[#2C2C2E]/60 pl-4 pr-10 py-2.5 text-sm sm:text-base font-semibold text-[#1C1C1E] dark:text-[#F2F2F7] shadow-xs focus:border-[#007AFF] focus:bg-white dark:focus:bg-[#1C1C1E] focus:outline-none cursor-pointer transition-all"
           >
             <option value="" className="bg-white dark:bg-[#1C1C1E] text-[#8E8E93]">
-              -- เลือกผู้เล่น ({players.length} คน) --
+              เลือกผู้เล่น
             </option>
             {players.map((p) => (
               <option

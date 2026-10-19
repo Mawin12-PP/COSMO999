@@ -5,14 +5,7 @@
 // Mobile-first iOS guidelines: min 44px+ touch targets on close button, min 48px close action,
 // active:scale-95 feedback, and iOS Grouped List.
 import { useEffect, useMemo, useRef } from "react";
-import {
-  Crown,
-  Gamepad2,
-  PiggyBank,
-  Target,
-  X,
-  type LucideIcon,
-} from "lucide-react";
+import { Gamepad2, X } from "lucide-react";
 import { PlayerAvatar } from "@/components/PlayerAvatar";
 import { formatNumber } from "@/lib/format";
 import { computeGroupStats } from "@/lib/groupStats";
@@ -34,25 +27,6 @@ function rankTone(rank: number): string {
   if (rank === 2) return "text-gray-400 font-semibold";
   if (rank === 3) return "text-amber-700 dark:text-amber-500 font-semibold";
   return "text-[#8E8E93] dark:text-[#98989D]";
-}
-
-function Badge({
-  icon: Icon,
-  label,
-  className,
-}: {
-  icon: LucideIcon;
-  label: string;
-  className: string;
-}) {
-  return (
-    <span
-      className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold leading-tight ${className}`}
-    >
-      <Icon className="size-3 shrink-0" aria-hidden />
-      {label}
-    </span>
-  );
 }
 
 export function GroupScoreDialog({
@@ -133,9 +107,6 @@ export function GroupScoreDialog({
           {ranked.map(({ pId, player, score }, index) => {
             const rank = index + 1;
             const record = stats?.records[pId];
-            const isLeader = stats?.leaderIds.includes(pId) ?? false;
-            const isLastPlace = stats?.lastPlaceIds.includes(pId) ?? false;
-            const isNemesis = stats?.nemesisIds.includes(pId) ?? false;
             return (
               <li
                 key={pId}
@@ -157,36 +128,11 @@ export function GroupScoreDialog({
                   </span>
                 )}
 
-                {/* Name, nickname badges, win/loss record */}
+                {/* Name, win/loss record */}
                 <div className="min-w-0 flex-1">
                   <span className="block truncate text-sm font-semibold text-[#1C1C1E] dark:text-[#F2F2F7]">
                     {player ? player.name : "(ถูกลบ)"}
                   </span>
-                  {isLeader || isLastPlace || isNemesis ? (
-                    <div className="mt-1 flex flex-wrap gap-1">
-                      {isLeader ? (
-                        <Badge
-                          icon={Crown}
-                          label="เจ้ามือประจำกลุ่ม"
-                          className="bg-blue-50/80 border border-blue-500/20 text-[#007AFF] dark:bg-blue-500/15 dark:border-blue-500/30 dark:text-[#2E8BFF]"
-                        />
-                      ) : null}
-                      {isLastPlace ? (
-                        <Badge
-                          icon={PiggyBank}
-                          label="หมูแจกแต้ม"
-                          className="bg-red-50/80 border border-red-500/20 text-[#FF3B30] dark:bg-red-500/15 dark:border-red-500/30 dark:text-[#FF453A]"
-                        />
-                      ) : null}
-                      {isNemesis ? (
-                        <Badge
-                          icon={Target}
-                          label="มือปราบแชมป์"
-                          className="bg-black/[0.04] dark:bg-white/[0.06] text-[#1C1C1E] dark:text-[#F2F2F7]"
-                        />
-                      ) : null}
-                    </div>
-                  ) : null}
                   {record ? (
                     <p className="mt-0.5 text-xs tabular-nums text-[#8E8E93] dark:text-[#98989D]">
                       ชนะ {record.wins} - แพ้ {record.losses}

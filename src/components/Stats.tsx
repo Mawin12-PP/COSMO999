@@ -111,7 +111,7 @@ export function Stats() {
               onChange={(e) => setSelectedId(e.target.value)}
               className="flex min-h-[48px] w-full rounded-2xl border border-black/[0.06] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] px-4 py-3 text-base font-semibold text-[#1C1C1E] dark:text-[#F2F2F7] shadow-xs focus:border-[#007AFF] focus:outline-none sm:max-w-xs"
             >
-              <option value="">เลือกผู้เล่นเพื่อดูสถิติ...</option>
+              <option value="">เลือกผู้เล่น</option>
               {players.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.name}
