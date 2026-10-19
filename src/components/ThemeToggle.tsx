@@ -52,10 +52,14 @@ export function ThemeToggle() {
 
       {/* Fluid sliding circular thumb */}
       <span
-        className={`absolute top-1 left-1 flex size-6 items-center justify-center rounded-full shadow-sm transform transition-transform duration-300 ease-in-out pointer-events-none ${
+        style={{
+          transform: isDark ? "translateX(32px)" : "translateX(0px)",
+          transition: "transform 300ms cubic-bezier(0.25, 1, 0.5, 1), background-color 300ms, color 300ms",
+        }}
+        className={`absolute top-1 left-1 flex size-6 items-center justify-center rounded-full shadow-sm will-change-transform pointer-events-none ${
           isDark
-            ? "translate-x-8 bg-[#1C1C1E] text-blue-400"
-            : "translate-x-0 bg-white text-amber-500"
+            ? "bg-[#1C1C1E] text-blue-400"
+            : "bg-white text-amber-500"
         }`}
       >
         {isDark ? (

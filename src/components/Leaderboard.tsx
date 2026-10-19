@@ -430,16 +430,36 @@ function ViewSwitcher({
   const isPastPeriodActive =
     viewKey !== "all" && viewKey !== currentPeriodKey;
 
+  const activeIndex =
+    viewKey === currentPeriodKey ? 0 : viewKey === "all" ? 1 : null;
+
   return (
     <div className="reveal flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <div className="inline-flex w-fit gap-1 rounded-full bg-black/[0.06] dark:bg-[#2C2C2E] p-1 shadow-2xs">
+      <div className="relative inline-flex w-fit rounded-full bg-black/[0.06] dark:bg-[#2C2C2E] p-1 shadow-2xs">
+        {/* Sliding Magic Indicator Pill */}
+        <div
+          className={`pointer-events-none absolute inset-y-1 left-1 right-1 z-0 transition-opacity duration-200 ${
+            activeIndex !== null ? "opacity-100" : "opacity-0"
+          }`}
+          aria-hidden="true"
+        >
+          <div
+            className="h-full w-1/2 transition-transform duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] will-change-transform"
+            style={{
+              transform: `translateX(${activeIndex === 1 ? "100%" : "0%"})`,
+            }}
+          >
+            <div className="h-full w-full rounded-full bg-white dark:bg-[#1C1C1E] shadow-sm" />
+          </div>
+        </div>
+
         <button
           type="button"
           aria-pressed={viewKey === currentPeriodKey}
           onClick={() => onChange(currentPeriodKey)}
-          className={`flex min-h-[44px] items-center rounded-full px-5 py-2 text-sm font-semibold transition-all duration-200 ease-out active:scale-[0.97] cursor-pointer ${
+          className={`relative z-10 flex min-h-[44px] min-w-[90px] items-center justify-center rounded-full px-5 py-2 text-sm font-semibold transition-colors duration-200 ease-out active:scale-[0.97] cursor-pointer ${
             viewKey === currentPeriodKey
-              ? "bg-white dark:bg-[#1C1C1E] text-[#1C1C1E] dark:text-[#F2F2F7] shadow-sm"
+              ? "text-[#1C1C1E] dark:text-[#F2F2F7]"
               : "text-[#8E8E93] dark:text-[#98989D] hover:text-[#1C1C1E] dark:hover:text-[#F2F2F7]"
           }`}
         >
@@ -449,9 +469,9 @@ function ViewSwitcher({
           type="button"
           aria-pressed={viewKey === "all"}
           onClick={() => onChange("all")}
-          className={`flex min-h-[44px] items-center rounded-full px-5 py-2 text-sm font-semibold transition-all duration-200 ease-out active:scale-[0.97] cursor-pointer ${
+          className={`relative z-10 flex min-h-[44px] min-w-[90px] items-center justify-center rounded-full px-5 py-2 text-sm font-semibold transition-colors duration-200 ease-out active:scale-[0.97] cursor-pointer ${
             viewKey === "all"
-              ? "bg-white dark:bg-[#1C1C1E] text-[#1C1C1E] dark:text-[#F2F2F7] shadow-sm"
+              ? "text-[#1C1C1E] dark:text-[#F2F2F7]"
               : "text-[#8E8E93] dark:text-[#98989D] hover:text-[#1C1C1E] dark:hover:text-[#F2F2F7]"
           }`}
         >
@@ -466,7 +486,7 @@ function ViewSwitcher({
           onChange={(e) => {
             if (e.target.value) onChange(e.target.value);
           }}
-          className="min-h-[44px] rounded-full border border-black/[0.06] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] px-5 py-2 text-sm font-semibold text-[#1C1C1E] dark:text-[#F2F2F7] shadow-xs transition-all duration-200 ease-out focus:border-[#007AFF] focus:outline-none"
+          className="min-h-[44px] rounded-full border border-black/[0.06] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] px-5 py-2 text-sm font-semibold text-[#1C1C1E] dark:text-[#F2F2F7] shadow-xs transition-all duration-200 ease-out focus:border-[#007AFF] focus:outline-none cursor-pointer"
         >
           <option value="">ดูงวดย้อนหลัง...</option>
           {pastPeriods.map((period) => (
@@ -495,16 +515,31 @@ function TabSwitcher({
   ];
 
   return (
-    <div className="reveal inline-flex w-full gap-1 rounded-full bg-black/[0.06] dark:bg-[#2C2C2E] p-1 shadow-2xs sm:w-fit">
+    <div className="reveal relative inline-flex w-full sm:w-[360px] rounded-full bg-black/[0.06] dark:bg-[#2C2C2E] p-1 shadow-2xs">
+      {/* Sliding Magic Indicator Pill */}
+      <div
+        className="pointer-events-none absolute inset-y-1 left-1 right-1 z-0"
+        aria-hidden="true"
+      >
+        <div
+          className="h-full w-1/2 transition-transform duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] will-change-transform"
+          style={{
+            transform: `translateX(${activeTab === "hall-of-fame" ? "100%" : "0%"})`,
+          }}
+        >
+          <div className="h-full w-full rounded-full bg-white dark:bg-[#1C1C1E] shadow-sm" />
+        </div>
+      </div>
+
       {tabs.map(({ key, label, icon: Icon }) => (
         <button
           key={key}
           type="button"
           aria-pressed={activeTab === key}
           onClick={() => onChange(key)}
-          className={`flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-all duration-200 ease-out active:scale-[0.97] cursor-pointer sm:flex-none ${
+          className={`relative z-10 flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-colors duration-200 ease-out active:scale-[0.97] cursor-pointer ${
             activeTab === key
-              ? "bg-white dark:bg-[#1C1C1E] text-[#1C1C1E] dark:text-[#F2F2F7] shadow-sm"
+              ? "text-[#1C1C1E] dark:text-[#F2F2F7]"
               : "text-[#8E8E93] dark:text-[#98989D] hover:text-[#1C1C1E] dark:hover:text-[#F2F2F7]"
           }`}
         >

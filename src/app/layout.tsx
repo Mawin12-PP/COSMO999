@@ -43,7 +43,7 @@ export default function RootLayout({
           attribute="class"
           defaultTheme="system"
           enableSystem={true}
-          disableTransitionOnChange
+          disableTransitionOnChange={false}
         >
           <div className="min-h-dvh bg-[var(--background)] md:flex">
             <AppNav />
