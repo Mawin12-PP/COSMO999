@@ -172,9 +172,6 @@ function RoundSetupInner({
       </div>
 
       <div className="@container flex flex-col gap-2.5">
-        <p className="text-xs font-semibold uppercase tracking-wider text-[#8E8E93] dark:text-[#98989D]">
-          1. เลือกผู้เล่นในรอบนี้
-        </p>
         <RoundPlayerSelect
           players={orderedPlayers}
           loading={loading}
@@ -184,9 +181,6 @@ function RoundSetupInner({
       </div>
 
       <div className="flex flex-col gap-2.5">
-        <p className="text-xs font-semibold uppercase tracking-wider text-[#8E8E93] dark:text-[#98989D]">
-          2. ตัวคูณคะแนนรอบนี้
-        </p>
         <div className={multiplier >= 20 ? "animate-shake" : ""}>
           <MultiplierPicker
             value={multiplier}
@@ -215,11 +209,6 @@ function RoundSetupInner({
           เริ่ม
           <ArrowRight className="size-4.5" />
         </button>
-        {!enoughPlayers ? (
-          <p className="text-center text-xs text-[#8E8E93] dark:text-[#98989D]">
-            เลือกผู้เล่นอย่างน้อย {MIN_PLAYERS} คน
-          </p>
-        ) : null}
       </div>
     </section>
   );

@@ -5,7 +5,7 @@
 // Edit and Delete micro-interactions (active:scale-90), iOS Modal sheet for Add/Edit,
 // and accessible deletion confirmation via ConfirmDialog.
 import { useState } from "react";
-import { ChevronDown, Loader2, Pencil, Plus, Trash2, Users } from "lucide-react";
+import { ChevronDown, Loader2, Pencil, Trash2, Users } from "lucide-react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { PlayerAvatar } from "@/components/PlayerAvatar";
 import { PlayerModal } from "@/components/PlayerModal";
@@ -38,14 +38,6 @@ export function PlayerList({
   const isControlledAdd = onOpenAdd !== undefined;
   const isControlledEdit = onEditPlayer !== undefined;
   const addModalOpen = isAddOpen ?? internalAddOpen;
-
-  function handleOpenAdd() {
-    if (onOpenAdd) {
-      onOpenAdd();
-    } else {
-      setInternalAddOpen(true);
-    }
-  }
 
   function handleCloseAdd() {
     if (onCloseAdd) {
@@ -82,11 +74,9 @@ export function PlayerList({
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center gap-3 rounded-[20px] bg-white dark:bg-[#1C1C1E] p-8 shadow-sm border border-black/[0.04] dark:border-white/10">
+      <div className="flex items-center justify-center gap-3 py-6 text-sm font-medium text-[#8E8E93] dark:text-[#98989D]">
         <Loader2 className="size-5 animate-spin text-[#007AFF] dark:text-[#2E8BFF]" />
-        <span className="text-sm font-medium text-[#8E8E93] dark:text-[#98989D]">
-          กำลังโหลดรายชื่อผู้เล่น...
-        </span>
+        <span>กำลังโหลดรายชื่อผู้เล่น...</span>
       </div>
     );
   }
@@ -94,7 +84,7 @@ export function PlayerList({
   if (players.length === 0) {
     return (
       <>
-        <div className="flex flex-col items-center justify-center gap-4 rounded-[20px] bg-white dark:bg-[#1C1C1E] p-10 text-center shadow-sm border border-black/[0.04] dark:border-white/10">
+        <div className="flex flex-col items-center justify-center gap-3 py-6 text-center">
           <div className="grid size-12 place-items-center rounded-full bg-blue-50 dark:bg-blue-500/15 text-[#007AFF] dark:text-[#2E8BFF]">
             <Users className="size-6" />
           </div>
@@ -103,17 +93,9 @@ export function PlayerList({
               ยังไม่มีรายชื่อผู้เล่น
             </p>
             <p className="mt-1 text-xs text-[#8E8E93] dark:text-[#98989D]">
-              กดปุ่มด้านล่างเพื่อเพิ่มผู้เล่นเข้าสู่ระบบ
+              กดปุ่มด้านบนเพื่อเพิ่มผู้เล่นเข้าสู่ระบบ
             </p>
           </div>
-          <button
-            type="button"
-            onClick={handleOpenAdd}
-            className="flex min-h-[44px] items-center gap-1.5 rounded-full bg-[#007AFF] px-5 py-2.5 text-sm font-semibold text-white shadow-md active:scale-95 transition-all cursor-pointer"
-          >
-            <Plus className="size-4 stroke-[2.5]" />
-            <span>เพิ่มผู้เล่นคนแรก</span>
-          </button>
         </div>
 
         {/* Modal for Adding Player (Fallback for standalone usage) */}
@@ -131,11 +113,11 @@ export function PlayerList({
 
   return (
     <>
-      {/* Dropdown Selector Card for Editing Players */}
-      <div className="rounded-[20px] bg-white dark:bg-[#1C1C1E] p-4 sm:p-5 shadow-sm border border-black/[0.04] dark:border-[#38383A] transition-all">
+      {/* Dropdown Selector for Editing Players */}
+      <div className="flex flex-col gap-2">
         <label
           htmlFor="player-edit-select"
-          className="block text-xs font-semibold uppercase tracking-wider text-[#8E8E93] dark:text-[#98989D] mb-2"
+          className="block text-xs font-semibold uppercase tracking-wider text-[#8E8E93] dark:text-[#98989D]"
         >
           เลือกผู้เล่นที่ต้องการแก้ไข
         </label>
@@ -145,12 +127,7 @@ export function PlayerList({
             id="player-edit-select"
             value={selectedPlayerId}
             onChange={(e) => {
-              const id = e.target.value;
-              setSelectedPlayerId(id);
-              const p = players.find((x) => x.id === id);
-              if (p) {
-                handleEdit(p);
-              }
+              setSelectedPlayerId(e.target.value);
             }}
             className="flex min-h-[48px] w-full appearance-none items-center rounded-xl border border-black/[0.08] dark:border-[#38383A] bg-[#F2F2F7]/60 dark:bg-[#2C2C2E]/60 pl-4 pr-10 py-2.5 text-sm sm:text-base font-semibold text-[#1C1C1E] dark:text-[#F2F2F7] shadow-xs focus:border-[#007AFF] focus:bg-white dark:focus:bg-[#1C1C1E] focus:outline-none cursor-pointer transition-all"
           >
@@ -172,7 +149,7 @@ export function PlayerList({
 
         {/* Selected Player Card with Quick Edit & Delete Actions */}
         {selectedPlayer && (
-          <div className="mt-3 flex items-center justify-between gap-3 rounded-xl bg-gray-50/80 dark:bg-white/[0.04] p-3 border border-black/[0.04] dark:border-white/5 transition-all">
+          <div className="mt-2 flex items-center justify-between gap-3 rounded-xl bg-gray-50/80 dark:bg-white/[0.04] p-3 border border-black/[0.04] dark:border-white/5 transition-all">
             <div className="flex items-center gap-3 min-w-0">
               <PlayerAvatar player={selectedPlayer} className="size-10 text-sm shrink-0" />
               <div className="min-w-0">

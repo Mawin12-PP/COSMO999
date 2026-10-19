@@ -564,9 +564,6 @@ function HallOfFame({
         <h1 className="text-2xl font-semibold tracking-tight text-[#1C1C1E] sm:text-3xl">
           ทำเนียบเกียรติยศ
         </h1>
-        <p className="mt-1 text-sm text-[#8E8E93]">
-          แชมป์และอันดับสุดท้ายประจำแต่ละงวดที่จบแล้ว เรียงจากล่าสุด
-        </p>
       </header>
 
       {results.length === 0 ? (

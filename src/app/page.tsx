@@ -52,57 +52,56 @@ export default function HomePage() {
           />
 
           <section className="reveal flex flex-col gap-4">
-          {/* Card Container for Managing & Adding Players */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-[20px] border border-black/[0.04] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] p-5 sm:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none transition-all">
-            <div className="flex items-center gap-3">
-              <span className="grid size-9 sm:size-10 shrink-0 place-items-center rounded-xl bg-blue-50 dark:bg-blue-500/15 text-[#007AFF] dark:text-[#2E8BFF] shadow-xs">
-                <Users className="size-4.5 sm:size-5" />
-              </span>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h2 className="text-lg font-semibold tracking-tight text-[#1C1C1E] dark:text-[#F2F2F7]">
-                    จัดการผู้เล่น
-                  </h2>
-                  {error ? (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-red-50 dark:bg-red-950/40 border border-red-200/60 dark:border-red-900/40 px-2 py-0.5 text-[11px] font-medium text-[#FF3B30] dark:text-[#FF453A]">
-                      <TriangleAlert className="size-3" />
-                      หลุดการเชื่อมต่อ
-                    </span>
-                  ) : loading ? (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-black/[0.04] dark:bg-white/[0.06] px-2 py-0.5 text-[11px] font-medium text-[#8E8E93] dark:text-[#98989D]">
-                      <Loader2 className="size-3 animate-spin text-[#007AFF]" />
-                      กำลังโหลด
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-blue-50/80 dark:bg-blue-500/15 border border-blue-500/20 px-2.5 py-0.5 text-[11px] font-semibold text-[#007AFF] dark:text-[#2E8BFF]">
-                      <Wifi className="size-3" />
-                      {players.length} คน
-                    </span>
-                  )}
+            {/* Unified Card Container for Managing & Editing Players */}
+            <div className="flex flex-col gap-5 rounded-[20px] border border-black/[0.04] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] p-5 sm:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none transition-all">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <span className="grid size-9 sm:size-10 shrink-0 place-items-center rounded-xl bg-blue-50 dark:bg-blue-500/15 text-[#007AFF] dark:text-[#2E8BFF] shadow-xs">
+                    <Users className="size-4.5 sm:size-5" />
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-lg font-semibold tracking-tight text-[#1C1C1E] dark:text-[#F2F2F7]">
+                      จัดการผู้เล่น
+                    </h2>
+                    {error ? (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-red-50 dark:bg-red-950/40 border border-red-200/60 dark:border-red-900/40 px-2 py-0.5 text-[11px] font-medium text-[#FF3B30] dark:text-[#FF453A]">
+                        <TriangleAlert className="size-3" />
+                        หลุดการเชื่อมต่อ
+                      </span>
+                    ) : loading ? (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-black/[0.04] dark:bg-white/[0.06] px-2 py-0.5 text-[11px] font-medium text-[#8E8E93] dark:text-[#98989D]">
+                        <Loader2 className="size-3 animate-spin text-[#007AFF]" />
+                        กำลังโหลด
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-blue-50/80 dark:bg-blue-500/15 border border-blue-500/20 px-2.5 py-0.5 text-[11px] font-semibold text-[#007AFF] dark:text-[#2E8BFF]">
+                        <Wifi className="size-3" />
+                        {players.length} คน
+                      </span>
+                    )}
+                  </div>
                 </div>
-                <p className="mt-0.5 text-xs text-[#8E8E93] dark:text-[#98989D]">
-                  เพิ่ม แก้ไข หรือลบผู้เล่นในวง
-                </p>
+
+                <button
+                  type="button"
+                  onClick={() => setIsAddPlayerOpen(true)}
+                  className="flex min-h-[44px] items-center justify-center gap-2 self-start sm:self-auto bg-[#007AFF] text-white rounded-full px-5 py-2.5 text-sm font-semibold shadow-md shadow-blue-500/20 active:scale-95 hover:bg-[#0062cc] transition-all cursor-pointer"
+                >
+                  <Plus className="size-4.5 stroke-[2.5]" />
+                  <span>เพิ่มผู้เล่นใหม่</span>
+                </button>
               </div>
+
+              <div className="h-px bg-black/[0.05] dark:bg-white/[0.06]" />
+
+              <PlayerList
+                players={players}
+                loading={loading}
+                onOpenAdd={() => setIsAddPlayerOpen(true)}
+                onEditPlayer={(player) => setEditingPlayer(player)}
+              />
             </div>
-
-            <button
-              type="button"
-              onClick={() => setIsAddPlayerOpen(true)}
-              className="flex min-h-[44px] items-center justify-center gap-2 self-start sm:self-auto bg-[#007AFF] text-white rounded-full px-5 py-2.5 text-sm font-semibold shadow-md shadow-blue-500/20 active:scale-95 hover:bg-[#0062cc] transition-all cursor-pointer"
-            >
-              <Plus className="size-4.5 stroke-[2.5]" />
-              <span>เพิ่มผู้เล่นใหม่</span>
-            </button>
-          </div>
-
-          <PlayerList
-            players={players}
-            loading={loading}
-            onOpenAdd={() => setIsAddPlayerOpen(true)}
-            onEditPlayer={(player) => setEditingPlayer(player)}
-          />
-        </section>
+          </section>
       </div>
     </div>
 
