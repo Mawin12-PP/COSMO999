@@ -147,9 +147,9 @@ export function LatestRoundCard({
 
       {/* Random Penalty Box */}
       {penalty ? (
-        <div className="flex flex-col gap-2 rounded-2xl border border-purple-200/80 dark:border-purple-900/50 bg-purple-50/80 dark:bg-purple-950/30 p-4 text-[#AF52DE] dark:text-[#BF5AF2] backdrop-blur-sm">
+        <div className="flex flex-col gap-2 rounded-2xl border border-black/[0.08] dark:border-[#38383A] bg-black/[0.03] dark:bg-[#2C2C2E]/60 p-4 text-[#1C1C1E] dark:text-[#F2F2F7] backdrop-blur-sm">
           <div className="flex items-start gap-2.5 text-xs">
-            <Dices className="mt-0.5 size-4.5 shrink-0 text-[#AF52DE] dark:text-[#BF5AF2]" aria-hidden />
+            <Dices className="mt-0.5 size-4.5 shrink-0 text-[#8E8E93] dark:text-[#98989D]" aria-hidden />
             <p className="font-semibold leading-relaxed">{penalty}</p>
           </div>
         </div>
@@ -186,9 +186,9 @@ export function LatestRoundCard({
               setPenalty(`${loserPlayer.name} ต้อง: ${randomTask}`);
             }
           }}
-          className="flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-full border border-purple-200/80 dark:border-purple-900/50 bg-purple-50/70 dark:bg-purple-950/30 px-5 py-3 text-sm font-semibold text-[#AF52DE] dark:text-[#BF5AF2] transition-all duration-200 ease-out active:scale-[0.97] hover:bg-purple-100/80 dark:hover:bg-purple-950/50"
+          className="flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-full border border-black/[0.08] dark:border-[#38383A] bg-black/[0.04] dark:bg-[#2C2C2E] px-5 py-3 text-sm font-semibold text-[#1C1C1E] dark:text-[#F2F2F7] transition-all duration-200 ease-out active:scale-[0.97] hover:bg-black/[0.08] dark:hover:bg-[#38383A]"
         >
-          <Dices className="size-4.5" aria-hidden />
+          <Dices className="size-4.5 text-[#8E8E93] dark:text-[#98989D]" aria-hidden />
           สุ่มบทลงโทษ
         </button>
 
