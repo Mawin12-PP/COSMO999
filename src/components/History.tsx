@@ -36,30 +36,23 @@ function scoreTone(score: number): string {
 function HistoryRow({
   entry,
   players,
-  roundNumber,
   onUndo,
 }: {
   entry: HistoryEntry;
   players: Player[];
-  roundNumber: number;
   onUndo: (matchId: string) => void;
 }) {
   const timeStr = new Date(entry.timestamp).toLocaleString("th-TH");
 
   return (
     <article className="flex flex-col gap-3.5 p-4 sm:p-5 transition-colors hover:bg-black/[0.015] dark:hover:bg-white/[0.02]">
-      {/* Header row: time + round number + multiplier badge + trash button */}
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-1.5 text-xs text-[#8E8E93] dark:text-[#98989D]">
-            <Clock className="size-3.5 shrink-0" aria-hidden />
-            <time dateTime={entry.timestamp} className="tabular-nums font-medium">
-              {timeStr}
-            </time>
-          </div>
-          <h3 className="text-base font-semibold text-[#1C1C1E] dark:text-[#F2F2F7]">
-            รอบ {roundNumber}
-          </h3>
+      {/* Header row: time + multiplier badge + trash button */}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1.5 text-xs text-[#8E8E93] dark:text-[#98989D]">
+          <Clock className="size-3.5 shrink-0" aria-hidden />
+          <time dateTime={entry.timestamp} className="tabular-nums font-medium">
+            {timeStr}
+          </time>
         </div>
 
         {/* Right side: multiplier badge + trash button */}
@@ -226,12 +219,11 @@ export function History() {
       ) : (
         /* iOS Grouped List */
         <div className="overflow-hidden rounded-[20px] border border-black/[0.05] dark:border-white/[0.08] bg-white dark:bg-[#1C1C1E] shadow-[0_4px_24px_rgba(0,0,0,0.04)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.25)] divide-y divide-gray-100 dark:divide-white/[0.06]">
-          {sorted.map((entry, index) => (
+          {sorted.map((entry) => (
             <HistoryRow
               key={entry.id}
               entry={entry}
               players={players}
-              roundNumber={sorted.length - index}
               onUndo={handleUndoRequest}
             />
           ))}
