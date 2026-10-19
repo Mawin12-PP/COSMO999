@@ -55,7 +55,10 @@ function RoundSetupInner({
     return [...players].sort((a, b) => {
       const aTime = lastPlayed[a.id] ?? -1;
       const bTime = lastPlayed[b.id] ?? -1;
-      return aTime - bTime;
+      if (bTime !== aTime) {
+        return bTime - aTime;
+      }
+      return a.name.localeCompare(b.name, "th");
     });
   }, [players, history]);
 
@@ -200,7 +203,7 @@ function RoundSetupInner({
           type="button"
           onClick={handleProceed}
           disabled={!enoughPlayers}
-          className={`flex min-h-[48px] items-center justify-center gap-2 rounded-full px-6 py-3.5 text-base font-semibold transition-all duration-200 ease-out ${
+          className={`flex min-h-[44px] sm:min-h-[48px] items-center justify-center gap-2 rounded-full px-5 py-2.5 sm:px-6 sm:py-3 text-sm sm:text-base font-semibold transition-all duration-200 ease-out ${
             enoughPlayers
               ? "bg-[#007AFF] text-white shadow-lg shadow-blue-500/25 hover:bg-[#0062cc] active:scale-[0.97] cursor-pointer"
               : "bg-gray-300 text-gray-500 dark:bg-gray-800 dark:text-gray-400 cursor-not-allowed shadow-none"

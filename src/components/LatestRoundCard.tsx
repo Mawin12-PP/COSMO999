@@ -186,18 +186,18 @@ export function LatestRoundCard({
               setPenalty(`${loserPlayer.name} ต้อง: ${randomTask}`);
             }
           }}
-          className="flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-full border border-black/[0.08] dark:border-[#38383A] bg-black/[0.04] dark:bg-[#2C2C2E] px-5 py-3 text-sm font-semibold text-[#1C1C1E] dark:text-[#F2F2F7] transition-all duration-200 ease-out active:scale-[0.97] hover:bg-black/[0.08] dark:hover:bg-[#38383A]"
+          className="flex min-h-[42px] sm:min-h-[46px] flex-1 items-center justify-center gap-2 rounded-full border border-black/[0.08] dark:border-[#38383A] bg-black/[0.04] dark:bg-[#2C2C2E] px-4 py-2.5 sm:px-5 sm:py-3 text-xs sm:text-sm font-semibold text-[#1C1C1E] dark:text-[#F2F2F7] transition-all duration-200 ease-out active:scale-[0.97] hover:bg-black/[0.08] dark:hover:bg-[#38383A]"
         >
-          <Dices className="size-4.5 text-[#8E8E93] dark:text-[#98989D]" aria-hidden />
+          <Dices className="size-4 text-[#8E8E93] dark:text-[#98989D]" aria-hidden />
           สุ่มบทลงโทษ
         </button>
 
         <button
           type="button"
           onClick={handlePlayAgain}
-          className="flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-full bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/25 transition-all duration-200 ease-out active:scale-[0.97] hover:opacity-90"
+          className="flex min-h-[42px] sm:min-h-[46px] flex-1 items-center justify-center gap-2 rounded-full bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] px-4 py-2.5 sm:px-5 sm:py-3 text-xs sm:text-sm font-semibold text-white shadow-lg shadow-blue-500/25 transition-all duration-200 ease-out active:scale-[0.97] hover:opacity-90"
         >
-          <RotateCcw className="size-4.5" aria-hidden />
+          <RotateCcw className="size-4" aria-hidden />
           เล่นกลุ่มเดิม
         </button>
       </div>

@@ -59,7 +59,7 @@ export function MultiplierPicker({
 
   return (
     <div className="flex flex-col gap-2.5">
-      <div className="flex flex-wrap gap-2.5">
+      <div className="grid grid-cols-5 gap-1.5 sm:gap-2">
         {MULTIPLIERS.map((m) => {
           const active = value === m;
           return (
@@ -69,10 +69,10 @@ export function MultiplierPicker({
               onClick={() => onChange(m)}
               disabled={rolling}
               aria-pressed={active}
-              className={`flex h-12 min-w-[54px] sm:min-w-[62px] items-center justify-center rounded-2xl px-3.5 py-2.5 text-base font-bold tabular-nums transition-all duration-200 ease-out active:scale-[0.97] disabled:opacity-50 cursor-pointer ${
+              className={`flex h-10 sm:h-11 w-full items-center justify-center rounded-xl sm:rounded-2xl text-sm sm:text-base font-semibold tabular-nums transition-all duration-150 ease-out active:scale-[0.96] disabled:opacity-50 cursor-pointer ${
                 active
                   ? "bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] text-white shadow-md shadow-blue-500/20 border-0 hover:opacity-90"
-                  : "bg-white dark:bg-[#1C1C1E] border border-gray-200 dark:border-[#38383A] text-gray-800 dark:text-[#F2F2F7] shadow-sm hover:bg-gray-50 dark:hover:bg-[#2C2C2E]"
+                  : "bg-white dark:bg-[#1C1C1E] border border-black/[0.08] dark:border-[#38383A] text-gray-800 dark:text-[#F2F2F7] shadow-2xs hover:bg-gray-50 dark:hover:bg-[#2C2C2E]"
               }`}
             >
               x{m}
@@ -85,14 +85,14 @@ export function MultiplierPicker({
           onClick={handleRandomize}
           disabled={rolling}
           aria-pressed={isRandom}
-          className={`flex h-12 items-center justify-center gap-2 rounded-2xl px-5 py-2.5 text-base font-bold transition-all duration-200 ease-out active:scale-[0.97] disabled:opacity-70 cursor-pointer ${
+          className={`col-span-2 flex h-10 sm:h-11 w-full items-center justify-center gap-1.5 rounded-xl sm:rounded-2xl px-2 text-sm sm:text-base font-semibold transition-all duration-150 ease-out active:scale-[0.96] disabled:opacity-70 cursor-pointer ${
             isRandom
               ? "bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] text-white shadow-md shadow-blue-500/20 border-0 hover:opacity-90"
-              : "bg-white dark:bg-[#1C1C1E] border border-gray-200 dark:border-[#38383A] text-[#007AFF] shadow-sm hover:bg-blue-50/50 dark:hover:bg-blue-950/30 active:bg-blue-50 dark:active:bg-blue-950/50"
+              : "bg-white dark:bg-[#1C1C1E] border border-black/[0.08] dark:border-[#38383A] text-[#007AFF] shadow-2xs hover:bg-blue-50/50 dark:hover:bg-blue-950/30 active:bg-blue-50 dark:active:bg-blue-950/50"
           }`}
         >
-          <Dices key={rollId} className={`size-5 ${rolling ? "dice-tumble" : ""}`} />
-          สุ่ม
+          <Dices key={rollId} className={`size-4 sm:size-4.5 shrink-0 ${rolling ? "dice-tumble" : ""}`} />
+          <span>สุ่ม</span>
         </button>
       </div>
 

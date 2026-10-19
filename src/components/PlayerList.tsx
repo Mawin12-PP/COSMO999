@@ -5,9 +5,10 @@
 // Edit and Delete micro-interactions (active:scale-90), iOS Modal sheet for Add/Edit,
 // and accessible deletion confirmation via ConfirmDialog.
 import { useState } from "react";
-import { ChevronDown, Loader2, Pencil, Trash2, Users } from "lucide-react";
+import { Loader2, Pencil, Trash2, Users } from "lucide-react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { PlayerAvatar } from "@/components/PlayerAvatar";
+import { PlayerDropdownPicker } from "@/components/PlayerDropdownPicker";
 import { PlayerModal } from "@/components/PlayerModal";
 import { deletePlayer } from "@/lib/players";
 import type { Player } from "@/types/models";
@@ -115,37 +116,16 @@ export function PlayerList({
     <>
       {/* Dropdown Selector for Editing Players */}
       <div className="flex flex-col gap-2">
-        <label
-          htmlFor="player-edit-select"
-          className="block text-xs font-semibold uppercase tracking-wider text-[#8E8E93] dark:text-[#98989D]"
-        >
+        <label className="block text-xs font-medium uppercase tracking-wider text-[#8E8E93] dark:text-[#98989D]">
           เลือกผู้เล่น
         </label>
 
-        <div className="relative">
-          <select
-            id="player-edit-select"
-            value={selectedPlayerId}
-            onChange={(e) => {
-              setSelectedPlayerId(e.target.value);
-            }}
-            className="flex min-h-[48px] w-full appearance-none items-center rounded-xl border border-black/[0.08] dark:border-[#38383A] bg-[#F2F2F7]/60 dark:bg-[#2C2C2E]/60 pl-4 pr-10 py-2.5 text-sm sm:text-base font-semibold text-[#1C1C1E] dark:text-[#F2F2F7] shadow-xs focus:border-[#007AFF] focus:bg-white dark:focus:bg-[#1C1C1E] focus:outline-none cursor-pointer transition-all"
-          >
-            <option value="" className="bg-white dark:bg-[#1C1C1E] text-[#8E8E93]">
-              เลือกผู้เล่น
-            </option>
-            {players.map((p) => (
-              <option
-                key={p.id}
-                value={p.id}
-                className="bg-white dark:bg-[#1C1C1E] text-[#1C1C1E] dark:text-[#F2F2F7]"
-              >
-                {p.name}
-              </option>
-            ))}
-          </select>
-          <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 size-4.5 text-[#8E8E93] dark:text-[#98989D]" />
-        </div>
+        <PlayerDropdownPicker
+          players={players}
+          selectedId={selectedPlayerId}
+          onSelect={(id) => setSelectedPlayerId(id)}
+          placeholder="เลือกผู้เล่น"
+        />
 
         {/* Selected Player Card with Quick Edit & Delete Actions */}
         {selectedPlayer && (
@@ -153,10 +133,10 @@ export function PlayerList({
             <div className="flex items-center gap-3 min-w-0">
               <PlayerAvatar player={selectedPlayer} className="size-10 text-sm shrink-0" />
               <div className="min-w-0">
-                <span className="text-sm font-semibold text-[#1C1C1E] dark:text-[#F2F2F7] truncate block">
+                <span className="text-sm font-medium text-[#1C1C1E] dark:text-[#F2F2F7] truncate block">
                   {selectedPlayer.name}
                 </span>
-                <span className="text-[11px] text-[#8E8E93] dark:text-[#98989D]">
+                <span className="text-xs text-[#8E8E93] dark:text-[#98989D]">
                   เลือกอยู่
                 </span>
               </div>
@@ -166,7 +146,7 @@ export function PlayerList({
               <button
                 type="button"
                 onClick={() => handleEdit(selectedPlayer)}
-                className="flex min-h-[36px] items-center gap-1.5 rounded-full bg-blue-50 dark:bg-blue-500/15 px-3.5 py-1.5 text-xs font-semibold text-[#007AFF] dark:text-[#2E8BFF] hover:bg-blue-100 dark:hover:bg-blue-500/25 active:scale-95 transition-all cursor-pointer"
+                className="flex min-h-[38px] sm:min-h-[40px] items-center gap-1.5 rounded-full bg-blue-50 dark:bg-blue-500/15 px-3 py-1.5 sm:px-3.5 sm:py-2 text-xs sm:text-sm font-semibold text-[#007AFF] dark:text-[#2E8BFF] hover:bg-blue-100 dark:hover:bg-blue-500/25 active:scale-95 transition-all cursor-pointer"
               >
                 <Pencil className="size-3.5" />
                 <span>แก้ไข</span>
@@ -179,7 +159,7 @@ export function PlayerList({
                   setPlayerToDelete(selectedPlayer);
                 }}
                 aria-label={`ลบ ${selectedPlayer.name}`}
-                className="flex size-9 min-h-[36px] min-w-[36px] items-center justify-center rounded-full text-[#8E8E93] dark:text-[#98989D] hover:bg-red-50 dark:hover:bg-red-500/15 hover:text-[#FF3B30] dark:hover:text-[#FF453A] active:scale-90 transition-all cursor-pointer"
+                className="flex size-9 sm:size-10 min-h-[38px] min-w-[38px] sm:min-h-[40px] sm:min-w-[40px] items-center justify-center rounded-full text-[#8E8E93] dark:text-[#98989D] hover:bg-red-50 dark:hover:bg-red-500/15 hover:text-[#FF3B30] dark:hover:text-[#FF453A] active:scale-90 transition-all cursor-pointer"
               >
                 <Trash2 className="size-4" />
               </button>

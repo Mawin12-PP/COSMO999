@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { AnimatedNumber } from "@/components/AnimatedNumber";
 import { PlayerAvatar } from "@/components/PlayerAvatar";
+import { PlayerDropdownPicker } from "@/components/PlayerDropdownPicker";
 import { useHistory } from "@/hooks/useHistory";
 import { usePlayers } from "@/hooks/usePlayers";
 import { formatSignedScore } from "@/lib/format";
@@ -100,24 +101,17 @@ export function Stats() {
         </div>
       ) : (
         <>
-          {/* Player selector with min 48px height */}
+          {/* Player selector with PlayerDropdownPicker */}
           <div className="mb-6 flex flex-col gap-2">
-            <label htmlFor="stats-player-select" className="text-xs font-semibold uppercase tracking-wider text-[#8E8E93] dark:text-[#98989D]">
+            <label className="text-xs font-medium uppercase tracking-wider text-[#8E8E93] dark:text-[#98989D]">
               เลือกผู้เล่น
             </label>
-            <select
-              id="stats-player-select"
-              value={selectedId}
-              onChange={(e) => setSelectedId(e.target.value)}
-              className="flex min-h-[48px] w-full rounded-2xl border border-black/[0.06] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] px-4 py-3 text-base font-semibold text-[#1C1C1E] dark:text-[#F2F2F7] shadow-xs focus:border-[#007AFF] focus:outline-none sm:max-w-xs"
-            >
-              <option value="">เลือกผู้เล่น</option>
-              {players.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
+            <PlayerDropdownPicker
+              players={players}
+              selectedId={selectedId}
+              onSelect={(id) => setSelectedId(id)}
+              placeholder="เลือกผู้เล่น"
+            />
           </div>
 
           {/* No player selected yet */}

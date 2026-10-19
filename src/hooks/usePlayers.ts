@@ -2,7 +2,7 @@
 
 // Live list of players from dummyRoom/players. Read-only.
 import { useEffect, useState } from "react";
-import { DB_PATHS } from "@/lib/firebase";
+import { DB_PATHS, isConfigured } from "@/lib/firebase";
 import { writeAll } from "@/lib/players";
 import { subscribeToList } from "@/lib/rtdb";
 import { parseThematicAvatar, getUniqueThematicAvatar } from "@/lib/suits";
@@ -18,6 +18,20 @@ export function usePlayers(): {
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
+    // If Firebase is not configured (local development), load mock data immediately
+    if (process.env.NODE_ENV === "development" && !isConfigured) {
+      fetch("/mock-data.json")
+        .then((res) => res.json())
+        .then((data) => {
+          if (Array.isArray(data?.players) && data.players.length > 0) {
+            setPlayers(data.players);
+            setError(null);
+          }
+        })
+        .catch((err) => setError(err))
+        .finally(() => setLoading(false));
+      return;
+    }
     const unsubscribe = subscribeToList<Player>(
       DB_PATHS.players,
       (items) => {
@@ -56,6 +70,21 @@ export function usePlayers(): {
         setLoading(false);
       },
       (err) => {
+        if (process.env.NODE_ENV === "development" && !isConfigured) {
+          fetch("/mock-data.json")
+            .then((res) => res.json())
+            .then((data) => {
+              if (Array.isArray(data?.players) && data.players.length > 0) {
+                setPlayers(data.players);
+                setError(null);
+              } else {
+                setError(err);
+              }
+            })
+            .catch(() => setError(err))
+            .finally(() => setLoading(false));
+          return;
+        }
         setError(err);
         setLoading(false);
       },

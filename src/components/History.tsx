@@ -65,9 +65,9 @@ function HistoryRow({
             title="ลบ / ยกเลิกผลรอบนี้"
             aria-label="ลบหรือยกเลิกผลรอบนี้"
             onClick={() => onUndo(entry.id)}
-            className="flex size-7.5 items-center justify-center rounded-full border border-black/[0.06] dark:border-white/[0.08] bg-white dark:bg-[#2C2C2E] text-[#8E8E93] dark:text-[#98989D] shadow-2xs transition-all duration-200 ease-out active:scale-90 hover:border-red-200 dark:hover:border-red-900/40 hover:bg-red-50/80 dark:hover:bg-red-950/30 hover:text-[#FF3B30] dark:hover:text-[#FF453A] cursor-pointer"
+            className="flex size-8 sm:size-8.5 min-h-[32px] min-w-[32px] items-center justify-center rounded-full border border-black/[0.06] dark:border-white/[0.08] bg-white dark:bg-[#2C2C2E] text-[#8E8E93] dark:text-[#98989D] shadow-2xs transition-all duration-200 ease-out active:scale-90 hover:border-red-200 dark:hover:border-red-900/40 hover:bg-red-50/80 dark:hover:bg-red-950/30 hover:text-[#FF3B30] dark:hover:text-[#FF453A] cursor-pointer"
           >
-            <Trash2 className="size-3.5" aria-hidden />
+            <Trash2 className="size-3.5 sm:size-4" aria-hidden />
           </button>
         </div>
       </div>
@@ -79,7 +79,7 @@ function HistoryRow({
           return (
             <li
               key={pId}
-              className="flex min-h-[36px] items-center justify-between gap-1.5 sm:gap-2 rounded-full border border-black/[0.04] dark:border-white/[0.06] bg-[#F2F2F7] dark:bg-[#2C2C2E] px-2.5 sm:px-3 py-1.5 shadow-2xs transition-transform active:scale-[0.98] min-w-0"
+              className="flex min-h-[36px] sm:min-h-[38px] items-center justify-between gap-1.5 sm:gap-2 rounded-full border border-black/[0.04] dark:border-white/[0.06] bg-[#F2F2F7] dark:bg-[#2C2C2E] px-2.5 sm:px-3 py-1.5 shadow-2xs transition-transform active:scale-[0.98] min-w-0"
             >
               <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1">
                 {player ? (
@@ -176,7 +176,7 @@ export function History() {
             setRecalcError(null);
             setRecalcPending(true);
           }}
-          className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-black/[0.06] dark:border-white/[0.08] bg-white dark:bg-[#1C1C1E] px-4 py-2.5 text-xs sm:text-sm font-semibold text-[#007AFF] shadow-2xs transition-all duration-200 ease-out active:scale-95 hover:bg-gray-50 dark:hover:bg-[#2C2C2E]"
+          className="inline-flex min-h-[40px] sm:min-h-[44px] w-full sm:w-auto items-center justify-center gap-2 rounded-full border border-black/[0.06] dark:border-white/[0.08] bg-white dark:bg-[#1C1C1E] px-4 py-2 sm:px-4 sm:py-2.5 text-xs sm:text-sm font-semibold text-[#007AFF] shadow-2xs transition-all duration-200 ease-out active:scale-95 hover:bg-gray-50 dark:hover:bg-[#2C2C2E] cursor-pointer"
         >
           <RefreshCw className="size-3.5 sm:size-4" aria-hidden />
           <span>คำนวณคะแนนใหม่จากประวัติ</span>

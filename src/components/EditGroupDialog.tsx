@@ -86,12 +86,12 @@ export function EditGroupDialog({
             type="button"
             onClick={onDelete}
             disabled={busy}
-            className="flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full bg-[#FF3B30] hover:bg-[#FF3B30]/90 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-red-500/25 transition-all duration-200 ease-out active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex min-h-[44px] sm:min-h-[48px] w-full items-center justify-center gap-2 rounded-full bg-[#FF3B30] hover:bg-[#FF3B30]/90 px-5 py-2.5 sm:px-6 sm:py-3 text-sm sm:text-base font-semibold text-white shadow-lg shadow-red-500/25 transition-all duration-200 ease-out active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50"
           >
             {busy ? (
-              <Loader2 className="size-4.5 animate-spin" aria-hidden />
+              <Loader2 className="size-4 sm:size-4.5 animate-spin" aria-hidden />
             ) : (
-              <Trash2 className="size-4.5" aria-hidden />
+              <Trash2 className="size-4 sm:size-4.5" aria-hidden />
             )}
             {busy ? "กำลังลบ..." : "ยืนยันลบกลุ่มนี้"}
           </button>
@@ -100,7 +100,7 @@ export function EditGroupDialog({
             type="button"
             onClick={dismiss}
             disabled={busy}
-            className="flex min-h-[44px] w-full items-center justify-center rounded-full border border-black/[0.06] dark:border-[#38383A] bg-white dark:bg-[#2C2C2E] px-4 py-2.5 text-sm font-semibold text-[#1C1C1E] dark:text-[#F2F2F7] shadow-2xs transition-all duration-200 ease-out active:scale-[0.97] hover:bg-gray-50 dark:hover:bg-[#38383A] disabled:opacity-50"
+            className="flex min-h-[44px] sm:min-h-[48px] w-full items-center justify-center rounded-full border border-black/[0.06] dark:border-[#38383A] bg-white dark:bg-[#2C2C2E] px-5 py-2.5 sm:px-6 sm:py-3 text-sm sm:text-base font-semibold text-[#1C1C1E] dark:text-[#F2F2F7] shadow-2xs transition-all duration-200 ease-out active:scale-[0.97] hover:bg-gray-50 dark:hover:bg-[#38383A] disabled:opacity-50"
           >
             ยกเลิก
           </button>

@@ -85,9 +85,9 @@ export default function HomePage() {
                 <button
                   type="button"
                   onClick={() => setIsAddPlayerOpen(true)}
-                  className="flex min-h-[44px] items-center justify-center gap-2 self-start sm:self-auto bg-[#007AFF] text-white rounded-full px-5 py-2.5 text-sm font-semibold shadow-md shadow-blue-500/20 active:scale-95 hover:bg-[#0062cc] transition-all cursor-pointer"
+                  className="flex min-h-[40px] sm:min-h-[44px] w-full sm:w-auto items-center justify-center gap-2 rounded-full bg-[#007AFF] px-4 py-2 sm:px-5 sm:py-2.5 text-xs sm:text-sm font-semibold text-white shadow-md shadow-blue-500/20 active:scale-95 hover:bg-[#0062cc] transition-all cursor-pointer"
                 >
-                  <Plus className="size-4.5 stroke-[2.5]" />
+                  <Plus className="size-4 sm:size-4.5 stroke-[2.5]" />
                   <span>เพิ่มผู้เล่นใหม่</span>
                 </button>
               </div>

@@ -14,7 +14,7 @@ const rawConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-const isConfigured = Boolean(rawConfig.apiKey && rawConfig.databaseURL);
+export const isConfigured = Boolean(rawConfig.apiKey && rawConfig.databaseURL);
 
 const firebaseConfig = isConfigured
   ? rawConfig

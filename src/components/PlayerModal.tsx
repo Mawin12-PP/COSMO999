@@ -193,7 +193,7 @@ export function PlayerModal({
               placeholder="เช่น สมชาย (ตัวตึง)"
               disabled={pending}
               autoFocus
-              className="bg-[#F2F2F7] dark:bg-[#2C2C2E] border-none rounded-xl px-4 py-3 w-full text-base font-semibold text-[#1C1C1E] dark:text-[#F2F2F7] outline-none transition-all placeholder:text-[#8E8E93]/60 dark:placeholder:text-[#98989D]/60 focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50"
+              className="bg-[#F2F2F7] dark:bg-[#2C2C2E] border-none rounded-xl px-3.5 py-2.5 sm:px-4 sm:py-3 w-full text-sm sm:text-base font-semibold text-[#1C1C1E] dark:text-[#F2F2F7] outline-none transition-all placeholder:text-[#8E8E93]/60 dark:placeholder:text-[#98989D]/60 focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50"
             />
           </div>
 
@@ -207,9 +207,9 @@ export function PlayerModal({
                 type="button"
                 onClick={() => fileRef.current?.click()}
                 disabled={pending}
-                className="flex min-h-[44px] items-center gap-2 rounded-xl bg-[#F2F2F7] dark:bg-[#2C2C2E] px-4 py-2.5 text-sm font-semibold text-[#007AFF] dark:text-[#2E8BFF] active:scale-90 transition-transform hover:opacity-90 disabled:opacity-50"
+                className="flex min-h-[40px] sm:min-h-[44px] items-center gap-2 rounded-xl bg-[#F2F2F7] dark:bg-[#2C2C2E] px-3.5 py-2 sm:px-4 sm:py-2.5 text-xs sm:text-sm font-semibold text-[#007AFF] dark:text-[#2E8BFF] active:scale-90 transition-transform hover:opacity-90 disabled:opacity-50"
               >
-                <ImagePlus className="size-4.5" />
+                <ImagePlus className="size-4 sm:size-4.5" />
                 {fileName ?? (previewImage ? "เปลี่ยนรูป" : "เลือกรูป")}
               </button>
               {previewImage ? (
@@ -217,7 +217,7 @@ export function PlayerModal({
                   type="button"
                   onClick={handleRemoveImage}
                   disabled={pending}
-                  className="flex min-h-[44px] items-center gap-1 rounded-xl bg-red-50 dark:bg-red-500/10 px-3 py-2 text-xs font-semibold text-[#FF3B30] dark:text-[#FF453A] active:scale-90 transition-transform"
+                  className="flex min-h-[40px] sm:min-h-[44px] items-center gap-1 rounded-xl bg-red-50 dark:bg-red-500/10 px-3 py-2 text-xs font-semibold text-[#FF3B30] dark:text-[#FF453A] active:scale-90 transition-transform"
                 >
                   <Trash2 className="size-3.5" />
                   ลบรูป
@@ -248,14 +248,14 @@ export function PlayerModal({
             <button
               type="submit"
               disabled={pending}
-              className="flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-full bg-[#007AFF] px-6 py-3 text-base font-semibold text-white shadow-lg shadow-blue-500/25 active:scale-95 transition-all hover:bg-[#0062cc] disabled:opacity-50 cursor-pointer"
+              className="flex min-h-[44px] sm:min-h-[48px] flex-1 items-center justify-center gap-2 rounded-full bg-[#007AFF] px-5 py-2.5 sm:px-6 sm:py-3 text-sm sm:text-base font-semibold text-white shadow-lg shadow-blue-500/25 active:scale-95 transition-all hover:bg-[#0062cc] disabled:opacity-50 cursor-pointer"
             >
               {pending ? (
-                <Loader2 className="size-4.5 animate-spin" />
+                <Loader2 className="size-4 sm:size-4.5 animate-spin" />
               ) : isEdit ? (
-                <Check className="size-4.5 stroke-[2.5]" />
+                <Check className="size-4 sm:size-4.5 stroke-[2.5]" />
               ) : (
-                <UserPlus className="size-4.5" />
+                <UserPlus className="size-4 sm:size-4.5" />
               )}
               {pending ? "กำลังบันทึก..." : isEdit ? "บันทึกข้อมูล" : "เพิ่มผู้เล่น"}
             </button>
@@ -263,7 +263,7 @@ export function PlayerModal({
               type="button"
               onClick={onClose}
               disabled={pending}
-              className="flex min-h-[48px] flex-1 items-center justify-center rounded-full border border-gray-100 dark:border-white/10 bg-white dark:bg-[#2C2C2E] px-6 py-3 text-base font-semibold text-[#1C1C1E] dark:text-[#F2F2F7] shadow-xs active:scale-95 transition-all hover:bg-[#F2F2F7] dark:hover:bg-[#38383A] disabled:opacity-50 cursor-pointer"
+              className="flex min-h-[44px] sm:min-h-[48px] flex-1 items-center justify-center rounded-full border border-gray-100 dark:border-white/10 bg-white dark:bg-[#2C2C2E] px-5 py-2.5 sm:px-6 sm:py-3 text-sm sm:text-base font-semibold text-[#1C1C1E] dark:text-[#F2F2F7] shadow-xs active:scale-95 transition-all hover:bg-[#F2F2F7] dark:hover:bg-[#38383A] disabled:opacity-50 cursor-pointer"
             >
               ยกเลิก
             </button>

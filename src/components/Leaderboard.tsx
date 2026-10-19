@@ -457,7 +457,7 @@ function ViewSwitcher({
           type="button"
           aria-pressed={viewKey === currentPeriodKey}
           onClick={() => onChange(currentPeriodKey)}
-          className={`relative z-10 flex min-h-[44px] min-w-[90px] items-center justify-center rounded-full px-5 py-2 text-sm font-semibold transition-colors duration-200 ease-out active:scale-[0.97] cursor-pointer ${
+          className={`relative z-10 flex min-h-[40px] sm:min-h-[44px] min-w-[76px] sm:min-w-[90px] items-center justify-center rounded-full px-3.5 py-1.5 sm:px-5 sm:py-2 text-xs sm:text-sm font-semibold transition-colors duration-200 ease-out active:scale-[0.97] cursor-pointer ${
             viewKey === currentPeriodKey
               ? "text-[#1C1C1E] dark:text-[#F2F2F7]"
               : "text-[#8E8E93] dark:text-[#98989D] hover:text-[#1C1C1E] dark:hover:text-[#F2F2F7]"
@@ -469,7 +469,7 @@ function ViewSwitcher({
           type="button"
           aria-pressed={viewKey === "all"}
           onClick={() => onChange("all")}
-          className={`relative z-10 flex min-h-[44px] min-w-[90px] items-center justify-center rounded-full px-5 py-2 text-sm font-semibold transition-colors duration-200 ease-out active:scale-[0.97] cursor-pointer ${
+          className={`relative z-10 flex min-h-[40px] sm:min-h-[44px] min-w-[76px] sm:min-w-[90px] items-center justify-center rounded-full px-3.5 py-1.5 sm:px-5 sm:py-2 text-xs sm:text-sm font-semibold transition-colors duration-200 ease-out active:scale-[0.97] cursor-pointer ${
             viewKey === "all"
               ? "text-[#1C1C1E] dark:text-[#F2F2F7]"
               : "text-[#8E8E93] dark:text-[#98989D] hover:text-[#1C1C1E] dark:hover:text-[#F2F2F7]"
@@ -486,7 +486,7 @@ function ViewSwitcher({
           onChange={(e) => {
             if (e.target.value) onChange(e.target.value);
           }}
-          className="min-h-[44px] rounded-full border border-black/[0.06] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] px-5 py-2 text-sm font-semibold text-[#1C1C1E] dark:text-[#F2F2F7] shadow-xs transition-all duration-200 ease-out focus:border-[#007AFF] focus:outline-none cursor-pointer"
+          className="min-h-[40px] sm:min-h-[44px] w-full sm:w-auto rounded-full border border-black/[0.06] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] px-4 py-2 sm:px-5 sm:py-2 text-xs sm:text-sm font-semibold text-[#1C1C1E] dark:text-[#F2F2F7] shadow-xs transition-all duration-200 ease-out focus:border-[#007AFF] focus:outline-none cursor-pointer"
         >
           <option value="">ดูงวดย้อนหลัง...</option>
           {pastPeriods.map((period) => (

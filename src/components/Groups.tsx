@@ -133,14 +133,14 @@ function GroupCard({
       ) : null}
 
       {/* Actions */}
-      <div className="flex flex-col gap-2.5">
+      <div className="flex flex-col gap-2 sm:gap-2.5">
         {/* Primary: play */}
         <button
           type="button"
           onClick={handlePlay}
-          className="flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] px-6 py-3 text-base font-semibold text-white shadow-lg shadow-blue-500/25 transition-all duration-200 ease-out active:scale-[0.97] hover:opacity-90"
+          className="flex min-h-[44px] sm:min-h-[48px] w-full items-center justify-center gap-2 rounded-full bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] px-5 py-2.5 sm:px-6 sm:py-3 text-sm sm:text-base font-semibold text-white shadow-lg shadow-blue-500/25 transition-all duration-200 ease-out active:scale-[0.97] hover:opacity-90 cursor-pointer"
         >
-          <Play className="size-4.5 fill-current" aria-hidden />
+          <Play className="size-4 sm:size-4.5 fill-current" aria-hidden />
           เล่นกลุ่มนี้
         </button>
 
@@ -149,17 +149,17 @@ function GroupCard({
           <button
             type="button"
             onClick={() => onScore(group.id)}
-            className="flex min-h-[44px] flex-1 items-center justify-center gap-1.5 rounded-full border border-black/[0.06] dark:border-[#38383A] bg-white dark:bg-[#2C2C2E] px-4 py-2.5 text-sm font-semibold text-[#1C1C1E] dark:text-[#F2F2F7] shadow-2xs transition-all duration-200 ease-out active:scale-[0.97] hover:bg-gray-50 dark:hover:bg-[#38383A]"
+            className="flex min-h-[40px] sm:min-h-[44px] flex-1 items-center justify-center gap-1.5 rounded-full border border-black/[0.06] dark:border-[#38383A] bg-white dark:bg-[#2C2C2E] px-3.5 py-2 sm:px-4 sm:py-2.5 text-xs sm:text-sm font-semibold text-[#1C1C1E] dark:text-[#F2F2F7] shadow-2xs transition-all duration-200 ease-out active:scale-[0.97] hover:bg-gray-50 dark:hover:bg-[#38383A] cursor-pointer"
           >
             ดูคะแนน
           </button>
           <button
             type="button"
             onClick={() => onEdit(group.id)}
-            className="flex size-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-black/[0.06] dark:border-[#38383A] bg-white dark:bg-[#2C2C2E] text-[#8E8E93] dark:text-[#98989D] shadow-2xs transition-all duration-200 ease-out active:scale-[0.97] hover:bg-red-50 dark:hover:bg-red-950/30 hover:border-red-200 dark:hover:border-red-900/40 hover:text-[#FF3B30] dark:hover:text-[#FF453A]"
+            className="flex size-10 sm:size-11 min-h-[40px] sm:min-h-[44px] min-w-[40px] sm:min-w-[44px] items-center justify-center rounded-full border border-black/[0.06] dark:border-[#38383A] bg-white dark:bg-[#2C2C2E] text-[#8E8E93] dark:text-[#98989D] shadow-2xs transition-all duration-200 ease-out active:scale-[0.97] hover:bg-red-50 dark:hover:bg-red-950/30 hover:border-red-200 dark:hover:border-red-900/40 hover:text-[#FF3B30] dark:hover:text-[#FF453A] cursor-pointer"
             aria-label="ลบกลุ่มขาประจำ"
           >
-            <Trash2 className="size-4.5" aria-hidden />
+            <Trash2 className="size-4 sm:size-4.5" aria-hidden />
           </button>
         </div>
       </div>
@@ -210,28 +210,42 @@ export function Groups() {
     setEditError(null);
   }
 
-  // Count how many rounds each group has played in history
-  const groupPlayCounts = useMemo(() => {
-    const counts: Record<string, number> = {};
+  // Find the last played timestamp for each group from history
+  const groupLastPlayed = useMemo(() => {
+    const map: Record<string, number> = {};
     for (const entry of history) {
+      const time = new Date(entry.timestamp).getTime();
+      if (Number.isNaN(time)) continue;
+
       if (entry.groupId) {
-        counts[entry.groupId] = (counts[entry.groupId] ?? 0) + 1;
+        if (map[entry.groupId] === undefined || time > map[entry.groupId]) {
+          map[entry.groupId] = time;
+        }
+      }
+
+      if (entry.playerScores) {
+        const sortedKey = Object.keys(entry.playerScores).sort().join("_");
+        if (sortedKey && (map[sortedKey] === undefined || time > map[sortedKey])) {
+          map[sortedKey] = time;
+        }
       }
     }
-    return counts;
+    return map;
   }, [history]);
 
-  // Sort groups: most played groups first, then alphabetically by name
+  // Sort groups: most recently played groups first (latest at top), then alphabetically by name
   const sortedGroups = useMemo(() => {
     return [...groups].sort((a, b) => {
-      const countA = groupPlayCounts[a.id] ?? 0;
-      const countB = groupPlayCounts[b.id] ?? 0;
-      if (countB !== countA) {
-        return countB - countA;
+      const sortedAKey = [...a.playerIds].sort().join("_");
+      const sortedBKey = [...b.playerIds].sort().join("_");
+      const timeA = Math.max(groupLastPlayed[a.id] ?? -1, groupLastPlayed[sortedAKey] ?? -1);
+      const timeB = Math.max(groupLastPlayed[b.id] ?? -1, groupLastPlayed[sortedBKey] ?? -1);
+      if (timeB !== timeA) {
+        return timeB - timeA;
       }
       return a.name.localeCompare(b.name, "th");
     });
-  }, [groups, groupPlayCounts]);
+  }, [groups, groupLastPlayed]);
 
   const scoreGroup = scoreGroupId
     ? (groups.find((g) => g.id === scoreGroupId) ?? null)
