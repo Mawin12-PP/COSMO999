@@ -87,13 +87,6 @@ export function parseThematicAvatar(image?: string | null): ThematicAvatarId | n
   return null;
 }
 
-export const FOUR_SUITS: ThematicAvatarId[] = [
-  "spade",
-  "heart",
-  "club",
-  "diamond",
-];
-
 /**
  * 32-bit FNV-1a hash algorithm. Uniformly distributes strings and numeric timestamps
  * across buckets without mathematical degenerate collisions.
@@ -108,44 +101,56 @@ export function getRobustHash(seed: string): number {
 }
 
 /**
- * Pick a thematic avatar evenly selected from the 4 primary card suits:
- * Spade (♠), Heart (♥), Club (♣), Diamond (♦).
- * It tracks frequency among existing players and selects from the least-used suit(s),
- * breaking ties randomly. Also prevents assigning the exact same suit to consecutive
- * new users when other candidate suits are available.
+ * "Unique Smart Pick" (No Duplication Logic):
+ * 1. Scans existing players in the current circle to see which of the 14 symbols are in use.
+ * 2. Picks a symbol from the 14-symbol pool that is NOT currently being used.
+ * 3. Only if all 14 symbols are already in use, falls back to picking the one with the lowest frequency count.
  */
 export function getUniqueThematicAvatar(
   existingImages: (string | undefined | null)[],
 ): ThematicAvatarId {
-  const counts: Record<"spade" | "heart" | "club" | "diamond", number> = {
+  const counts: Record<ThematicAvatarId, number> = {
     spade: 0,
     heart: 0,
     club: 0,
     diamond: 0,
+    "speto-2": 0,
+    "speto-q": 0,
+    joker: 0,
+    king: 0,
+    deck: 0,
+    dice: 0,
+    chip: 0,
+    fire: 0,
+    shield: 0,
+    trophy: 0,
   };
 
-  // Find the suit of the most recently added player (consecutive user check)
-  let lastSuit: ("spade" | "heart" | "club" | "diamond") | null = null;
+  let lastSymbol: ThematicAvatarId | null = null;
   for (let i = existingImages.length - 1; i >= 0; i--) {
     const img = existingImages[i];
     if (!img) continue;
-    const clean = img.replace(/^suit:/, "");
+    const clean = img.replace(/^suit:/, "") as ThematicAvatarId;
     if (clean in counts) {
-      if (!lastSuit) lastSuit = clean as "spade" | "heart" | "club" | "diamond";
-      counts[clean as keyof typeof counts]++;
+      if (!lastSymbol) lastSymbol = clean;
+      counts[clean]++;
     }
   }
 
-  // Find minimum count among the 4 suits to distribute evenly
-  const minCount = Math.min(...Object.values(counts));
-  let candidates = (Object.keys(counts) as ("spade" | "heart" | "club" | "diamond")[]).filter(
-    (suit) => counts[suit] === minCount,
-  );
+  // 1. Pick among symbols in the 14-symbol pool that are NOT currently in use
+  const unused = THEMATIC_AVATARS.filter((id) => counts[id] === 0);
+  if (unused.length > 0) {
+    const randomIndex = Math.floor(Math.random() * unused.length);
+    return unused[randomIndex];
+  }
 
-  // If multiple candidates are available with the minimum count,
-  // avoid assigning the exact same icon as the immediately preceding user
-  if (candidates.length > 1 && lastSuit && candidates.includes(lastSuit)) {
-    candidates = candidates.filter((suit) => suit !== lastSuit);
+  // 2. All 14 symbols are in use -> fallback to lowest frequency count
+  const minCount = Math.min(...Object.values(counts));
+  let candidates = THEMATIC_AVATARS.filter((id) => counts[id] === minCount);
+
+  // Avoid consecutive duplicate if multiple candidates are available
+  if (candidates.length > 1 && lastSymbol && candidates.includes(lastSymbol)) {
+    candidates = candidates.filter((id) => id !== lastSymbol);
   }
 
   const randomIndex = Math.floor(Math.random() * candidates.length);
@@ -154,16 +159,16 @@ export function getUniqueThematicAvatar(
 
 /**
  * Deterministically pick an avatar for fallback consistency based on player id/name
- * using the 4 primary card suits and FNV-1a distribution.
+ * using the full 14-symbol pool and FNV-1a distribution.
  */
 export function getDeterministicThematicAvatar(seed: string): ThematicAvatarId {
   const hash = getRobustHash(seed);
-  return FOUR_SUITS[hash % FOUR_SUITS.length];
+  return THEMATIC_AVATARS[hash % THEMATIC_AVATARS.length];
 }
 
 // Backwards-compatible aliases
-export type CardSuit = "spade" | "heart" | "club" | "diamond";
-export const CARD_SUITS = FOUR_SUITS;
+export type CardSuit = ThematicAvatarId;
+export const CARD_SUITS = THEMATIC_AVATARS;
 export const getRandomSuit = () => getUniqueThematicAvatar([]);
 export const isSuitAvatar = isThematicAvatar;
 export const parseSuit = parseThematicAvatar;

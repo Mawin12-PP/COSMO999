@@ -102,8 +102,9 @@ export function PlayerModal({
           image: previewImage ?? player.image,
         });
       } else {
-        // Automatically assign persistent random card game avatar if no image uploaded
-        const finalImage = previewImage || `suit:${assignedAvatar}`;
+        // Automatically assign persistent unique thematic avatar if no image uploaded
+        const chosenAvatar = assignedAvatar || getUniqueThematicAvatar(existingPlayers.map((p) => p.image));
+        const finalImage = previewImage || `suit:${chosenAvatar}`;
         await createPlayer(trimmed, finalImage);
       }
       onClose();
