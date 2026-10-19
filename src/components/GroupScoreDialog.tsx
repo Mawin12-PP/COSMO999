@@ -6,7 +6,6 @@
 // active:scale-95 feedback, and iOS Grouped List.
 import { useEffect, useMemo, useRef } from "react";
 import {
-  BarChart2,
   Crown,
   Gamepad2,
   PiggyBank,
@@ -110,28 +109,20 @@ export function GroupScoreDialog({
     >
       <div className="flex flex-col gap-5 p-5 sm:p-6">
         {/* Header */}
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <span className="grid size-8 place-items-center rounded-full bg-blue-50 dark:bg-blue-500/15 text-[#007AFF] dark:text-[#2E8BFF] shadow-xs">
-                <BarChart2 className="size-4 shrink-0" aria-hidden />
-              </span>
-              <h2 id="group-score-title" className="text-base font-semibold leading-snug text-[#1C1C1E] dark:text-[#F2F2F7]">
-                คะแนนรวมกลุ่ม: {group.name}
-              </h2>
-            </div>
-            {stats ? (
-              <p className="mt-1 flex items-center gap-1.5 text-xs text-[#8E8E93] dark:text-[#98989D]">
-                <Gamepad2 className="size-3.5 shrink-0" aria-hidden />
-                ดวลกันไปแล้วทั้งหมด {formatNumber(stats.totalRounds)} รอบ
-              </p>
-            ) : null}
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <span className="grid size-8 shrink-0 place-items-center rounded-full bg-blue-50 dark:bg-blue-500/15 text-[#007AFF] dark:text-[#2E8BFF] shadow-xs">
+              <Gamepad2 className="size-4 shrink-0" aria-hidden />
+            </span>
+            <h2 id="group-score-title" className="text-base font-semibold leading-snug text-[#1C1C1E] dark:text-[#F2F2F7] truncate">
+              {stats ? `ดวลกันไปแล้วทั้งหมด ${formatNumber(stats.totalRounds)} รอบ` : "สถิติกลุ่ม"}
+            </h2>
           </div>
           <button
             type="button"
             onClick={dismiss}
             aria-label="ปิด"
-            className="flex size-11 min-h-[44px] min-w-[44px] items-center justify-center -mr-2 -mt-2 rounded-full text-[#8E8E93] dark:text-[#98989D] transition-all duration-200 ease-out active:scale-[0.97] hover:bg-black/[0.04] hover:text-[#1C1C1E] dark:hover:bg-white/[0.06] dark:hover:text-[#F2F2F7]"
+            className="flex size-11 min-h-[44px] min-w-[44px] items-center justify-center -mr-2 rounded-full text-[#8E8E93] dark:text-[#98989D] transition-all duration-200 ease-out active:scale-[0.97] hover:bg-black/[0.04] hover:text-[#1C1C1E] dark:hover:bg-white/[0.06] dark:hover:text-[#F2F2F7]"
           >
             <X className="size-5" />
           </button>
