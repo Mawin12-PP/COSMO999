@@ -31,6 +31,7 @@ export default function HomePage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
+        {/* Column 1: Round Setup */}
         <div className="flex flex-col gap-6">
           <div className="reveal">
             <RoundSetup
@@ -40,15 +41,17 @@ export default function HomePage() {
               presetTrigger={presetTrigger}
             />
           </div>
+        </div>
 
+        {/* Column 2: Latest Round Summary (top) + Manage Players (below) */}
+        <div className="flex flex-col gap-6">
           <LatestRoundCard
             history={history}
             players={players}
             onPlayAgain={handlePlayAgain}
           />
-        </div>
 
-        <section className="reveal flex flex-col gap-4">
+          <section className="reveal flex flex-col gap-4">
           {/* Card Container for Managing & Adding Players */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-[20px] border border-black/[0.04] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] p-5 sm:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none transition-all">
             <div className="flex items-center gap-3">
@@ -101,6 +104,7 @@ export default function HomePage() {
           />
         </section>
       </div>
+    </div>
 
       {/* Global Modals: Root level (outside 2-column layout) with full-screen blur backdrop */}
       <PlayerModal
