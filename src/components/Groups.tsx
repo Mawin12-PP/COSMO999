@@ -12,24 +12,15 @@ import {
   Pencil,
   Play,
   TriangleAlert,
-  Users,
 } from "lucide-react";
 import { EditGroupDialog } from "@/components/EditGroupDialog";
 import { GroupScoreDialog } from "@/components/GroupScoreDialog";
+import { PlayerAvatar } from "@/components/PlayerAvatar";
 import { useGroups } from "@/hooks/useGroups";
 import { useHistory } from "@/hooks/useHistory";
 import { usePlayers } from "@/hooks/usePlayers";
 import { deleteGroup, renameGroup } from "@/lib/groups";
 import type { Group, Player } from "@/types/models";
-
-function memberLabel(playerIds: string[], players: Player[]): string {
-  return playerIds
-    .map((id) => {
-      const p = players.find((x) => x.id === id);
-      return p ? p.name : "(ถูกลบ)";
-    })
-    .join(" • ");
-}
 
 function GroupCard({
   group,
@@ -53,17 +44,27 @@ function GroupCard({
 
   return (
     <article className="reveal flex flex-col justify-between gap-5 rounded-[20px] border border-black/[0.04] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] p-5 sm:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all">
-      {/* Group name + member list */}
-      <div className="flex items-start gap-3.5">
-        <span className="grid size-10 shrink-0 place-items-center rounded-full bg-blue-50 dark:bg-blue-500/15 text-[#007AFF] dark:text-[#2E8BFF] shadow-xs">
-          <Users className="size-5" aria-hidden />
-        </span>
-        <div className="min-w-0 flex-1">
-          <h2 className="truncate text-base font-semibold tracking-tight text-[#1C1C1E] dark:text-[#F2F2F7]">{group.name}</h2>
-          <p className="mt-1 text-xs text-[#8E8E93] dark:text-[#98989D] leading-relaxed">
-            {memberLabel(group.playerIds, players)}
-          </p>
-        </div>
+      {/* Group member profile avatars in 1 single row */}
+      <div className="flex items-center gap-2.5 overflow-x-auto no-scrollbar py-0.5">
+        {group.playerIds.map((id) => {
+          const player = players.find((x) => x.id === id);
+          if (!player) {
+            return (
+              <span
+                key={id}
+                title="ผู้เล่นถูกลบ"
+                className="flex size-11 shrink-0 items-center justify-center rounded-full border border-dashed border-black/[0.1] dark:border-white/20 bg-black/[0.04] dark:bg-white/5 text-xs text-[#8E8E93] dark:text-[#98989D]"
+              >
+                ?
+              </span>
+            );
+          }
+          return (
+            <div key={player.id} className="relative shrink-0" title={player.name}>
+              <PlayerAvatar player={player} className="size-11 text-base shadow-xs" />
+            </div>
+          );
+        })}
       </div>
 
       {/* Play error */}

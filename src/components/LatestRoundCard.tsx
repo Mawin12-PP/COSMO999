@@ -90,11 +90,6 @@ export function LatestRoundCard({
         </div>
       </div>
 
-      {/* Group Name */}
-      <div className="flex items-center justify-between gap-2 border-b border-black/[0.04] dark:border-[#38383A] pb-3 text-sm">
-        <span className="text-xs font-semibold uppercase tracking-wider text-[#8E8E93] dark:text-[#98989D]">กลุ่ม:</span>
-        <span className="font-semibold text-[#1C1C1E] dark:text-[#F2F2F7]">{latestMatch.groupName}</span>
-      </div>
 
       {/* Player Scores Grid */}
       <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
