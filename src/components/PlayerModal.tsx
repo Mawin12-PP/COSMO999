@@ -257,7 +257,7 @@ export function PlayerModal({
               ) : (
                 <UserPlus className="size-4.5" />
               )}
-              {pending ? "กำลังบันทึก..." : isEdit ? "บันทึกข้อมูล" : "เชิญตัวตึงเข้าตี้"}
+              {pending ? "กำลังบันทึก..." : isEdit ? "บันทึกข้อมูล" : "เพิ่มผู้เล่น"}
             </button>
             <button
               type="button"

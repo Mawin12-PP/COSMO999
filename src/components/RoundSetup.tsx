@@ -212,7 +212,7 @@ function RoundSetupInner({
               : "bg-gray-300 text-gray-500 dark:bg-gray-800 dark:text-gray-400 cursor-not-allowed shadow-none"
           }`}
         >
-          ลุยดิวะ!
+          เริ่ม
           <ArrowRight className="size-4.5" />
         </button>
         {!enoughPlayers ? (

@@ -136,7 +136,7 @@ export function PreviewDialog({
             className="flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-full bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] px-6 py-3 text-base font-semibold text-white shadow-lg shadow-blue-500/25 transition-all duration-200 ease-out active:scale-[0.97] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Check className="size-4.5" />
-            {saving ? "กำลังบันทึก..." : "ปิดจ๊อบ! ประจานเลย"}
+            {saving ? "กำลังบันทึก..." : "ยืนยันบันทึก"}
           </button>
           <button
             type="button"
@@ -144,7 +144,7 @@ export function PreviewDialog({
             disabled={saving}
             className="flex min-h-[48px] flex-1 items-center justify-center rounded-full border border-black/[0.06] dark:border-[#38383A] bg-white dark:bg-[#2C2C2E] px-6 py-3 text-base font-semibold text-[#1C1C1E] dark:text-[#F2F2F7] shadow-xs transition-all duration-200 ease-out active:scale-[0.97] hover:bg-gray-50 dark:hover:bg-[#38383A] disabled:cursor-not-allowed disabled:opacity-50"
           >
-            กลับไปแก้
+            แก้ไข
           </button>
         </div>
       </div>

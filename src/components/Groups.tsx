@@ -22,30 +22,47 @@ import { usePlayers } from "@/hooks/usePlayers";
 import { deleteGroup } from "@/lib/groups";
 import type { Group, Player } from "@/types/models";
 
-function GroupAvatarItem({ player }: { player: Player }) {
-  const [showTooltip, setShowTooltip] = useState(false);
+function GroupAvatarItem({
+  player,
+  isSelected,
+  onToggle,
+}: {
+  player: Player;
+  isSelected: boolean;
+  onToggle: () => void;
+}) {
+  const [hovered, setHovered] = useState(false);
+  const show = hovered || isSelected;
 
   return (
     <div
       className="relative shrink-0"
-      onMouseEnter={() => setShowTooltip(true)}
-      onMouseLeave={() => setShowTooltip(false)}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
     >
       <button
         type="button"
+        title={player.name}
+        aria-label={`ผู้เล่น ${player.name}`}
         onClick={(e) => {
           e.stopPropagation();
-          setShowTooltip((prev) => !prev);
+          onToggle();
         }}
-        className="rounded-full focus:outline-none focus:ring-2 focus:ring-[#007AFF]/40 cursor-pointer block"
-        aria-label={player.name}
+        className={`group relative rounded-full p-0.5 transition-all duration-200 cursor-pointer block active:scale-95 ${
+          isSelected
+            ? "ring-2 ring-[#007AFF] ring-offset-2 dark:ring-offset-[#1C1C1E] scale-105"
+            : "hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#007AFF]/40"
+        }`}
       >
         <PlayerAvatar player={player} className="size-11 text-base shadow-xs" />
       </button>
 
       {/* Floating Name Tooltip */}
-      {showTooltip && (
-        <div className="absolute -top-9 left-1/2 -translate-x-1/2 pointer-events-none z-30 whitespace-nowrap rounded-lg bg-[#1C1C1E] dark:bg-white px-2.5 py-1 text-xs font-semibold text-white dark:text-[#1C1C1E] shadow-lg animate-in fade-in zoom-in-95 duration-100">
+      {show && (
+        <div
+          role="tooltip"
+          className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 z-50 whitespace-nowrap rounded-lg bg-[#1C1C1E] dark:bg-white px-2.5 py-1 text-xs font-semibold text-white dark:text-[#1C1C1E] shadow-xl pointer-events-none animate-in fade-in zoom-in-95 duration-150"
+        >
           {player.name}
           <div className="absolute left-1/2 top-full -translate-x-1/2 border-4 border-transparent border-t-[#1C1C1E] dark:border-t-white" />
         </div>
@@ -67,6 +84,7 @@ function GroupCard({
   onScore: (groupId: string) => void;
   onEdit: (groupId: string) => void;
 }) {
+  const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
   const [playError, setPlayError] = useState<string | null>(null);
 
   function handlePlay() {
@@ -75,9 +93,12 @@ function GroupCard({
   }
 
   return (
-    <article className="reveal flex flex-col justify-between gap-5 rounded-[20px] border border-black/[0.04] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] p-5 sm:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all">
+    <article
+      onClick={() => setSelectedPlayerId(null)}
+      className="reveal flex flex-col justify-between gap-5 rounded-[20px] border border-black/[0.04] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] p-5 sm:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all"
+    >
       {/* Group member profile avatars in 1 single row */}
-      <div className="flex items-center gap-2.5 overflow-x-auto no-scrollbar py-0.5">
+      <div className="relative flex items-center gap-2 sm:gap-2.5 pt-7 pb-1 overflow-visible">
         {group.playerIds.map((id) => {
           const player = players.find((x) => x.id === id);
           if (!player) {
@@ -91,7 +112,16 @@ function GroupCard({
               </span>
             );
           }
-          return <GroupAvatarItem key={player.id} player={player} />;
+          return (
+            <GroupAvatarItem
+              key={player.id}
+              player={player}
+              isSelected={selectedPlayerId === player.id}
+              onToggle={() =>
+                setSelectedPlayerId((prev) => (prev === player.id ? null : player.id))
+              }
+            />
+          );
         })}
       </div>
 

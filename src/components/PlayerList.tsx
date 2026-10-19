@@ -95,10 +95,10 @@ export function PlayerList({
           </div>
           <div>
             <p className="font-semibold text-base text-[#1C1C1E] dark:text-[#F2F2F7]">
-              ยังไม่มีผู้เล่นในตี้
+              ยังไม่มีรายชื่อผู้เล่น
             </p>
             <p className="mt-1 text-xs text-[#8E8E93] dark:text-[#98989D]">
-              กดปุ่มด้านล่างเพื่อเพิ่มตัวตึงคนแรกเข้าสู่วง
+              กดปุ่มด้านล่างเพื่อเพิ่มผู้เล่นเข้าสู่ระบบ
             </p>
           </div>
           <button
