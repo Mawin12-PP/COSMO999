@@ -15,11 +15,18 @@ const prompt = Prompt({
 });
 
 export const metadata: Metadata = {
-  title: "COSMO999",
+  title: {
+    default: "COSMO999",
+    template: "%s | COSMO999",
+  },
   description: "กระดานนับแต้มไพ่ดัมมี่สำหรับวงเพื่อน เล่นเพื่อความบันเทิง",
   icons: {
-    icon: "/icon.svg",
-    apple: "/icon.svg",
+    icon: [
+      { url: "/icon.svg?v=3", type: "image/svg+xml" },
+      { url: "/favicon.ico?v=3", sizes: "any" },
+    ],
+    shortcut: "/icon.svg?v=3",
+    apple: "/icon.svg?v=3",
   },
 };
 
@@ -38,6 +45,11 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="th" className={prompt.variable} suppressHydrationWarning>
+      <head>
+        <link rel="icon" href="/icon.svg?v=3" type="image/svg+xml" />
+        <link rel="shortcut icon" href="/icon.svg?v=3" />
+        <link rel="apple-touch-icon" href="/icon.svg?v=3" />
+      </head>
       <body className="bg-[var(--background)] text-[var(--text-primary)] antialiased selection:bg-[#007AFF]/20 transition-colors duration-200">
         <ThemeProvider
           attribute="class"

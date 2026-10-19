@@ -93,20 +93,24 @@ export function AppNav() {
                   href={href}
                   onClick={() => setPendingIndex(index)}
                   aria-current={active ? "page" : undefined}
-                  className={`group flex min-h-[46px] flex-col items-center justify-center gap-1 rounded-full px-1 py-1 text-[10px] font-semibold transition-colors duration-200 ease-out active:scale-95 md:min-h-[44px] md:h-11 md:flex-row md:justify-start md:gap-3 md:rounded-xl md:px-4 md:py-3 md:text-sm ${
+                  aria-label={label}
+                  title={label}
+                  className={`group flex min-h-[44px] h-11 items-center justify-center rounded-full transition-colors duration-200 ease-out active:scale-95 md:flex-row md:justify-start md:gap-3 md:rounded-xl md:px-4 md:py-3 md:text-sm ${
                     active
                       ? "text-[#007AFF] font-bold"
                       : "text-[#8E8E93] dark:text-[#98989D] hover:text-[#1C1C1E] dark:hover:text-[#F2F2F7]"
                   }`}
                 >
                   <Icon
-                    className={`size-5 shrink-0 transition-all duration-200 ${
+                    className={`size-5.5 md:size-5 shrink-0 transition-all duration-200 ${
                       active
                         ? "text-[#007AFF] scale-105"
                         : "text-[#8E8E93] dark:text-[#98989D] group-hover:text-[#1C1C1E] dark:group-hover:text-[#F2F2F7]"
                     }`}
                   />
-                  <span className="leading-none transition-colors duration-200">{label}</span>
+                  <span className="sr-only md:not-sr-only md:inline leading-none transition-colors duration-200">
+                    {label}
+                  </span>
                 </Link>
               </li>
             );

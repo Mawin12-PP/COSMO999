@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 64 64">
+  <defs>
+    <!-- Soft card drop shadow for depth on both light and dark browser tabs -->
+    <filter id="card-shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="-1.5" dy="2.5" stdDeviation="2.5" flood-color="#000000" flood-opacity="0.38" />
+    </filter>
+    <filter id="back-shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="-0.5" dy="2" stdDeviation="2" flood-color="#000000" flood-opacity="0.22" />
+    </filter>
+  </defs>
+
+  <!-- Left Card: 2 of Clubs (2♣) tilted -9° -->
+  <g transform="rotate(-9 23 33)" filter="url(#back-shadow)">
+    <!-- White Card Background with crisp dark border -->
+    <rect x="9" y="11" width="28" height="42" rx="5" fill="#FFFFFF" stroke="#1C1C1E" stroke-width="1.8" />
+    <!-- Rank 2 -->
+    <text x="13" y="24" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="900" font-size="12" fill="#1C1C1E" letter-spacing="-0.5">2</text>
+    <!-- Club (♣) Icon in center -->
+    <g transform="translate(13.5, 23.5) scale(0.68)">
+      <!-- Top lobe -->
+      <circle cx="14" cy="11.5" r="4.2" fill="#1C1C1E"/>
+      <!-- Left lobe -->
+      <circle cx="9.8" cy="18.2" r="4.2" fill="#1C1C1E"/>
+      <!-- Right lobe -->
+      <circle cx="18.2" cy="18.2" r="4.2" fill="#1C1C1E"/>
+      <!-- Center filler -->
+      <circle cx="14" cy="16" r="3.2" fill="#1C1C1E"/>
+      <!-- Stem / base -->
+      <path d="M12.5 17.5 L11 25.5 H17 L15.5 17.5 Z" fill="#1C1C1E"/>
+    </g>
+  </g>
+
+  <!-- Right Card: Q of Spades (Q♠) tilted +9° overlapping left card -->
+  <g transform="rotate(9 41 33)" filter="url(#card-shadow)">
+    <!-- White Card Background with crisp dark border -->
+    <rect x="27" y="11" width="28" height="42" rx="5" fill="#FFFFFF" stroke="#1C1C1E" stroke-width="1.8" />
+    <!-- Rank Q -->
+    <text x="30.5" y="24" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="900" font-size="12" fill="#1C1C1E" letter-spacing="-0.5">Q</text>
+    <!-- Spade (♠) Icon in center -->
+    <g transform="translate(30.5, 21.5) scale(0.68)">
+      <path d="M15 7.5 c 0 0 -7.5 5.8 -7.5 10.6 a 4.3 4.3 0 0 0 6.6 3.6 c -.26 2 -1.4 3.7 -2.6 4.5 h 7 c -1.2 -.8 -2.4 -2.5 -2.6 -4.5 a 4.3 4.3 0 0 0 6.6 -3.6 C 22.5 13.3 15 7.5 15 7.5 Z" fill="#1C1C1E"/>
+    </g>
+  </g>
+</svg>

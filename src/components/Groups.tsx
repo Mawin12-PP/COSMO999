@@ -4,7 +4,7 @@
 // playThisGroup (L682), showGroupScore (L1484), and editGroup (L1530).
 // Mobile-first iOS guidelines: min 44px+ touch targets on all interactive controls,
 // active:scale-95 feedback, and responsive grid layout (1 col on iPhone, 2 cols on iPad).
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ClipboardList,
@@ -210,6 +210,29 @@ export function Groups() {
     setEditError(null);
   }
 
+  // Count how many rounds each group has played in history
+  const groupPlayCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const entry of history) {
+      if (entry.groupId) {
+        counts[entry.groupId] = (counts[entry.groupId] ?? 0) + 1;
+      }
+    }
+    return counts;
+  }, [history]);
+
+  // Sort groups: most played groups first, then alphabetically by name
+  const sortedGroups = useMemo(() => {
+    return [...groups].sort((a, b) => {
+      const countA = groupPlayCounts[a.id] ?? 0;
+      const countB = groupPlayCounts[b.id] ?? 0;
+      if (countB !== countA) {
+        return countB - countA;
+      }
+      return a.name.localeCompare(b.name, "th");
+    });
+  }, [groups, groupPlayCounts]);
+
   const scoreGroup = scoreGroupId
     ? (groups.find((g) => g.id === scoreGroupId) ?? null)
     : null;
@@ -225,7 +248,7 @@ export function Groups() {
           ขาประจำ
         </h1>
         <p className="mt-1 text-sm text-[#8E8E93] dark:text-[#98989D]">
-          {groups.length > 0 ? `${groups.length} กลุ่ม` : "\u00a0"}
+          {sortedGroups.length > 0 ? `${sortedGroups.length} กลุ่ม` : "\u00a0"}
         </p>
       </div>
 
@@ -250,7 +273,7 @@ export function Groups() {
             กรุณาตรวจสอบอินเทอร์เน็ตแล้วรีเฟรชหน้า
           </p>
         </div>
-      ) : groups.length === 0 ? (
+      ) : sortedGroups.length === 0 ? (
         <div className="flex flex-col items-center gap-4 rounded-[20px] border border-black/[0.04] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] p-12 text-center text-[#8E8E93] dark:text-[#98989D] shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
           <div className="grid size-14 place-items-center rounded-full bg-black/[0.04] dark:bg-white/[0.06] text-[#8E8E93] dark:text-[#98989D]">
             <ClipboardList className="size-7" aria-hidden />
@@ -265,7 +288,7 @@ export function Groups() {
       ) : (
         /* Group cards grid (1 col on iPhone, 2 cols on iPad/desktop) */
         <ul className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          {groups.map((group) => (
+          {sortedGroups.map((group) => (
             <li key={group.id}>
               <GroupCard
                 group={group}

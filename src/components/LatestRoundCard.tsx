@@ -21,9 +21,8 @@ function formatScore(score: number): string {
 
 export function getPlayerGridCols(count: number): string {
   if (count === 2) return "grid-cols-2";
-  if (count === 3) return "grid-cols-1 sm:grid-cols-3";
-  if (count === 4) return "grid-cols-2 sm:grid-cols-4";
-  if (count === 5) return "grid-cols-2 sm:grid-cols-5";
+  if (count === 3) return "grid-cols-3";
+  if (count === 4) return "grid-cols-2";
   return "grid-cols-2 sm:grid-cols-3";
 }
 
@@ -111,7 +110,7 @@ export function LatestRoundCard({
             <div
               key={pId}
               title={player ? player.name : undefined}
-              className={`flex min-h-[44px] sm:min-h-[48px] items-center justify-between gap-1.5 sm:gap-2 rounded-2xl border px-2.5 sm:px-3 py-1.5 sm:py-2 transition-all min-w-0 ${
+              className={`flex min-h-[38px] sm:min-h-[42px] items-center justify-center gap-2 sm:gap-2.5 rounded-full border px-3 py-1.5 transition-all min-w-0 ${
                 isWinner
                   ? "border-green-300/60 dark:border-green-800/60 bg-green-50/70 dark:bg-green-950/30 shadow-2xs"
                   : isLoser
@@ -120,14 +119,14 @@ export function LatestRoundCard({
               }`}
             >
               {player ? (
-                <PlayerAvatar player={player} className="size-7.5 sm:size-8 text-xs shrink-0" />
+                <PlayerAvatar player={player} className="size-7 sm:size-7.5 text-xs shrink-0" />
               ) : (
-                <span className="flex size-7.5 sm:size-8 shrink-0 items-center justify-center rounded-full border border-black/[0.06] dark:border-[#38383A] bg-black/[0.04] dark:bg-[#2C2C2E] text-xs text-[#8E8E93] dark:text-[#98989D]">
+                <span className="flex size-7 sm:size-7.5 shrink-0 items-center justify-center rounded-full border border-black/[0.06] dark:border-[#38383A] bg-black/[0.04] dark:bg-[#2C2C2E] text-xs text-[#8E8E93] dark:text-[#98989D]">
                   ?
                 </span>
               )}
               <span
-                className={`text-xs sm:text-sm font-bold tabular-nums text-right shrink-0 ${scoreTone(
+                className={`text-xs sm:text-sm font-bold tabular-nums text-center shrink-0 ${scoreTone(
                   score,
                 )}`}
               >
