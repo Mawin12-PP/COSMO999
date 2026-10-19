@@ -98,7 +98,7 @@ export function computePeriodPlayerStats(
           stat.maxWinStreak = currentWinStreakMap[playerId];
         }
         currentLoseStreakMap[playerId] = 0;
-        if (round.multiplier >= 5) {
+        if (round.multiplier >= 20) {
           stat.highMultiplierWins += 1;
         }
       } else {
@@ -131,6 +131,8 @@ export interface PersonalTitleOptions {
   isAllTime?: boolean;
   championCount?: number;
   maxChampionCountInGroup?: number;
+  maxBestRoundInGroup?: number;
+  minWorstRoundInGroup?: number;
 }
 
 /**
@@ -141,14 +143,17 @@ export function getPersonalTitle(
   stat: PlayerPeriodStat | undefined,
   rank: number,
   totalRanked: number,
-  maxRoundsInGroup: number,
+  maxRoundsInGroup?: number,
   options?: PersonalTitleOptions,
 ): PersonalTitle {
   const isAllTime = options?.isAllTime ?? false;
   const championCount = options?.championCount ?? 0;
   const maxChampionCountInGroup = options?.maxChampionCountInGroup ?? 0;
+  const maxBestRoundInGroup = options?.maxBestRoundInGroup ?? 0;
+  const minWorstRoundInGroup = options?.minWorstRoundInGroup ?? 0;
 
-  if (!stat || stat.roundsPlayed <= 1) {
+  // ผู้เล่นที่ยังไม่ได้ลงสนาม
+  if (!stat || stat.roundsPlayed === 0) {
     return {
       id: "spectator",
       title: "รอดูเชิง",
@@ -158,7 +163,7 @@ export function getPersonalTitle(
     };
   }
 
-  // 1. ตำแหน่งสำคัญของตาราง: หัวแถว / ท้ายตาราง / ตู้โชว์ถ้วย
+  // 1. อันดับ 1: หัวตาราง (ตลอดกาล / งวด)
   if (isAllTime && rank === 1 && stat.netScore > 0) {
     return {
       id: "all_time_leader",
@@ -179,6 +184,7 @@ export function getPersonalTitle(
     };
   }
 
+  // 2. ตู้โชว์ถ้วย (เฉพาะ all-time)
   if (isAllTime && championCount >= 2 && championCount === maxChampionCountInGroup) {
     return {
       id: "trophy_master",
@@ -189,6 +195,7 @@ export function getPersonalTitle(
     };
   }
 
+  // 3. ท้ายตาราง: หมูแจกแต้ม (คนที่ได้น้อยสุดของอันดับ โดยไม่มีเงื่อนไขขั้นต่ำของจำนวนตา)
   if (isAllTime && totalRanked >= 2 && rank === totalRanked) {
     return {
       id: "all_time_sponsor",
@@ -209,102 +216,39 @@ export function getPersonalTitle(
     };
   }
 
-  // 2. สถิติต่อเนื่อง: มือขึ้นจัด / ดวงยังไม่ตื่น
-  if (stat.maxWinStreak >= 3) {
-    return {
-      id: "win_streak",
-      title: "มือขึ้นจัด",
-      description: `ชนะติดต่อกัน ${stat.maxWinStreak} ตาติด กำลังเข้าฝัก`,
-      iconName: "Flame",
-      tone: "accent",
-    };
-  }
-
-  if (
-    stat.maxLoseStreak >= 3 ||
-    (stat.losses >= 3 && stat.losses / stat.roundsPlayed >= 0.7 && stat.netScore < 0)
-  ) {
-    return {
-      id: "lose_streak",
-      title: "ดวงยังไม่ตื่น",
-      description: "โดนต่อเนื่อง จังหวะยังไม่มา",
-      iconName: "ShieldAlert",
-      tone: "danger",
-    };
-  }
-
-  // 3. สถิติตาเดียวสุดโต่ง: ดอกเดียวอิ่ม / ดอกเดียวจุก
-  if (stat.bestRound >= 150) {
+  // 4. สถิติตาเดียวสุดพีค: ดอกเดียวอิ่ม / ดอกเดียวจุก (ได้หรือเสียมากที่สุดของงวดนั้นๆ หรือ all time)
+  if (maxBestRoundInGroup > 0 && stat.bestRound === maxBestRoundInGroup) {
     return {
       id: "best_round",
       title: "ดอกเดียวอิ่ม",
-      description: `เคยทำคะแนนตาเดียวสูงถึง +${stat.bestRound} คะแนน`,
+      description: isAllTime
+        ? `ทำแต้มในตาเดียวสูงสุดตลอดกาล (+${stat.bestRound})`
+        : `ทำแต้มในตาเดียวสูงสุดประจำงวด (+${stat.bestRound})`,
       iconName: "Sparkles",
       tone: "accent",
     };
   }
 
-  if (stat.worstRound <= -100) {
+  if (minWorstRoundInGroup < 0 && stat.worstRound === minWorstRoundInGroup) {
     return {
       id: "worst_round",
       title: "ดอกเดียวจุก",
-      description: `เคยโดนตาดอกเดียวถล่มไป ${stat.worstRound} คะแนน`,
+      description: isAllTime
+        ? `เสียแต้มในตาเดียวหนักสุดตลอดกาล (${stat.worstRound})`
+        : `เสียแต้มในตาเดียวหนักสุดประจำงวด (${stat.worstRound})`,
       iconName: "ShieldAlert",
       tone: "danger",
     };
   }
 
-  // 4. สถิติจังหวะฝีมือ: สายคูณหนัก / คมจัด
-  if (stat.highMultiplierWins >= 1) {
+  // 5. สถิติจังหวะฝีมือ: ชนะรอบตัวคูณ x20 ขึ้นไป 5 รอบขึ้นไป
+  if (stat.highMultiplierWins >= 5) {
     return {
       id: "high_multiplier",
       title: "สายคูณหนัก",
-      description: "ชอบของแรง ชนะในรอบตัวคูณ x5 ขึ้นไป",
+      description: `ชอบของแรง ชนะในรอบตัวคูณ x20 ขึ้นไปสะสม ${stat.highMultiplierWins} รอบ`,
       iconName: "Zap",
       tone: "accent",
-    };
-  }
-
-  const minRoundsForWinRate = isAllTime ? 5 : 3;
-  if (stat.roundsPlayed >= minRoundsForWinRate && stat.winRate >= 50) {
-    return {
-      id: "high_winrate",
-      title: "คมจัด",
-      description: `อัตราการชนะสูงถึง ${stat.winRate.toFixed(0)}% ลงไม่เยอะแต่เก็บเรียบ`,
-      iconName: "Target",
-      tone: "accent",
-    };
-  }
-
-  // 5. สไตล์การเอาตัวรอด: ขาประจำไม่ยอมลุก / หลบกระสุนเก่ง / มาเอาสังคม
-  if (stat.roundsPlayed >= 3 && stat.roundsPlayed === maxRoundsInGroup) {
-    return {
-      id: "iron_player",
-      title: "ขาประจำไม่ยอมลุก",
-      description: `ลงเล่นมากที่สุดถึง ${stat.roundsPlayed} ตา อยู่ยันจบ`,
-      iconName: "Activity",
-      tone: "accent",
-    };
-  }
-
-  const nonLossRate = (stat.wins + stat.zeros) / stat.roundsPlayed;
-  if (stat.roundsPlayed >= 3 && nonLossRate >= 0.65) {
-    return {
-      id: "evader",
-      title: "หลบกระสุนเก่ง",
-      description: "เอาตัวรอดเนียน กินแต้มยาก รอดได้เกือบทุกตา",
-      iconName: "Shield",
-      tone: "success",
-    };
-  }
-
-  if (stat.roundsPlayed >= 3 && stat.netScore >= -5 && stat.netScore <= 5) {
-    return {
-      id: "socializer",
-      title: "มาเอาสังคม",
-      description: "เล่นตั้งนานแต้มกลับมาที่เดิม ไม่เจ็บไม่รวย",
-      iconName: "Sun",
-      tone: "muted",
     };
   }
 

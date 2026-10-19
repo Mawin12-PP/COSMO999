@@ -50,9 +50,6 @@ function scoreTone(score: number): string {
   return "text-[#8E8E93]";
 }
 
-function formatSigned(score: number): string {
-  return score > 0 ? `+${score}` : `${score}`;
-}
 
 function usePulseOnChange(
   scores: Record<string, number>,
@@ -102,21 +99,6 @@ function usePulseOnChange(
   return pulsingIds;
 }
 
-function LatestScoreLabel({ latestScore }: { latestScore: number | null }) {
-  if (latestScore == null) {
-    return (
-      <p className="text-xs text-[#8E8E93]">รอบล่าสุด ยังไม่ได้เล่น</p>
-    );
-  }
-  return (
-    <p className="text-xs text-[#8E8E93]">
-      รอบล่าสุด{" "}
-      <span className={`font-semibold ${scoreTone(latestScore)}`}>
-        {formatSigned(latestScore)}
-      </span>
-    </p>
-  );
-}
 
 function TrophyBadge({ count }: { count: number }) {
   if (count <= 0) return null;
@@ -200,7 +182,6 @@ function PodiumCard({
   score,
   championCount,
   personalTitle,
-  showLatestScore,
   pulsing,
 }: {
   rank: 1 | 2 | 3;
@@ -208,7 +189,6 @@ function PodiumCard({
   score: number;
   championCount: number;
   personalTitle: PersonalTitle;
-  showLatestScore: boolean;
   pulsing: boolean;
 }) {
   const style = PODIUM_STYLE[rank];
@@ -255,11 +235,6 @@ function PodiumCard({
         value={score}
         className={`text-lg font-bold tabular-nums sm:text-xl ${scoreTone(score)}`}
       />
-
-      {/* Latest Score Label */}
-      {showLatestScore ? (
-        <LatestScoreLabel latestScore={player.latestScore} />
-      ) : null}
     </div>
   );
 }
@@ -267,7 +242,6 @@ function PodiumCard({
 function Podium({
   entries,
   pulsingIds,
-  showLatestScore,
 }: {
   entries: Array<{
     player: Player;
@@ -276,7 +250,6 @@ function Podium({
     personalTitle: PersonalTitle;
   }>;
   pulsingIds: Set<string>;
-  showLatestScore: boolean;
 }) {
   const slots: Array<1 | 2 | 3> = [2, 1, 3];
   return (
@@ -292,7 +265,6 @@ function Podium({
             score={entry.score}
             championCount={entry.championCount}
             personalTitle={entry.personalTitle}
-            showLatestScore={showLatestScore}
             pulsing={pulsingIds.has(entry.player.id)}
           />
         );
@@ -338,7 +310,6 @@ function LeaderboardRow({
   championCount,
   rank,
   personalTitle,
-  showLatestScore,
   pulsing,
 }: {
   player: Player;
@@ -346,7 +317,6 @@ function LeaderboardRow({
   championCount: number;
   rank: number;
   personalTitle: PersonalTitle;
-  showLatestScore: boolean;
   pulsing: boolean;
 }) {
   return (
@@ -373,9 +343,6 @@ function LeaderboardRow({
           <TrophyBadge count={championCount} />
           <PersonalTitleBadge title={personalTitle} />
         </div>
-        {showLatestScore ? (
-          <LatestScoreLabel latestScore={player.latestScore} />
-        ) : null}
       </div>
       <AnimatedNumber
         value={score}
@@ -711,13 +678,25 @@ export function Leaderboard() {
     );
   }
 
-  const showLatestScore = viewKey === "all";
   const roundsList = Object.values(periodStats).map((s) => s.roundsPlayed);
   const maxRoundsInGroup = roundsList.length > 0 ? Math.max(...roundsList) : 0;
   const isAllTime = viewKey === "all";
   const trophyCountsValues = Object.values(trophyCounts).map((t) => t.championCount);
   const maxChampionCountInGroup =
     trophyCountsValues.length > 0 ? Math.max(...trophyCountsValues) : 0;
+
+  const visibleStats = visiblePlayers
+    .map((p) => periodStats[p.id])
+    .filter(Boolean);
+  const bestRoundsList = visibleStats
+    .map((s) => s.bestRound)
+    .filter((score) => score > 0);
+  const maxBestRoundInGroup = bestRoundsList.length > 0 ? Math.max(...bestRoundsList) : 0;
+
+  const worstRoundsList = visibleStats
+    .map((s) => s.worstRound)
+    .filter((score) => score < 0);
+  const minWorstRoundInGroup = worstRoundsList.length > 0 ? Math.min(...worstRoundsList) : 0;
 
   const preScored = visiblePlayers.map((player) => ({
     player,
@@ -738,6 +717,8 @@ export function Leaderboard() {
         isAllTime,
         championCount: entry.championCount,
         maxChampionCountInGroup,
+        maxBestRoundInGroup,
+        minWorstRoundInGroup,
       },
     );
     return {
@@ -771,7 +752,6 @@ export function Leaderboard() {
       <Podium
         entries={podiumEntries}
         pulsingIds={pulsingIds}
-        showLatestScore={showLatestScore}
       />
 
       {/* Clean horizontal divider directly underneath top 3 podium */}
@@ -799,7 +779,6 @@ export function Leaderboard() {
                 championCount={entry.championCount}
                 rank={index + 4}
                 personalTitle={entry.personalTitle}
-                showLatestScore={showLatestScore}
                 pulsing={pulsingIds.has(entry.player.id)}
               />
             ))}

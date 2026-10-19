@@ -38,18 +38,6 @@ function ThematicIcon({ id, className = "size-5" }: { id: ThematicAvatarId; clas
       return <Club className={`${className} fill-current`} aria-hidden="true" />;
     case "diamond":
       return <Diamond className={`${className} fill-current`} aria-hidden="true" />;
-    case "speto-2":
-      return (
-        <span className="font-extrabold text-[12px] sm:text-[13px] tracking-tight flex items-center leading-none select-none">
-          2<Club className="size-3 fill-current ml-0.5" aria-hidden="true" />
-        </span>
-      );
-    case "speto-q":
-      return (
-        <span className="font-extrabold text-[12px] sm:text-[13px] tracking-tight flex items-center leading-none select-none">
-          Q<Spade className="size-3 fill-current ml-0.5" aria-hidden="true" />
-        </span>
-      );
     case "joker":
       return <Sparkles className={`${className}`} aria-hidden="true" />;
     case "king":
@@ -81,7 +69,13 @@ export function PlayerAvatar({
   const avatarId = parseThematicAvatar(player.image);
 
   // If a photo is stored (data URL or external URL, not a thematic token)
-  if (player.image && !avatarId) {
+  const isPhoto = Boolean(
+    player.image &&
+      !player.image.startsWith("suit:") &&
+      !avatarId,
+  );
+
+  if (isPhoto) {
     return (
       <span
         role="img"

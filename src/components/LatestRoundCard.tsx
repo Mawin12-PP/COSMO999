@@ -184,7 +184,7 @@ export function LatestRoundCard({
             const loserPlayer = players.find(p => p.id === randomLoser[0]);
             if (loserPlayer) {
               const randomTask = PENALTIES[Math.floor(Math.random() * PENALTIES.length)];
-              setPenalty(`กรรมตามสนอง! ${loserPlayer.name} ต้อง: ${randomTask}`);
+              setPenalty(`${loserPlayer.name} ต้อง: ${randomTask}`);
             }
           }}
           className="flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-full border border-red-200/80 dark:border-red-900/50 bg-red-50/70 dark:bg-red-950/30 px-5 py-3 text-sm font-semibold text-[#FF3B30] transition-all duration-200 ease-out active:scale-[0.97] hover:bg-red-100/80 dark:hover:bg-red-950/50"

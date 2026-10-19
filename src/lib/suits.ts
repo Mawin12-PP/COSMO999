@@ -1,27 +1,23 @@
 // Thematic Playing Card & Dummy Game Avatar definitions.
-// Supported avatars (14 unique card-game items):
+// Supported avatars (12 unique card-game items):
 // 1. Spade (♠ โพดำ)
 // 2. Heart (♥ โพแดง)
 // 3. Club (♣ ดอกจิก)
 // 4. Diamond (♦ ข้าวหลามตัด)
-// 5. Speto 2 (2♣ สเปโตสอง)
-// 6. Speto Q (Q♠ สเปโตแหม่ม)
-// 7. Joker (🃏 โจ๊กเกอร์)
-// 8. King (👑 คิง)
-// 9. Deck (🎴 สำรับไพ่)
-// 10. Dice (🎲 ลูกเต๋า)
-// 11. Chip (🪙 ชิปเดิมพัน)
-// 12. Fire (🔥 มือขึ้น)
-// 13. Shield (🛡️ สายเหนียว)
-// 14. Trophy (🏆 แชมป์วง)
+// 5. Joker (🃏 โจ๊กเกอร์)
+// 6. King (👑 คิง)
+// 7. Deck (🎴 สำรับไพ่)
+// 8. Dice (🎲 ลูกเต๋า)
+// 9. Chip (🪙 ชิปเดิมพัน)
+// 10. Fire (🔥 มือขึ้น)
+// 11. Shield (🛡️ สายเหนียว)
+// 12. Trophy (🏆 แชมป์วง)
 
 export type ThematicAvatarId =
   | "spade"
   | "heart"
   | "club"
   | "diamond"
-  | "speto-2"
-  | "speto-q"
   | "joker"
   | "king"
   | "deck"
@@ -36,8 +32,6 @@ export const THEMATIC_AVATARS: ThematicAvatarId[] = [
   "heart",
   "club",
   "diamond",
-  "speto-2",
-  "speto-q",
   "joker",
   "king",
   "deck",
@@ -54,8 +48,6 @@ export const THEMATIC_AVATAR_LABELS: Record<ThematicAvatarId, string> = {
   heart: "โพแดง ♥",
   club: "ดอกจิก ♣",
   diamond: "ข้าวหลามตัด ♦",
-  "speto-2": "สเปโต 2♣",
-  "speto-q": "สเปโต Q♠",
   joker: "โจ๊กเกอร์ 🃏",
   king: "คิง 👑",
   deck: "สำรับไพ่ 🎴",
@@ -102,9 +94,9 @@ export function getRobustHash(seed: string): number {
 
 /**
  * "Unique Smart Pick" (No Duplication Logic):
- * 1. Scans existing players in the current circle to see which of the 14 symbols are in use.
- * 2. Picks a symbol from the 14-symbol pool that is NOT currently being used.
- * 3. Only if all 14 symbols are already in use, falls back to picking the one with the lowest frequency count.
+ * 1. Scans existing players in the current circle to see which of the 12 symbols are in use.
+ * 2. Picks a symbol from the 12-symbol pool that is NOT currently being used.
+ * 3. Only if all 12 symbols are already in use, falls back to picking the one with the lowest frequency count.
  */
 export function getUniqueThematicAvatar(
   existingImages: (string | undefined | null)[],
@@ -114,8 +106,6 @@ export function getUniqueThematicAvatar(
     heart: 0,
     club: 0,
     diamond: 0,
-    "speto-2": 0,
-    "speto-q": 0,
     joker: 0,
     king: 0,
     deck: 0,
@@ -137,14 +127,14 @@ export function getUniqueThematicAvatar(
     }
   }
 
-  // 1. Pick among symbols in the 14-symbol pool that are NOT currently in use
+  // 1. Pick among symbols in the 12-symbol pool that are NOT currently in use
   const unused = THEMATIC_AVATARS.filter((id) => counts[id] === 0);
   if (unused.length > 0) {
     const randomIndex = Math.floor(Math.random() * unused.length);
     return unused[randomIndex];
   }
 
-  // 2. All 14 symbols are in use -> fallback to lowest frequency count
+  // 2. All 12 symbols are in use -> fallback to lowest frequency count
   const minCount = Math.min(...Object.values(counts));
   let candidates = THEMATIC_AVATARS.filter((id) => counts[id] === minCount);
 
@@ -159,7 +149,7 @@ export function getUniqueThematicAvatar(
 
 /**
  * Deterministically pick an avatar for fallback consistency based on player id/name
- * using the full 14-symbol pool and FNV-1a distribution.
+ * using the full 12-symbol pool and FNV-1a distribution.
  */
 export function getDeterministicThematicAvatar(seed: string): ThematicAvatarId {
   const hash = getRobustHash(seed);
