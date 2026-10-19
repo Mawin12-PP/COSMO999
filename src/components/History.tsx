@@ -173,9 +173,7 @@ export function History() {
             ประวัติการเล่น
           </h1>
           <p className="mt-1 text-xs sm:text-sm text-[#8E8E93] dark:text-[#98989D]">
-            {sorted.length > 0
-              ? `${sorted.length} รอบ — เรียงล่าสุดก่อน`
-              : "\u00a0"}
+            {sorted.length > 0 ? `${sorted.length} รอบ` : "\u00a0"}
           </p>
         </div>
         <button

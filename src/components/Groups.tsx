@@ -225,9 +225,7 @@ export function Groups() {
           ขาประจำ
         </h1>
         <p className="mt-1 text-sm text-[#8E8E93] dark:text-[#98989D]">
-          {groups.length > 0
-            ? `${groups.length} กลุ่ม — สร้างอัตโนมัติจากรอบที่เล่น`
-            : "\u00a0"}
+          {groups.length > 0 ? `${groups.length} กลุ่ม` : "\u00a0"}
         </p>
       </div>
 
