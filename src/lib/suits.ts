@@ -87,37 +87,50 @@ export function parseThematicAvatar(image?: string | null): ThematicAvatarId | n
   return null;
 }
 
+export const FOUR_SUITS: ThematicAvatarId[] = [
+  "spade",
+  "heart",
+  "club",
+  "diamond",
+];
+
 /**
- * Pick a random thematic avatar that is NOT yet used by any existing player in the room.
- * If all 14 avatars are already taken, falls back to a random pick from the full pool.
+ * Pick a thematic avatar evenly selected from the 4 primary card suits:
+ * Spade (♠), Heart (♥), Club (♣), Diamond (♦).
+ * It tracks frequency among existing players and selects from the least-used suit(s),
+ * breaking ties randomly. This guarantees uniform distribution with no unwanted repeats.
  */
 export function getUniqueThematicAvatar(
   existingImages: (string | undefined | null)[],
 ): ThematicAvatarId {
-  const usedAvatars = new Set<string>();
+  const counts: Record<"spade" | "heart" | "club" | "diamond", number> = {
+    spade: 0,
+    heart: 0,
+    club: 0,
+    diamond: 0,
+  };
+
   for (const img of existingImages) {
     if (!img) continue;
     const clean = img.replace(/^suit:/, "");
-    if (THEMATIC_AVATARS.includes(clean as ThematicAvatarId)) {
-      usedAvatars.add(clean);
+    if (clean in counts) {
+      counts[clean as keyof typeof counts]++;
     }
   }
 
-  // Filter avatars that haven't been claimed yet
-  const available = THEMATIC_AVATARS.filter((id) => !usedAvatars.has(id));
+  // Find minimum count among the 4 suits to distribute evenly
+  const minCount = Math.min(...Object.values(counts));
+  const candidates = (Object.keys(counts) as ("spade" | "heart" | "club" | "diamond")[]).filter(
+    (suit) => counts[suit] === minCount,
+  );
 
-  if (available.length > 0) {
-    const randomIndex = Math.floor(Math.random() * available.length);
-    return available[randomIndex];
-  }
-
-  // Fallback when player count exceeds available avatar pool
-  const fallbackIndex = Math.floor(Math.random() * THEMATIC_AVATARS.length);
-  return THEMATIC_AVATARS[fallbackIndex];
+  const randomIndex = Math.floor(Math.random() * candidates.length);
+  return candidates[randomIndex];
 }
 
 /**
- * Deterministically pick an avatar for fallback consistency based on player id/name.
+ * Deterministically pick an avatar for fallback consistency based on player id/name
+ * using the 4 primary card suits.
  */
 export function getDeterministicThematicAvatar(seed: string): ThematicAvatarId {
   let hash = 0;
@@ -125,12 +138,12 @@ export function getDeterministicThematicAvatar(seed: string): ThematicAvatarId {
     hash = (hash << 5) - hash + seed.charCodeAt(i);
     hash |= 0;
   }
-  return THEMATIC_AVATARS[Math.abs(hash) % THEMATIC_AVATARS.length];
+  return FOUR_SUITS[Math.abs(hash) % FOUR_SUITS.length];
 }
 
 // Backwards-compatible aliases
-export type CardSuit = ThematicAvatarId;
-export const CARD_SUITS = THEMATIC_AVATARS;
+export type CardSuit = "spade" | "heart" | "club" | "diamond";
+export const CARD_SUITS = FOUR_SUITS;
 export const getRandomSuit = () => getUniqueThematicAvatar([]);
 export const isSuitAvatar = isThematicAvatar;
 export const parseSuit = parseThematicAvatar;

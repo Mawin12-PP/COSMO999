@@ -154,7 +154,7 @@ export function StatsCharts({
           <ResponsiveContainer width="100%" height={220}>
             <LineChart
               data={roundData}
-              margin={{ top: 20, right: 16, bottom: 8, left: 0 }}
+              margin={{ top: 20, right: 16, bottom: 8, left: -10 }}
             >
               <CartesianGrid
                 strokeDasharray="3 3"
@@ -167,7 +167,13 @@ export function StatsCharts({
                 axisLine={false}
                 tickLine={false}
               />
-              <YAxis hide />
+              <YAxis
+                tick={{ fill: mutedColour, fontSize: 10 }}
+                axisLine={false}
+                tickLine={false}
+                width={40}
+                tickFormatter={(val: number) => `${val}`}
+              />
               <ReferenceLine y={0} stroke={mutedColour} strokeDasharray="4 2" />
               <Tooltip
                 content={<RoundScoreTooltip />}
@@ -208,7 +214,7 @@ export function StatsCharts({
           <ResponsiveContainer width="100%" height={220}>
             <AreaChart
               data={cumulativeData}
-              margin={{ top: 20, right: 16, bottom: 8, left: 0 }}
+              margin={{ top: 20, right: 16, bottom: 8, left: -10 }}
             >
               <defs>
                 <linearGradient id="cumGradient" x1="0" y1="0" x2="0" y2="1">
@@ -235,7 +241,13 @@ export function StatsCharts({
                 axisLine={false}
                 tickLine={false}
               />
-              <YAxis hide />
+              <YAxis
+                tick={{ fill: mutedColour, fontSize: 10 }}
+                axisLine={false}
+                tickLine={false}
+                width={40}
+                tickFormatter={(val: number) => `${val}`}
+              />
               <ReferenceLine y={0} stroke={mutedColour} strokeDasharray="4 2" />
               <Tooltip
                 content={<CumulativeScoreTooltip />}

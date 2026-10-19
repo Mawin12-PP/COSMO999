@@ -35,17 +35,19 @@ function scoreTone(score: number): string {
 function HistoryRow({
   entry,
   players,
+  roundNumber,
   onUndo,
 }: {
   entry: HistoryEntry;
   players: Player[];
+  roundNumber: number;
   onUndo: (matchId: string) => void;
 }) {
   const timeStr = new Date(entry.timestamp).toLocaleString("th-TH");
 
   return (
     <article className="flex flex-col gap-3.5 p-4 sm:p-5 transition-colors hover:bg-black/[0.015] dark:hover:bg-white/[0.02]">
-      {/* Header row: time + group name + multiplier badge */}
+      {/* Header row: time + round number + multiplier badge */}
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-1.5 text-xs text-[#8E8E93] dark:text-[#98989D]">
@@ -55,7 +57,7 @@ function HistoryRow({
             </time>
           </div>
           <h3 className="text-base font-semibold text-[#1C1C1E] dark:text-[#F2F2F7]">
-            {entry.groupName}
+            รอบที่ #{roundNumber}
           </h3>
         </div>
         <span className="shrink-0 inline-flex items-center rounded-full bg-[#007AFF]/10 dark:bg-[#007AFF]/20 border border-[#007AFF]/25 px-2.5 py-0.5 text-xs font-semibold tabular-nums text-[#007AFF]">
@@ -222,11 +224,12 @@ export function History() {
       ) : (
         /* iOS Grouped List */
         <div className="overflow-hidden rounded-[20px] border border-black/[0.05] dark:border-white/[0.08] bg-white dark:bg-[#1C1C1E] shadow-[0_4px_24px_rgba(0,0,0,0.04)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.25)] divide-y divide-gray-100 dark:divide-white/[0.06]">
-          {sorted.map((entry) => (
+          {sorted.map((entry, index) => (
             <HistoryRow
               key={entry.id}
               entry={entry}
               players={players}
+              roundNumber={sorted.length - index}
               onUndo={handleUndoRequest}
             />
           ))}

@@ -206,7 +206,11 @@ function RoundSetupInner({
           type="button"
           onClick={handleProceed}
           disabled={!enoughPlayers}
-          className="flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] px-6 py-3.5 text-base font-semibold text-white shadow-lg shadow-blue-500/25 transition-all duration-200 ease-out hover:opacity-90 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none"
+          className={`flex min-h-[48px] items-center justify-center gap-2 rounded-full px-6 py-3.5 text-base font-semibold transition-all duration-200 ease-out ${
+            enoughPlayers
+              ? "bg-[#007AFF] text-white shadow-lg shadow-blue-500/25 hover:bg-[#0062cc] active:scale-[0.97] cursor-pointer"
+              : "bg-gray-300 text-gray-500 dark:bg-gray-800 dark:text-gray-400 cursor-not-allowed shadow-none"
+          }`}
         >
           ลุยดิวะ!
           <ArrowRight className="size-4.5" />

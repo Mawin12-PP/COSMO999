@@ -31,10 +31,10 @@ function formatScore(score: number): string {
 }
 
 function rankTone(rank: number): string {
-  if (rank === 1) return "text-[#007AFF] font-bold";
-  if (rank === 2) return "text-[#8E8E93] font-semibold";
-  if (rank === 3) return "text-[#C4975A] font-semibold";
-  return "text-[#8E8E93]";
+  if (rank === 1) return "text-yellow-500 font-bold";
+  if (rank === 2) return "text-gray-400 font-semibold";
+  if (rank === 3) return "text-amber-700 dark:text-amber-500 font-semibold";
+  return "text-[#8E8E93] dark:text-[#98989D]";
 }
 
 function Badge({
@@ -198,10 +198,7 @@ export function GroupScoreDialog({
                   ) : null}
                   {record ? (
                     <p className="mt-0.5 text-xs tabular-nums text-[#8E8E93] dark:text-[#98989D]">
-                      ชนะ {record.wins} • แพ้ {record.losses}
-                      {record.winRate !== null
-                        ? ` (${Math.round(record.winRate)}%)`
-                        : ""}
+                      ชนะ {record.wins} - แพ้ {record.losses}
                     </p>
                   ) : null}
                 </div>

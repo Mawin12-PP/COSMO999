@@ -341,7 +341,17 @@ function LeaderboardRow({
     <div
       className={`flex min-h-[56px] items-center gap-3.5 p-3.5 sm:px-4 sm:py-3 transition-colors hover:bg-gray-50/60 dark:hover:bg-[#2C2C2E]/40 active:bg-gray-100/60 dark:active:bg-[#2C2C2E]/60 ${pulsing ? "pulse-highlight" : ""}`}
     >
-      <span className="grid size-7 shrink-0 place-items-center rounded-full bg-black/[0.04] dark:bg-white/[0.08] text-xs font-bold text-[#8E8E93] dark:text-[#98989D]">
+      <span
+        className={`grid size-7 shrink-0 place-items-center rounded-full bg-black/[0.04] dark:bg-white/[0.08] text-xs font-bold ${
+          rank === 1
+            ? "text-yellow-500"
+            : rank === 2
+            ? "text-gray-400"
+            : rank === 3
+            ? "text-amber-700 dark:text-amber-500"
+            : "text-[#8E8E93] dark:text-[#98989D]"
+        }`}
+      >
         {rank}
       </span>
       <PlayerAvatar player={player} className="size-10 text-base shrink-0" />

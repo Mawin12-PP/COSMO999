@@ -26,11 +26,13 @@ export function AnimatedNumber({
   value,
   className,
   grouped = false,
+  showSign = true,
 }: {
   value: number;
   className?: string;
   // Show thousands separators ("+18,580") instead of the bare digits.
   grouped?: boolean;
+  showSign?: boolean;
 }) {
   const [displayValue, setDisplayValue] = useState(0);
   // Mirrors displayValue outside React state so a value change that
@@ -76,10 +78,10 @@ export function AnimatedNumber({
   return (
     <span className={className}>
       {grouped ? (
-        formatSignedScore(rounded)
+        showSign ? formatSignedScore(rounded) : rounded.toLocaleString("th-TH")
       ) : (
         <>
-          {rounded > 0 ? "+" : ""}
+          {showSign && rounded > 0 ? "+" : ""}
           {rounded}
         </>
       )}

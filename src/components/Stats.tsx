@@ -180,7 +180,7 @@ export function Stats() {
                   </span>
                 </StatCard>
                 <StatCard label="จำนวนเกม">
-                  <AnimatedNumber value={stats.totalRounds} />
+                  <AnimatedNumber value={stats.totalRounds} showSign={false} />
                 </StatCard>
                 <StatCard label="สูงสุดที่เคยทำ" tone="positive">
                   <AnimatedNumber value={stats.bestRound} />
