@@ -15,10 +15,7 @@ const prompt = Prompt({
 });
 
 export const metadata: Metadata = {
-  title: {
-    default: "COSMO999",
-    template: "%s | COSMO999",
-  },
+  title: "COSMO999",
   description: "กระดานนับแต้มไพ่ดัมมี่สำหรับวงเพื่อน เล่นเพื่อความบันเทิง",
   icons: {
     icon: [
