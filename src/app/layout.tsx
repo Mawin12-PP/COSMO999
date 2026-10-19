@@ -17,6 +17,10 @@ const prompt = Prompt({
 export const metadata: Metadata = {
   title: "COSMO999",
   description: "กระดานนับแต้มไพ่ดัมมี่สำหรับวงเพื่อน เล่นเพื่อความบันเทิง",
+  icons: {
+    icon: "/icon.svg",
+    apple: "/icon.svg",
+  },
 };
 
 // viewportFit: "cover" lets the header and bottom tab bar pad themselves
