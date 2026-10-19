@@ -6,26 +6,33 @@
 import { ref, set } from "firebase/database";
 import { database, DB_PATHS } from "./firebase";
 import { readList } from "./rtdb";
+import { getUniqueThematicAvatar } from "./suits";
 import type { Player } from "@/types/models";
 
-async function writeAll(players: Player[]): Promise<void> {
+export async function writeAll(players: Player[]): Promise<void> {
   await set(ref(database, DB_PATHS.players), players);
 }
 
 /**
- * Append a new player and return its id. Mirrors the legacy addPlayer:
- * id is Date.now() as a string, totalScore starts at 0, latestScore is null
- * (never scored yet), image is an empty string when none is given.
+ * Append a new player and return its id.
+ * If no custom image is provided, automatically selects a balanced
+ * card suit avatar (♠, ♥, ♣, ♦) and permanently persists it to the database.
  */
 export async function createPlayer(
   name: string,
   image?: string,
 ): Promise<string> {
   const players = await readList<Player>(DB_PATHS.players);
+  let finalImage = image?.trim() || "";
+  if (!finalImage) {
+    const existingImages = players.map((p) => p.image);
+    finalImage = `suit:${getUniqueThematicAvatar(existingImages)}`;
+  }
+
   const newPlayer: Player = {
     id: Date.now().toString(),
-    name,
-    image: image ?? "",
+    name: name.trim(),
+    image: finalImage,
     totalScore: 0,
     latestScore: null,
   };
@@ -42,15 +49,19 @@ export async function updatePlayer(
   changes: { name?: string; image?: string },
 ): Promise<void> {
   const players = await readList<Player>(DB_PATHS.players);
-  const next = players.map((player) =>
-    player.id === id
-      ? {
-          ...player,
-          ...(changes.name !== undefined ? { name: changes.name } : {}),
-          ...(changes.image !== undefined ? { image: changes.image } : {}),
-        }
-      : player,
-  );
+  const next = players.map((player) => {
+    if (player.id !== id) return player;
+    let newImage = changes.image !== undefined ? changes.image : player.image;
+    if (!newImage || newImage.trim() === "") {
+      const otherImages = players.filter((p) => p.id !== id).map((p) => p.image);
+      newImage = `suit:${getUniqueThematicAvatar(otherImages)}`;
+    }
+    return {
+      ...player,
+      ...(changes.name !== undefined ? { name: changes.name.trim() } : {}),
+      image: newImage,
+    };
+  });
   await writeAll(next);
 }
 

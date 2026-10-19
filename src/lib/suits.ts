@@ -95,10 +95,24 @@ export const FOUR_SUITS: ThematicAvatarId[] = [
 ];
 
 /**
+ * 32-bit FNV-1a hash algorithm. Uniformly distributes strings and numeric timestamps
+ * across buckets without mathematical degenerate collisions.
+ */
+export function getRobustHash(seed: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < seed.length; i++) {
+    h ^= seed.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+/**
  * Pick a thematic avatar evenly selected from the 4 primary card suits:
  * Spade (♠), Heart (♥), Club (♣), Diamond (♦).
  * It tracks frequency among existing players and selects from the least-used suit(s),
- * breaking ties randomly. This guarantees uniform distribution with no unwanted repeats.
+ * breaking ties randomly. Also prevents assigning the exact same suit to consecutive
+ * new users when other candidate suits are available.
  */
 export function getUniqueThematicAvatar(
   existingImages: (string | undefined | null)[],
@@ -110,19 +124,29 @@ export function getUniqueThematicAvatar(
     diamond: 0,
   };
 
-  for (const img of existingImages) {
+  // Find the suit of the most recently added player (consecutive user check)
+  let lastSuit: ("spade" | "heart" | "club" | "diamond") | null = null;
+  for (let i = existingImages.length - 1; i >= 0; i--) {
+    const img = existingImages[i];
     if (!img) continue;
     const clean = img.replace(/^suit:/, "");
     if (clean in counts) {
+      if (!lastSuit) lastSuit = clean as "spade" | "heart" | "club" | "diamond";
       counts[clean as keyof typeof counts]++;
     }
   }
 
   // Find minimum count among the 4 suits to distribute evenly
   const minCount = Math.min(...Object.values(counts));
-  const candidates = (Object.keys(counts) as ("spade" | "heart" | "club" | "diamond")[]).filter(
+  let candidates = (Object.keys(counts) as ("spade" | "heart" | "club" | "diamond")[]).filter(
     (suit) => counts[suit] === minCount,
   );
+
+  // If multiple candidates are available with the minimum count,
+  // avoid assigning the exact same icon as the immediately preceding user
+  if (candidates.length > 1 && lastSuit && candidates.includes(lastSuit)) {
+    candidates = candidates.filter((suit) => suit !== lastSuit);
+  }
 
   const randomIndex = Math.floor(Math.random() * candidates.length);
   return candidates[randomIndex];
@@ -130,15 +154,11 @@ export function getUniqueThematicAvatar(
 
 /**
  * Deterministically pick an avatar for fallback consistency based on player id/name
- * using the 4 primary card suits.
+ * using the 4 primary card suits and FNV-1a distribution.
  */
 export function getDeterministicThematicAvatar(seed: string): ThematicAvatarId {
-  let hash = 0;
-  for (let i = 0; i < seed.length; i++) {
-    hash = (hash << 5) - hash + seed.charCodeAt(i);
-    hash |= 0;
-  }
-  return FOUR_SUITS[Math.abs(hash) % FOUR_SUITS.length];
+  const hash = getRobustHash(seed);
+  return FOUR_SUITS[hash % FOUR_SUITS.length];
 }
 
 // Backwards-compatible aliases

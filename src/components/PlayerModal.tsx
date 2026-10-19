@@ -32,20 +32,25 @@ export function PlayerModal({
   const [assignedAvatar, setAssignedAvatar] = useState<ThematicAvatarId>("spade");
   const fileRef = useRef<HTMLInputElement>(null);
 
-  // Sync state whenever player or isOpen changes
+  const wasOpenRef = useRef(false);
+
+  // Sync state once whenever modal opens or target player changes
   useEffect(() => {
     if (isOpen) {
-      setName(player?.name ?? "");
-      setPreviewImage(player?.image);
-      setFileName(null);
-      setError(null);
-      if (fileRef.current) fileRef.current.value = "";
-      if (!player) {
-        // Pick an avatar that is not yet used by any existing player in the room
-        const existingImages = existingPlayers.map((p) => p.image);
-        setAssignedAvatar(getUniqueThematicAvatar(existingImages));
+      if (!wasOpenRef.current) {
+        setName(player?.name ?? "");
+        setPreviewImage(player?.image);
+        setFileName(null);
+        setError(null);
+        if (fileRef.current) fileRef.current.value = "";
+        if (!player) {
+          // Pick an avatar that is balanced and not repeating in the room
+          const existingImages = existingPlayers.map((p) => p.image);
+          setAssignedAvatar(getUniqueThematicAvatar(existingImages));
+        }
       }
     }
+    wasOpenRef.current = isOpen;
   }, [isOpen, player, existingPlayers]);
 
   // Handle ESC key to dismiss modal cleanly
