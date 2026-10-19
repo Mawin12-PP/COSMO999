@@ -18,19 +18,23 @@ export function PlayerList({
   isAddOpen,
   onOpenAdd,
   onCloseAdd,
+  onEditPlayer,
 }: {
   players: Player[];
   loading: boolean;
   isAddOpen?: boolean;
   onOpenAdd?: () => void;
   onCloseAdd?: () => void;
+  onEditPlayer?: (player: Player) => void;
 }) {
-  const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
+  const [internalEditingPlayer, setInternalEditingPlayer] = useState<Player | null>(null);
   const [internalAddOpen, setInternalAddOpen] = useState(false);
   const [playerToDelete, setPlayerToDelete] = useState<Player | null>(null);
   const [deletePending, setDeletePending] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
+  const isControlledAdd = onOpenAdd !== undefined;
+  const isControlledEdit = onEditPlayer !== undefined;
   const addModalOpen = isAddOpen ?? internalAddOpen;
 
   function handleOpenAdd() {
@@ -46,6 +50,14 @@ export function PlayerList({
       onCloseAdd();
     } else {
       setInternalAddOpen(false);
+    }
+  }
+
+  function handleEdit(player: Player) {
+    if (onEditPlayer) {
+      onEditPlayer(player);
+    } else {
+      setInternalEditingPlayer(player);
     }
   }
 
@@ -99,12 +111,15 @@ export function PlayerList({
           </button>
         </div>
 
-        {/* Modal for Adding Player */}
-        <PlayerModal
-          isOpen={addModalOpen}
-          player={null}
-          onClose={handleCloseAdd}
-        />
+        {/* Modal for Adding Player (Fallback for standalone usage) */}
+        {!isControlledAdd && (
+          <PlayerModal
+            isOpen={addModalOpen}
+            player={null}
+            existingPlayers={players}
+            onClose={handleCloseAdd}
+          />
+        )}
       </>
     );
   }
@@ -116,7 +131,7 @@ export function PlayerList({
         {players.map((player) => (
           <li
             key={player.id}
-            onClick={() => setEditingPlayer(player)}
+            onClick={() => handleEdit(player)}
             className="group flex min-h-[58px] items-center justify-between gap-3 px-4 py-3 sm:px-5 sm:py-3.5 transition-colors hover:bg-gray-50/70 dark:hover:bg-white/[0.03] active:bg-gray-50 dark:active:bg-white/5 cursor-pointer"
           >
             {/* Left: Avatar & Primary Name */}
@@ -135,7 +150,7 @@ export function PlayerList({
               {/* Edit Button */}
               <button
                 type="button"
-                onClick={() => setEditingPlayer(player)}
+                onClick={() => handleEdit(player)}
                 aria-label={`แก้ไข ${player.name}`}
                 className="flex size-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full text-[#8E8E93] dark:text-[#98989D] transition-all duration-200 active:scale-90 active:bg-blue-50 dark:active:bg-blue-500/15 active:text-[#007AFF] hover:bg-blue-50/80 dark:hover:bg-blue-500/10 hover:text-[#007AFF] dark:hover:text-[#2E8BFF]"
               >
@@ -159,19 +174,24 @@ export function PlayerList({
         ))}
       </ul>
 
-      {/* Modal for Adding Player */}
-      <PlayerModal
-        isOpen={addModalOpen}
-        player={null}
-        onClose={handleCloseAdd}
-      />
+      {/* Fallback Modals for Standalone Usage */}
+      {!isControlledAdd && (
+        <PlayerModal
+          isOpen={addModalOpen}
+          player={null}
+          existingPlayers={players}
+          onClose={handleCloseAdd}
+        />
+      )}
 
-      {/* Modal for Editing Player */}
-      <PlayerModal
-        isOpen={Boolean(editingPlayer)}
-        player={editingPlayer}
-        onClose={() => setEditingPlayer(null)}
-      />
+      {!isControlledEdit && (
+        <PlayerModal
+          isOpen={Boolean(internalEditingPlayer)}
+          player={internalEditingPlayer}
+          existingPlayers={players}
+          onClose={() => setInternalEditingPlayer(null)}
+        />
+      )}
 
       {/* Accessible Confirmation Dialog for Deleting Player */}
       {playerToDelete && (

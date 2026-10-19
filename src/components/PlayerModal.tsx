@@ -5,18 +5,22 @@
 // scale-in-animation, frosted glass backdrop, and full Dark Mode support.
 import { useEffect, useRef, useState } from "react";
 import { Check, ImagePlus, Loader2, Pencil, Trash2, UserPlus, X } from "lucide-react";
+import { GlobalModal } from "@/components/GlobalModal";
 import { PlayerAvatar } from "@/components/PlayerAvatar";
 import { fileToResizedDataUrl } from "@/lib/image";
 import { createPlayer, updatePlayer } from "@/lib/players";
+import { getUniqueThematicAvatar, type ThematicAvatarId } from "@/lib/suits";
 import type { Player } from "@/types/models";
 
 export function PlayerModal({
   isOpen,
   player,
+  existingPlayers = [],
   onClose,
 }: {
   isOpen: boolean;
   player?: Player | null; // null/undefined = Add mode, Player = Edit mode
+  existingPlayers?: Player[];
   onClose: () => void;
 }) {
   const isEdit = Boolean(player);
@@ -25,6 +29,7 @@ export function PlayerModal({
   const [fileName, setFileName] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [assignedAvatar, setAssignedAvatar] = useState<ThematicAvatarId>("spade");
   const fileRef = useRef<HTMLInputElement>(null);
 
   // Sync state whenever player or isOpen changes
@@ -35,8 +40,13 @@ export function PlayerModal({
       setFileName(null);
       setError(null);
       if (fileRef.current) fileRef.current.value = "";
+      if (!player) {
+        // Pick an avatar that is not yet used by any existing player in the room
+        const existingImages = existingPlayers.map((p) => p.image);
+        setAssignedAvatar(getUniqueThematicAvatar(existingImages));
+      }
     }
-  }, [isOpen, player]);
+  }, [isOpen, player, existingPlayers]);
 
   // Handle ESC key to dismiss modal cleanly
   useEffect(() => {
@@ -84,10 +94,12 @@ export function PlayerModal({
       if (isEdit && player) {
         await updatePlayer(player.id, {
           name: trimmed,
-          image: previewImage,
+          image: previewImage ?? player.image,
         });
       } else {
-        await createPlayer(trimmed, previewImage);
+        // Automatically assign persistent random card game avatar if no image uploaded
+        const finalImage = previewImage || `suit:${assignedAvatar}`;
+        await createPlayer(trimmed, finalImage);
       }
       onClose();
     } catch (err) {
@@ -98,18 +110,13 @@ export function PlayerModal({
   }
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="player-modal-title"
-      onClick={(e) => {
-        if (e.target === e.currentTarget && !pending) {
-          onClose();
-        }
-      }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+    <GlobalModal
+      isOpen={isOpen}
+      onClose={onClose}
+      preventClose={pending}
+      ariaLabelledby="player-modal-title"
     >
-      <div className="bg-white dark:bg-[#1C1C1E] w-full max-w-md p-6 rounded-[24px] shadow-2xl scale-in-animation border border-black/[0.04] dark:border-[#38383A] flex flex-col gap-5">
+      <div className="bg-white dark:bg-[#1C1C1E] w-full max-w-md p-6 rounded-[24px] shadow-2xl scale-in-animation border border-gray-100 dark:border-white/10 flex flex-col gap-5">
         {/* Header */}
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
@@ -142,15 +149,22 @@ export function PlayerModal({
               <span
                 role="img"
                 aria-label={name || "รูปผู้เล่น"}
-                className="size-16 rounded-full border border-black/[0.08] dark:border-white/10 bg-cover bg-center shadow-sm"
+                className="size-16 rounded-full border border-gray-100 dark:border-white/10 bg-cover bg-center shadow-sm"
                 style={{ backgroundImage: `url(${previewImage})` }}
               />
             ) : isEdit && player ? (
-              <PlayerAvatar player={{ ...player, name: name || player.name }} className="size-16 text-2xl" />
+              <PlayerAvatar player={{ ...player, name: name || player.name }} className="size-16" />
             ) : (
-              <span className="flex size-16 items-center justify-center rounded-full border border-blue-500/15 dark:border-blue-500/30 bg-blue-50/80 dark:bg-blue-500/15 text-2xl font-semibold text-[#007AFF] dark:text-[#2E8BFF] shadow-xs">
-                {name.trim().charAt(0) || "?"}
-              </span>
+              <PlayerAvatar
+                player={{
+                  id: "preview",
+                  name: name || "ผู้เล่นใหม่",
+                  image: `suit:${assignedAvatar}`,
+                  totalScore: 0,
+                  latestScore: null,
+                }}
+                className="size-16"
+              />
             )}
           </div>
 
@@ -228,7 +242,7 @@ export function PlayerModal({
             <button
               type="submit"
               disabled={pending}
-              className="flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-full bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] px-6 py-3 text-base font-semibold text-white shadow-lg shadow-blue-500/25 active:scale-90 transition-transform hover:opacity-90 disabled:opacity-50"
+              className="flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-full bg-[#007AFF] px-6 py-3 text-base font-semibold text-white shadow-lg shadow-blue-500/25 active:scale-95 transition-all hover:bg-[#0062cc] disabled:opacity-50 cursor-pointer"
             >
               {pending ? (
                 <Loader2 className="size-4.5 animate-spin" />
@@ -243,13 +257,13 @@ export function PlayerModal({
               type="button"
               onClick={onClose}
               disabled={pending}
-              className="flex min-h-[48px] flex-1 items-center justify-center rounded-full border border-black/[0.06] dark:border-[#38383A] bg-white dark:bg-[#2C2C2E] px-6 py-3 text-base font-semibold text-[#1C1C1E] dark:text-[#F2F2F7] shadow-xs active:scale-90 transition-transform hover:bg-gray-50 dark:hover:bg-[#38383A] disabled:opacity-50"
+              className="flex min-h-[48px] flex-1 items-center justify-center rounded-full border border-gray-100 dark:border-white/10 bg-white dark:bg-[#2C2C2E] px-6 py-3 text-base font-semibold text-[#1C1C1E] dark:text-[#F2F2F7] shadow-xs active:scale-95 transition-all hover:bg-[#F2F2F7] dark:hover:bg-[#38383A] disabled:opacity-50 cursor-pointer"
             >
               ยกเลิก
             </button>
           </div>
         </form>
       </div>
-    </div>
+    </GlobalModal>
   );
 }

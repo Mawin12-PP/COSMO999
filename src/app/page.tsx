@@ -6,16 +6,19 @@ import { useState } from "react";
 import { Loader2, Plus, TriangleAlert, Wifi } from "lucide-react";
 import { LatestRoundCard } from "@/components/LatestRoundCard";
 import { PlayerList } from "@/components/PlayerList";
+import { PlayerModal } from "@/components/PlayerModal";
 import { RoundSetup } from "@/components/RoundSetup";
 import type { PresetTrigger } from "@/components/RoundSetup";
 import { useHistory } from "@/hooks/useHistory";
 import { usePlayers } from "@/hooks/usePlayers";
+import type { Player } from "@/types/models";
 
 export default function HomePage() {
   const { players, loading, error } = usePlayers();
   const { history, loading: historyLoading } = useHistory();
   const [presetTrigger, setPresetTrigger] = useState<PresetTrigger | null>(null);
   const [isAddPlayerOpen, setIsAddPlayerOpen] = useState(false);
+  const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
 
   function handlePlayAgain(playerIds: string[]) {
     setPresetTrigger({ ids: playerIds, timestamp: Date.now() });
@@ -96,12 +99,26 @@ export default function HomePage() {
           <PlayerList
             players={players}
             loading={loading}
-            isAddOpen={isAddPlayerOpen}
             onOpenAdd={() => setIsAddPlayerOpen(true)}
-            onCloseAdd={() => setIsAddPlayerOpen(false)}
+            onEditPlayer={(player) => setEditingPlayer(player)}
           />
         </section>
       </div>
+
+      {/* Global Modals: Root level (outside 2-column layout) with full-screen blur backdrop */}
+      <PlayerModal
+        isOpen={isAddPlayerOpen}
+        player={null}
+        existingPlayers={players}
+        onClose={() => setIsAddPlayerOpen(false)}
+      />
+
+      <PlayerModal
+        isOpen={Boolean(editingPlayer)}
+        player={editingPlayer}
+        existingPlayers={players}
+        onClose={() => setEditingPlayer(null)}
+      />
     </div>
   );
 }
