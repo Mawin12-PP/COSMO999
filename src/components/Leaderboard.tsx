@@ -172,25 +172,25 @@ function PersonalTitleBadge({
 
 const PODIUM_STYLE: Record<
   1 | 2 | 3,
-  { pedestal: string; height: string; avatar: string; ring: string }
+  { avatar: string; ring: string; badge: string; crown: string }
 > = {
   1: {
-    pedestal: "bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] shadow-lg shadow-blue-500/25",
-    height: "h-28 sm:h-36",
     avatar: "size-20 text-2xl sm:size-24",
-    ring: "ring-4 ring-blue-500/20 shadow-xs",
+    ring: "ring-4 ring-yellow-400/50 dark:ring-yellow-500/40 shadow-lg shadow-yellow-500/15",
+    badge: "bg-gradient-to-b from-yellow-400 to-amber-500 text-white shadow-sm ring-2 ring-white dark:ring-[#1C1C1E]",
+    crown: "text-yellow-500 fill-yellow-500",
   },
   2: {
-    pedestal: "bg-gradient-to-b from-[#A0A0A5] to-[#8E8E93] shadow-sm",
-    height: "h-20 sm:h-24",
     avatar: "size-16 text-xl sm:size-20",
-    ring: "ring-2 ring-gray-300 shadow-xs",
+    ring: "ring-3 ring-gray-300 dark:ring-gray-600 shadow-sm",
+    badge: "bg-gradient-to-b from-gray-300 to-gray-400 text-white shadow-sm ring-2 ring-white dark:ring-[#1C1C1E]",
+    crown: "",
   },
   3: {
-    pedestal: "bg-gradient-to-b from-[#D4A366] to-[#B38344] shadow-sm",
-    height: "h-16 sm:h-20",
     avatar: "size-16 text-xl sm:size-20",
-    ring: "ring-2 ring-amber-300 shadow-xs",
+    ring: "ring-3 ring-amber-600/40 dark:ring-amber-500/40 shadow-sm",
+    badge: "bg-gradient-to-b from-amber-600 to-amber-700 text-white shadow-sm ring-2 ring-white dark:ring-[#1C1C1E]",
+    crown: "",
   },
 };
 
@@ -214,40 +214,52 @@ function PodiumCard({
   const style = PODIUM_STYLE[rank];
   return (
     <div
-      className="reveal flex w-24 flex-col items-center gap-2 sm:w-28"
+      className={`reveal flex w-28 sm:w-32 flex-col items-center gap-1.5 transition-transform duration-300 ${
+        rank === 1 ? "-translate-y-2 sm:-translate-y-3" : "translate-y-0"
+      } ${pulsing ? "pulse-highlight" : ""}`}
       style={{ animationDelay: `${(rank - 1) * 100}ms` }}
     >
-      <div className="flex flex-col items-center gap-1 relative">
+      {/* Crown + Avatar with Rank Badge */}
+      <div className="flex flex-col items-center relative mb-1">
         {rank === 1 ? (
-          <Crown className="size-6 text-[#007AFF] fill-[#007AFF] drop-shadow-sm" />
+          <Crown className={`size-6 sm:size-7 ${style.crown} drop-shadow-sm -mb-0.5 z-10`} />
         ) : (
-          <span className="h-6" aria-hidden />
+          <span className="h-6 sm:h-7" aria-hidden />
         )}
-        <span className={`rounded-full ${style.ring}`}>
-          <PlayerAvatar player={player} className={style.avatar} />
-        </span>
+        <div className="relative">
+          <span className={`block rounded-full ${style.ring}`}>
+            <PlayerAvatar player={player} className={style.avatar} />
+          </span>
+          {/* Circular Ranking Badge */}
+          <span
+            className={`absolute -bottom-1 left-1/2 -translate-x-1/2 flex size-5.5 sm:size-6 items-center justify-center rounded-full text-xs font-black tabular-nums ${style.badge}`}
+          >
+            {rank}
+          </span>
+        </div>
       </div>
 
-      <div className="flex flex-col items-center gap-0.5">
-        <p className="w-full truncate text-center text-sm font-semibold tracking-tight text-[#1C1C1E] sm:text-base">
+      {/* Name + Badges */}
+      <div className="flex flex-col items-center gap-0.5 mt-1 w-full px-1">
+        <p className="w-full truncate text-center text-sm font-semibold tracking-tight text-[#1C1C1E] dark:text-[#F2F2F7] sm:text-base">
           {player.name}
         </p>
-        <TrophyBadge count={championCount} />
-        <PersonalTitleBadge title={personalTitle} className="text-center" />
+        <div className="flex flex-wrap items-center justify-center gap-1">
+          <TrophyBadge count={championCount} />
+          <PersonalTitleBadge title={personalTitle} className="text-center" />
+        </div>
       </div>
+
+      {/* Score */}
       <AnimatedNumber
         value={score}
         className={`text-lg font-bold tabular-nums sm:text-xl ${scoreTone(score)}`}
       />
+
+      {/* Latest Score Label */}
       {showLatestScore ? (
         <LatestScoreLabel latestScore={player.latestScore} />
       ) : null}
-
-      <div
-        className={`flex w-full items-center justify-center rounded-t-2xl shadow-sm ${style.pedestal} ${style.height} ${pulsing ? "pulse-highlight" : ""}`}
-      >
-        <span className="text-2xl font-black text-white">{rank}</span>
-      </div>
     </div>
   );
 }
@@ -268,7 +280,7 @@ function Podium({
 }) {
   const slots: Array<1 | 2 | 3> = [2, 1, 3];
   return (
-    <div className="flex items-end justify-center gap-3 sm:gap-6 pt-3 pb-1">
+    <div className="flex items-start justify-center gap-3 sm:gap-8 pt-4 pb-2">
       {slots.map((rank) => {
         const entry = entries[rank - 1];
         if (!entry) return null;
@@ -408,21 +420,28 @@ function StateMessage({
 function LeaderboardSkeleton() {
   return (
     <div className="reveal flex flex-col gap-6">
-      <p className="text-sm text-[#8E8E93]">กำลังโหลดอันดับ...</p>
-      <div className="flex items-end justify-center gap-3 sm:gap-5">
+      <p className="text-sm text-[#8E8E93] dark:text-[#98989D]">กำลังโหลดอันดับ...</p>
+      <div className="flex items-start justify-center gap-4 sm:gap-8 pt-4 pb-2">
         {([2, 1, 3] as const).map((rank) => (
-          <div key={rank} className="flex w-24 flex-col items-center gap-2 sm:w-28">
-            <div className="size-16 animate-pulse rounded-full bg-black/[0.06] sm:size-20" />
-            <div className="h-3 w-16 animate-pulse rounded-full bg-black/[0.06]" />
+          <div
+            key={rank}
+            className={`flex w-28 sm:w-32 flex-col items-center gap-2 ${
+              rank === 1 ? "-translate-y-2 sm:-translate-y-3" : "translate-y-0"
+            }`}
+          >
             <div
-              className={`w-full animate-pulse rounded-t-2xl bg-black/[0.06] ${PODIUM_STYLE[rank].height}`}
+              className={`animate-pulse rounded-full bg-black/[0.06] dark:bg-white/[0.08] ${
+                rank === 1 ? "size-20 sm:size-24" : "size-16 sm:size-20"
+              }`}
             />
+            <div className="h-4 w-16 animate-pulse rounded-full bg-black/[0.06] dark:bg-white/[0.08]" />
+            <div className="h-5 w-12 animate-pulse rounded-full bg-black/[0.06] dark:bg-white/[0.08]" />
           </div>
         ))}
       </div>
-      <div className="rounded-[20px] border border-black/[0.04] bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden divide-y divide-gray-100/80">
+      <div className="rounded-[20px] border border-black/[0.04] dark:border-white/10 bg-white dark:bg-[#1C1C1E] shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden divide-y divide-gray-100/80 dark:divide-white/[0.06]">
         {[0, 1, 2].map((i) => (
-          <div key={i} className="h-16 animate-pulse bg-black/[0.02]" />
+          <div key={i} className="h-16 animate-pulse bg-black/[0.02] dark:bg-white/[0.02]" />
         ))}
       </div>
     </div>
@@ -737,10 +756,10 @@ export function Leaderboard() {
     <div className="flex flex-col gap-6">
       {tabSwitcher}
       <header className="reveal">
-        <h1 className="text-2xl font-semibold tracking-tight text-[#1C1C1E] sm:text-3xl">
+        <h1 className="text-2xl font-semibold tracking-tight text-[#1C1C1E] dark:text-[#F2F2F7] sm:text-3xl">
           อันดับ
         </h1>
-        <p className="mt-1 text-sm text-[#8E8E93]">
+        <p className="mt-1 text-sm text-[#8E8E93] dark:text-[#98989D]">
           {viewKey === "all"
             ? "จัดอันดับสายไพ่ประจำวง เรียงจากคะแนนรวมมากไปน้อย"
             : `งวด ${activePeriod?.label ?? ""}`}
@@ -755,6 +774,9 @@ export function Leaderboard() {
         showLatestScore={showLatestScore}
       />
 
+      {/* Clean horizontal divider directly underneath top 3 podium */}
+      <hr className="border-t border-black/[0.06] dark:border-white/10 my-1" />
+
       {showRoast ? (
         <RoastCallout
           player={lowestEntry.player}
@@ -765,10 +787,10 @@ export function Leaderboard() {
 
       {restEntries.length > 0 ? (
         <div className="flex flex-col gap-2">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-[#8E8E93] px-1">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-[#8E8E93] dark:text-[#98989D] px-1">
             อันดับอื่น ๆ
           </h2>
-          <div className="rounded-[20px] border border-black/[0.04] bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden divide-y divide-gray-100/80">
+          <div className="rounded-[20px] border border-black/[0.04] dark:border-white/10 bg-white dark:bg-[#1C1C1E] shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none overflow-hidden divide-y divide-gray-100/80 dark:divide-white/[0.06]">
             {restEntries.map((entry, index) => (
               <LeaderboardRow
                 key={entry.player.id}
