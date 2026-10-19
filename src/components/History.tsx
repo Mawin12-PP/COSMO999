@@ -58,7 +58,7 @@ function HistoryRow({
             </time>
           </div>
           <h3 className="text-base font-semibold text-[#1C1C1E] dark:text-[#F2F2F7]">
-            รอบที่ #{roundNumber}
+            รอบ {roundNumber}
           </h3>
         </div>
 

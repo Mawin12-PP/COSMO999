@@ -98,7 +98,7 @@ function GroupCard({
       className="reveal flex flex-col justify-between gap-5 rounded-[20px] border border-black/[0.04] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] p-5 sm:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all"
     >
       {/* Group member profile avatars in 1 single row */}
-      <div className="relative flex items-center gap-2 sm:gap-2.5 pt-7 pb-1 overflow-visible">
+      <div className="relative flex items-center justify-center gap-2 sm:gap-2.5 pt-7 pb-1 overflow-visible">
         {group.playerIds.map((id) => {
           const player = players.find((x) => x.id === id);
           if (!player) {
