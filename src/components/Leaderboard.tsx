@@ -561,7 +561,7 @@ function HallOfFame({
   return (
     <div className="flex flex-col gap-6">
       <header className="reveal">
-        <h1 className="text-2xl font-semibold tracking-tight text-[#1C1C1E] sm:text-3xl">
+        <h1 className="text-2xl font-semibold tracking-tight text-[#1C1C1E] dark:text-[#F2F2F7] sm:text-3xl">
           ทำเนียบเกียรติยศ
         </h1>
       </header>
@@ -689,7 +689,7 @@ export function Leaderboard() {
       <div className="flex flex-col gap-6">
         {tabSwitcher}
         <header className="reveal">
-          <h1 className="text-2xl font-semibold tracking-tight text-[#1C1C1E] sm:text-3xl">
+          <h1 className="text-2xl font-semibold tracking-tight text-[#1C1C1E] dark:text-[#F2F2F7] sm:text-3xl">
             อันดับ
           </h1>
         </header>

@@ -20,11 +20,11 @@ export function PlaceholderPage({
       </span>
 
       <div className="flex flex-col gap-1.5">
-        <h1 className="text-2xl font-semibold tracking-tight text-[#1C1C1E] sm:text-3xl">{title}</h1>
-        <p className="mx-auto max-w-xs text-sm text-[#8E8E93]">{description}</p>
+        <h1 className="text-2xl font-semibold tracking-tight text-[#1C1C1E] dark:text-[#F2F2F7] sm:text-3xl">{title}</h1>
+        <p className="mx-auto max-w-xs text-sm text-[#8E8E93] dark:text-[#98989D]">{description}</p>
       </div>
 
-      <p className="rounded-full border border-black/[0.04] bg-white/80 backdrop-blur-md px-3.5 py-1 text-xs font-medium text-[#8E8E93] shadow-xs">
+      <p className="rounded-full border border-black/[0.04] dark:border-[#38383A] bg-white/80 dark:bg-[#1C1C1E] backdrop-blur-md px-3.5 py-1 text-xs font-medium text-[#8E8E93] dark:text-[#98989D] shadow-xs">
         กำลังจะมาในเฟส {phase}
       </p>
     </div>
