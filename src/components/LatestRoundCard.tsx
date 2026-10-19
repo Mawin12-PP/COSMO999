@@ -110,7 +110,8 @@ export function LatestRoundCard({
           return (
             <div
               key={pId}
-              className={`flex min-h-[48px] items-center gap-2.5 rounded-2xl border p-2.5 transition-all ${
+              title={player ? player.name : undefined}
+              className={`flex min-h-[48px] items-center justify-between gap-2.5 rounded-2xl border px-3.5 py-2 transition-all ${
                 isWinner
                   ? "border-green-300/60 dark:border-green-800/60 bg-green-50/70 dark:bg-green-950/30 shadow-2xs"
                   : isLoser
@@ -119,24 +120,19 @@ export function LatestRoundCard({
               }`}
             >
               {player ? (
-                <PlayerAvatar player={player} className="size-8 text-xs shrink-0" />
+                <PlayerAvatar player={player} className="size-9 text-sm shrink-0" />
               ) : (
-                <span className="flex size-8 shrink-0 items-center justify-center rounded-full border border-black/[0.06] dark:border-[#38383A] bg-black/[0.04] dark:bg-[#2C2C2E] text-xs text-[#8E8E93] dark:text-[#98989D]">
+                <span className="flex size-9 shrink-0 items-center justify-center rounded-full border border-black/[0.06] dark:border-[#38383A] bg-black/[0.04] dark:bg-[#2C2C2E] text-xs text-[#8E8E93] dark:text-[#98989D]">
                   ?
                 </span>
               )}
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-xs font-semibold text-[#1C1C1E] dark:text-[#F2F2F7]">
-                  {player ? player.name : "(ถูกลบ)"}
-                </p>
-                <p
-                  className={`text-sm font-bold tabular-nums ${scoreTone(
-                    score,
-                  )}`}
-                >
-                  {formatScore(score)}
-                </p>
-              </div>
+              <span
+                className={`text-base font-bold tabular-nums shrink-0 ${scoreTone(
+                  score,
+                )}`}
+              >
+                {formatScore(score)}
+              </span>
             </div>
           );
         })}

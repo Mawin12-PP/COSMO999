@@ -11,8 +11,8 @@ import {
   Clock,
   Loader2,
   RefreshCw,
+  Trash2,
   TriangleAlert,
-  Undo2,
 } from "lucide-react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { getPlayerGridCols } from "@/components/LatestRoundCard";
@@ -48,8 +48,8 @@ function HistoryRow({
 
   return (
     <article className="flex flex-col gap-3.5 p-4 sm:p-5 transition-colors hover:bg-black/[0.015] dark:hover:bg-white/[0.02]">
-      {/* Header row: time + round number + multiplier badge */}
-      <div className="flex flex-wrap items-start justify-between gap-2">
+      {/* Header row: time + round number + multiplier badge + trash button */}
+      <div className="flex items-start justify-between gap-2">
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-1.5 text-xs text-[#8E8E93] dark:text-[#98989D]">
             <Clock className="size-3.5 shrink-0" aria-hidden />
@@ -61,9 +61,22 @@ function HistoryRow({
             รอบที่ #{roundNumber}
           </h3>
         </div>
-        <span className="shrink-0 inline-flex items-center rounded-full bg-[#007AFF]/10 dark:bg-[#007AFF]/20 border border-[#007AFF]/25 px-2.5 py-0.5 text-xs font-semibold tabular-nums text-[#007AFF]">
-          x{entry.multiplier}
-        </span>
+
+        {/* Right side: multiplier badge + trash button */}
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="inline-flex items-center rounded-full bg-[#007AFF]/10 dark:bg-[#007AFF]/20 border border-[#007AFF]/25 px-2.5 py-0.5 text-xs font-semibold tabular-nums text-[#007AFF]">
+            x{entry.multiplier}
+          </span>
+          <button
+            type="button"
+            title="ลบ / ยกเลิกผลรอบนี้"
+            aria-label="ลบหรือยกเลิกผลรอบนี้"
+            onClick={() => onUndo(entry.id)}
+            className="flex size-7.5 items-center justify-center rounded-full border border-black/[0.06] dark:border-white/[0.08] bg-white dark:bg-[#2C2C2E] text-[#8E8E93] dark:text-[#98989D] shadow-2xs transition-all duration-200 ease-out active:scale-90 hover:border-red-200 dark:hover:border-red-900/40 hover:bg-red-50/80 dark:hover:bg-red-950/30 hover:text-[#FF3B30] dark:hover:text-[#FF453A] cursor-pointer"
+          >
+            <Trash2 className="size-3.5" aria-hidden />
+          </button>
+        </div>
       </div>
 
       {/* Per-player score chips */}
@@ -92,18 +105,6 @@ function HistoryRow({
           );
         })}
       </ul>
-
-      {/* Undo button for this round (iOS pill button with feedback) */}
-      <div className="pt-0.5">
-        <button
-          type="button"
-          onClick={() => onUndo(entry.id)}
-          className="inline-flex min-h-[36px] items-center gap-1.5 rounded-full border border-black/[0.06] dark:border-white/[0.08] bg-white dark:bg-[#2C2C2E] px-3.5 py-1.5 text-xs font-medium text-[#8E8E93] dark:text-[#98989D] shadow-2xs transition-all duration-200 ease-out active:scale-95 hover:border-red-200 dark:hover:border-red-900/40 hover:bg-red-50/80 dark:hover:bg-red-950/30 hover:text-[#FF3B30] dark:hover:text-[#FF453A]"
-        >
-          <Undo2 className="size-3.5" aria-hidden />
-          <span>ยกเลิกผลรอบนี้</span>
-        </button>
-      </div>
     </article>
   );
 }
