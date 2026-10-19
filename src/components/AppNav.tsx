@@ -51,24 +51,24 @@ export function AppNav() {
   return (
     <nav
       aria-label="เมนูหลัก"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-gray-200 dark:border-[#38383A] bg-white/80 dark:bg-[#1C1C1E]/80 backdrop-blur-2xl shadow-[0_-4px_20px_rgb(0,0,0,0.03)] md:sticky md:inset-x-auto md:bottom-auto md:top-0 md:h-dvh md:w-60 md:shrink-0 md:border-t-0 md:border-r md:border-gray-200 dark:md:border-[#38383A] md:bg-[#F2F2F7]/70 dark:md:bg-[#000000]/70 md:shadow-none"
+      className="fixed z-40 left-1/2 -translate-x-1/2 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] w-[calc(100%-1.75rem)] max-w-sm sm:max-w-md rounded-full border border-black/[0.08] dark:border-white/15 bg-white/90 dark:bg-[#1C1C1E]/90 backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.5)] p-1.5 md:sticky md:inset-x-auto md:left-auto md:right-auto md:bottom-auto md:top-0 md:translate-x-0 md:h-dvh md:w-60 md:max-w-none md:shrink-0 md:rounded-none md:border-0 md:border-r md:border-gray-200 dark:md:border-[#38383A] md:bg-[#F2F2F7]/70 dark:md:bg-[#000000]/70 md:shadow-none md:p-0"
     >
-      <div className="flex md:h-full md:flex-col md:justify-between">
+      <div className="flex w-full md:h-full md:flex-col md:justify-between">
         {/* Navigation links */}
-        <ul className="relative flex flex-1 items-center justify-around px-2 pt-1 pb-[max(0.5rem,env(safe-area-inset-bottom))] md:flex-none md:flex-col md:justify-start md:gap-2 md:px-3.5 md:pt-6 md:pb-2">
+        <ul className="relative flex flex-1 items-center justify-around md:flex-none md:flex-col md:justify-start md:gap-2 md:px-3.5 md:pt-6 md:pb-2">
           {/* Mobile Horizontal Sliding Magic Indicator */}
           <div
-            className="pointer-events-none absolute inset-x-2 top-1 bottom-[max(0.5rem,env(safe-area-inset-bottom))] z-0 md:hidden"
+            className="pointer-events-none absolute inset-0 z-0 md:hidden"
             aria-hidden="true"
           >
             <div
-              className="h-full transition-transform duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] will-change-transform"
+              className="h-full transition-transform duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] will-change-transform px-0.5 py-0.5"
               style={{
                 width: `${100 / NAV_ITEMS.length}%`,
                 transform: `translateX(${activeIndex * 100}%)`,
               }}
             >
-              <div className="h-full w-full rounded-xl bg-white dark:bg-[#1C1C1E] shadow-sm border border-black/[0.04] dark:border-[#38383A]" />
+              <div className="h-full w-full rounded-full bg-black/[0.06] dark:bg-white/10 shadow-xs border border-black/[0.04] dark:border-white/10" />
             </div>
           </div>
 
@@ -93,7 +93,7 @@ export function AppNav() {
                   href={href}
                   onClick={() => setPendingIndex(index)}
                   aria-current={active ? "page" : undefined}
-                  className={`group flex min-h-[48px] flex-col items-center justify-center gap-1 rounded-xl px-2 py-1 text-[11px] font-semibold transition-colors duration-200 ease-out active:scale-[0.97] md:min-h-[44px] md:h-11 md:flex-row md:justify-start md:gap-3 md:px-4 md:py-3 md:text-sm ${
+                  className={`group flex min-h-[46px] flex-col items-center justify-center gap-1 rounded-full px-1 py-1 text-[10px] font-semibold transition-colors duration-200 ease-out active:scale-95 md:min-h-[44px] md:h-11 md:flex-row md:justify-start md:gap-3 md:rounded-xl md:px-4 md:py-3 md:text-sm ${
                     active
                       ? "text-[#007AFF] font-bold"
                       : "text-[#8E8E93] dark:text-[#98989D] hover:text-[#1C1C1E] dark:hover:text-[#F2F2F7]"
