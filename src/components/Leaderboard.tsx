@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { AnimatedNumber } from "@/components/AnimatedNumber";
 import { HallOfFameCard } from "@/components/HallOfFameCard";
+import { InteractiveSegmentedControl } from "@/components/InteractiveSegmentedControl";
 import { PlayerAvatar } from "@/components/PlayerAvatar";
 import { usePlayers } from "@/hooks/usePlayers";
 import { useHistory } from "@/hooks/useHistory";
@@ -430,54 +431,20 @@ function ViewSwitcher({
   const isPastPeriodActive =
     viewKey !== "all" && viewKey !== currentPeriodKey;
 
-  const activeIndex =
-    viewKey === currentPeriodKey ? 0 : viewKey === "all" ? 1 : null;
+  const viewItems = [
+    { key: currentPeriodKey, label: "งวดนี้" },
+    { key: "all", label: "ตลอดกาล" },
+  ];
 
   return (
     <div className="reveal flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <div className="relative inline-flex w-fit rounded-full bg-black/[0.06] dark:bg-[#2C2C2E] p-1 shadow-2xs">
-        {/* Sliding Magic Indicator Pill */}
-        <div
-          className={`pointer-events-none absolute inset-y-1 left-1 right-1 z-0 transition-opacity duration-200 ${
-            activeIndex !== null ? "opacity-100" : "opacity-0"
-          }`}
-          aria-hidden="true"
-        >
-          <div
-            className="h-full w-1/2 transition-transform duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] will-change-transform"
-            style={{
-              transform: `translateX(${activeIndex === 1 ? "100%" : "0%"})`,
-            }}
-          >
-            <div className="h-full w-full rounded-full bg-white dark:bg-[#1C1C1E] shadow-sm" />
-          </div>
-        </div>
-
-        <button
-          type="button"
-          aria-pressed={viewKey === currentPeriodKey}
-          onClick={() => onChange(currentPeriodKey)}
-          className={`relative z-10 flex min-h-[40px] sm:min-h-[44px] min-w-[76px] sm:min-w-[90px] items-center justify-center rounded-full px-3.5 py-1.5 sm:px-5 sm:py-2 text-xs sm:text-sm font-semibold transition-colors duration-200 ease-out active:scale-[0.97] cursor-pointer ${
-            viewKey === currentPeriodKey
-              ? "text-[#1C1C1E] dark:text-[#F2F2F7]"
-              : "text-[#8E8E93] dark:text-[#98989D] hover:text-[#1C1C1E] dark:hover:text-[#F2F2F7]"
-          }`}
-        >
-          งวดนี้
-        </button>
-        <button
-          type="button"
-          aria-pressed={viewKey === "all"}
-          onClick={() => onChange("all")}
-          className={`relative z-10 flex min-h-[40px] sm:min-h-[44px] min-w-[76px] sm:min-w-[90px] items-center justify-center rounded-full px-3.5 py-1.5 sm:px-5 sm:py-2 text-xs sm:text-sm font-semibold transition-colors duration-200 ease-out active:scale-[0.97] cursor-pointer ${
-            viewKey === "all"
-              ? "text-[#1C1C1E] dark:text-[#F2F2F7]"
-              : "text-[#8E8E93] dark:text-[#98989D] hover:text-[#1C1C1E] dark:hover:text-[#F2F2F7]"
-          }`}
-        >
-          ตลอดกาล
-        </button>
-      </div>
+      <InteractiveSegmentedControl
+        items={viewItems}
+        activeKey={isPastPeriodActive ? null : viewKey}
+        onChange={onChange}
+        className="w-fit"
+        buttonClassName="min-w-[76px] sm:min-w-[90px]"
+      />
 
       {pastPeriods.length > 0 ? (
         <select
@@ -509,44 +476,19 @@ function TabSwitcher({
   activeTab: LeaderboardTab;
   onChange: (tab: LeaderboardTab) => void;
 }) {
-  const tabs: Array<{ key: LeaderboardTab; label: string; icon: LucideIcon }> = [
-    { key: "ranking", label: "อันดับ", icon: Trophy },
-    { key: "hall-of-fame", label: "ทำเนียบเกียรติยศ", icon: Medal },
+  const tabs = [
+    { key: "ranking" as const, label: "อันดับ", icon: Trophy },
+    { key: "hall-of-fame" as const, label: "ทำเนียบเกียรติยศ", icon: Medal },
   ];
 
   return (
-    <div className="reveal relative inline-flex w-full sm:w-[360px] rounded-full bg-black/[0.06] dark:bg-[#2C2C2E] p-1 shadow-2xs">
-      {/* Sliding Magic Indicator Pill */}
-      <div
-        className="pointer-events-none absolute inset-y-1 left-1 right-1 z-0"
-        aria-hidden="true"
-      >
-        <div
-          className="h-full w-1/2 transition-transform duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] will-change-transform"
-          style={{
-            transform: `translateX(${activeTab === "hall-of-fame" ? "100%" : "0%"})`,
-          }}
-        >
-          <div className="h-full w-full rounded-full bg-white dark:bg-[#1C1C1E] shadow-sm" />
-        </div>
-      </div>
-
-      {tabs.map(({ key, label, icon: Icon }) => (
-        <button
-          key={key}
-          type="button"
-          aria-pressed={activeTab === key}
-          onClick={() => onChange(key)}
-          className={`relative z-10 flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-colors duration-200 ease-out active:scale-[0.97] cursor-pointer ${
-            activeTab === key
-              ? "text-[#1C1C1E] dark:text-[#F2F2F7]"
-              : "text-[#8E8E93] dark:text-[#98989D] hover:text-[#1C1C1E] dark:hover:text-[#F2F2F7]"
-          }`}
-        >
-          <Icon className="size-4.5" aria-hidden />
-          {label}
-        </button>
-      ))}
+    <div className="reveal w-full sm:w-[360px]">
+      <InteractiveSegmentedControl
+        items={tabs}
+        activeKey={activeTab}
+        onChange={onChange}
+        className="w-full"
+      />
     </div>
   );
 }

@@ -195,8 +195,7 @@ function RoundSetupInner({
       </div>
 
       <div className="flex flex-col gap-3 border-t border-black/[0.04] dark:border-[#38383A] pt-5">
-        <div className="flex items-center justify-between text-xs font-medium text-[#8E8E93] dark:text-[#98989D] tabular-nums">
-          <span>เลือกแล้ว {validSelectedIds.length} คน</span>
+        <div className="flex items-center justify-end text-xs font-medium text-[#8E8E93] dark:text-[#98989D] tabular-nums">
           <span>ตัวคูณ x{multiplier}</span>
         </div>
         <button
