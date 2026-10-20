@@ -77,6 +77,7 @@ function RoundSetupInner({
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [multiplier, setMultiplier] = useState<number>(1);
   const [isRandom, setIsRandom] = useState(false);
+  const [triggerReveal, setTriggerReveal] = useState<boolean>(false);
   const [step, setStep] = useState<"setup" | "entry">("setup");
   const [roundPlayers, setRoundPlayers] = useState<Player[]>([]);
 
@@ -111,13 +112,32 @@ function RoundSetupInner({
           .map((id) => players.find((p) => p.id === id))
           .filter((p): p is Player => p !== undefined);
         setRoundPlayers(snapshot);
+        setTriggerReveal(true);
         setStep("entry");
       } else {
         setRoundPlayers([]);
+        setTriggerReveal(false);
         setStep("setup");
       }
     }
   }, [presetTrigger, players]);
+
+  useEffect(() => {
+    if (step === "entry" && presetTrigger?.autoStart) {
+      setTimeout(() => {
+        const el = document.getElementById("round-setup-section");
+        if (el) {
+          const rect = el.getBoundingClientRect();
+          const headerOffset = 72;
+          const targetTop = window.scrollY + rect.top - headerOffset;
+          window.scrollTo({
+            top: Math.max(0, targetTop),
+            behavior: "smooth",
+          });
+        }
+      }, 40);
+    }
+  }, [step, presetTrigger]);
 
   function togglePlayer(id: string) {
     setSelectedIds((current) =>
@@ -148,6 +168,7 @@ function RoundSetupInner({
       .filter((player): player is Player => player !== undefined);
     if (snapshot.length < MIN_PLAYERS) return;
     setRoundPlayers(snapshot);
+    setTriggerReveal(false);
     setStep("entry");
   }
 
@@ -156,18 +177,24 @@ function RoundSetupInner({
     setMultiplier(1);
     setIsRandom(false);
     setRoundPlayers([]);
+    setTriggerReveal(false);
     setStep("setup");
   }
 
   if (step === "entry") {
     return (
-      <ScoreEntry
-        players={roundPlayers}
-        multiplier={multiplier}
-        triggerReveal={false}
-        onBack={() => setStep("setup")}
-        onReset={resetRound}
-      />
+      <div id="round-setup-section" className="scroll-mt-20 sm:scroll-mt-24">
+        <ScoreEntry
+          players={roundPlayers}
+          multiplier={multiplier}
+          triggerReveal={triggerReveal}
+          onBack={() => {
+            setTriggerReveal(false);
+            setStep("setup");
+          }}
+          onReset={resetRound}
+        />
+      </div>
     );
   }
 

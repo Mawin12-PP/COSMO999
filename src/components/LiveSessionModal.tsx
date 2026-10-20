@@ -130,7 +130,6 @@ export function LiveSessionModal({
 
   if (!isOpen || !session || !stats) return null;
 
-  const currentRoundNumber = stats.totalRounds + 1;
   const isTableConfigured = tablePlayers.length >= 2;
 
   // Toggle initial player selection
@@ -557,87 +556,100 @@ export function LiveSessionModal({
         {/* ========================================================= */}
         {/* BOTTOM ROUND PREP BAR: Ergonomic Player Swap + Multiplier */}
         {/* ========================================================= */}
-        <footer className="mt-auto rounded-[24px] border border-black/[0.06] dark:border-[#38383A] p-3 sm:p-4 bg-white dark:bg-[#1C1C1E] shadow-sm flex flex-col gap-3">
+        <footer className="mt-auto rounded-[24px] sm:rounded-[28px] border border-black/[0.06] dark:border-[#38383A] p-4 sm:p-5 bg-white dark:bg-[#1C1C1E] shadow-sm flex flex-col gap-3.5 sm:gap-4">
           
-          {/* Controls: Players in Round + Multiplier Selector */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 text-xs">
+          {/* Controls: 2-column grid on desktop/iPad, stacked on iPhone */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-5">
             
-            {/* Player In/Out Chips */}
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
-              <span className="text-[11px] font-semibold text-[#8E8E93] dark:text-[#98989D] shrink-0 mr-1">
-                ผู้เล่น ({selectedCount} คน):
-              </span>
-              {tablePlayers.map((tp) => {
-                const isSelected = selectedRoundPlayerIds.includes(tp.id);
-                return (
+            {/* 1. Players in Round */}
+            <div className="flex flex-col gap-2 min-w-0">
+              <div className="flex items-center justify-between text-xs px-0.5">
+                <span className="font-bold text-[#8E8E93] dark:text-[#98989D] uppercase tracking-wider text-[11px]">
+                  ผู้เล่นในรอบนี้ ({selectedCount} คน)
+                </span>
+                {availableRosterPlayers.length > 0 && (
                   <button
-                    key={tp.id}
                     type="button"
-                    onClick={() => toggleRoundPlayer(tp.id)}
-                    className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold shrink-0 transition-all cursor-pointer ${
-                      isSelected
-                        ? "bg-blue-50 dark:bg-blue-950/40 text-[#007AFF] dark:text-[#2E8BFF] border border-blue-500/30"
-                        : "bg-black/[0.04] dark:bg-white/[0.06] text-[#8E8E93] dark:text-[#98989D] border border-transparent opacity-50"
-                    }`}
+                    onClick={() => setIsAddPlayerModalOpen(true)}
+                    className="flex items-center gap-1 text-[11px] font-semibold text-[#007AFF] dark:text-[#2E8BFF] hover:underline cursor-pointer active:scale-95 transition-all"
                   >
-                    <PlayerAvatar player={tp} className="size-4 text-[9px]" />
-                    <span className="truncate max-w-[80px]">{tp.name}</span>
-                    {isSelected ? (
-                      <Check className="size-3 text-[#007AFF] dark:text-[#2E8BFF]" />
-                    ) : (
-                      <span className="text-[9px] text-[#8E8E93] dark:text-[#98989D]">พัก</span>
-                    )}
+                    <Plus className="size-3.5" />
+                    <span>เพิ่มคนเข้าโต๊ะ</span>
                   </button>
-                );
-              })}
+                )}
+              </div>
 
-              {/* Add New Player to Table Button */}
-              {availableRosterPlayers.length > 0 && (
-                <button
-                  type="button"
-                  onClick={() => setIsAddPlayerModalOpen(true)}
-                  className="flex items-center gap-1 rounded-full border border-dashed border-black/[0.15] dark:border-white/20 bg-black/[0.02] dark:bg-white/[0.03] px-2.5 py-1 text-xs font-medium text-[#8E8E93] dark:text-[#98989D] hover:text-[#1C1C1E] dark:hover:text-[#F2F2F7] transition-all cursor-pointer shrink-0"
-                >
-                  <Plus className="size-3" />
-                  <span>เพิ่มคน</span>
-                </button>
-              )}
+              {/* Player Chips Row (Clean, scrollable with no visible native scrollbar) */}
+              <div className="flex items-center gap-2 overflow-x-auto py-1 px-0.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                {tablePlayers.map((tp) => {
+                  const isSelected = selectedRoundPlayerIds.includes(tp.id);
+                  return (
+                    <button
+                      key={tp.id}
+                      type="button"
+                      onClick={() => toggleRoundPlayer(tp.id)}
+                      className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold shrink-0 transition-all cursor-pointer active:scale-95 ${
+                        isSelected
+                          ? "bg-blue-50 dark:bg-blue-950/40 text-[#007AFF] dark:text-[#2E8BFF] border border-blue-500/30 shadow-xs"
+                          : "bg-black/[0.04] dark:bg-white/[0.06] text-[#8E8E93] dark:text-[#98989D] border border-transparent opacity-60"
+                      }`}
+                    >
+                      <PlayerAvatar player={tp} className="size-5 text-[10px]" />
+                      <span className="truncate max-w-[100px]">{tp.name}</span>
+                      {isSelected ? (
+                        <Check className="size-3 text-[#007AFF] dark:text-[#2E8BFF]" />
+                      ) : (
+                        <span className="text-[10px] text-[#8E8E93] dark:text-[#98989D]">พัก</span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
-            {/* Multiplier Pills */}
-            <div className="flex items-center gap-1 overflow-x-auto shrink-0 pb-0.5">
-              <span className="text-[11px] font-semibold text-[#8E8E93] dark:text-[#98989D] shrink-0 mr-1 sm:hidden">
-                ตัวคูณ:
-              </span>
-              {MULTIPLIERS.map((m) => (
+            {/* 2. Multiplier Picker */}
+            <div className="flex flex-col gap-2 min-w-0">
+              <div className="flex items-center justify-between text-xs px-0.5">
+                <span className="font-bold text-[#8E8E93] dark:text-[#98989D] uppercase tracking-wider text-[11px]">
+                  ตัวคูณ
+                </span>
+                <span className="font-bold text-xs text-[#007AFF] dark:text-[#2E8BFF] tabular-nums">
+                  {multiplierLabel}
+                </span>
+              </div>
+
+              {/* Multiplier Pills with comfortable touch targets and no scrollbar */}
+              <div className="flex items-center gap-1.5 overflow-x-auto py-1 px-0.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                {MULTIPLIERS.map((m) => (
+                  <button
+                    key={m}
+                    type="button"
+                    onClick={() => {
+                      setRoundMultiplier(m);
+                      setIsRandomMultiplier(false);
+                    }}
+                    className={`min-w-[42px] h-9 sm:h-9.5 px-3 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-bold transition-all cursor-pointer tabular-nums flex items-center justify-center shrink-0 active:scale-95 ${
+                      !isRandomMultiplier && roundMultiplier === m
+                        ? "bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] text-white shadow-xs"
+                        : "bg-black/[0.04] dark:bg-white/[0.06] text-[#8E8E93] dark:text-[#98989D] hover:text-[#1C1C1E] dark:hover:text-[#F2F2F7]"
+                    }`}
+                  >
+                    x{m}
+                  </button>
+                ))}
                 <button
-                  key={m}
                   type="button"
-                  onClick={() => {
-                    setRoundMultiplier(m);
-                    setIsRandomMultiplier(false);
-                  }}
-                  className={`rounded-full px-2.5 py-1 text-xs font-bold transition-all cursor-pointer tabular-nums ${
-                    !isRandomMultiplier && roundMultiplier === m
-                      ? "bg-[#007AFF] text-white shadow-xs"
+                  onClick={() => setIsRandomMultiplier(true)}
+                  className={`h-9 sm:h-9.5 px-3.5 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 shrink-0 active:scale-95 ${
+                    isRandomMultiplier
+                      ? "bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] text-white shadow-xs"
                       : "bg-black/[0.04] dark:bg-white/[0.06] text-[#8E8E93] dark:text-[#98989D] hover:text-[#1C1C1E] dark:hover:text-[#F2F2F7]"
                   }`}
                 >
-                  x{m}
+                  <Shuffle className="size-3.5" />
+                  <span>สุ่ม</span>
                 </button>
-              ))}
-              <button
-                type="button"
-                onClick={() => setIsRandomMultiplier(true)}
-                className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold transition-all cursor-pointer ${
-                  isRandomMultiplier
-                    ? "bg-[#007AFF] text-white shadow-xs"
-                    : "bg-black/[0.04] dark:bg-white/[0.06] text-[#8E8E93] dark:text-[#98989D] hover:text-[#1C1C1E] dark:hover:text-[#F2F2F7]"
-                }`}
-              >
-                <Shuffle className="size-3" />
-                <span>สุ่ม</span>
-              </button>
+              </div>
             </div>
 
           </div>
@@ -648,7 +660,7 @@ export function LiveSessionModal({
               type="button"
               onClick={handleStartScoreEntry}
               disabled={selectedCount < 2}
-              className={`flex min-h-[48px] sm:min-h-[50px] w-full max-w-xl items-center justify-center gap-2 rounded-2xl px-6 py-3 text-sm sm:text-base font-bold transition-all ${
+              className={`flex min-h-[50px] w-full max-w-xl items-center justify-center gap-2 rounded-2xl px-6 py-3.5 text-sm sm:text-base font-bold transition-all ${
                 selectedCount >= 2
                   ? "bg-gradient-to-r from-[#2E8BFF] to-[#007AFF] text-white shadow-lg shadow-blue-500/25 active:scale-[0.98] cursor-pointer hover:opacity-95"
                   : "bg-gray-300 text-gray-500 dark:bg-gray-800 dark:text-gray-400 cursor-not-allowed shadow-none"
@@ -657,7 +669,7 @@ export function LiveSessionModal({
               <Radio className="size-4 animate-pulse" />
               <span>
                 {selectedCount >= 2
-                  ? `กรอกคะแนนรอบที่ ${currentRoundNumber} (${selectedCount} คน • ตัวคูณ ${multiplierLabel})`
+                  ? "กรอกคะแนน"
                   : "กรุณาเลือกผู้เล่นอย่างน้อย 2 คน"}
               </span>
             </button>

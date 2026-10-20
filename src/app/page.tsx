@@ -38,10 +38,21 @@ export default function HomePage() {
 
   function handlePlayAgain(playerIds: string[]) {
     setPresetTrigger({ ids: playerIds, timestamp: Date.now(), autoStart: true });
-    const el = document.getElementById("round-setup-section");
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth" });
-    }
+    // Scroll directly to the top edge of the score entry frame with sticky header clearance
+    setTimeout(() => {
+      const el = document.getElementById("round-setup-section");
+      if (el) {
+        const rect = el.getBoundingClientRect();
+        const headerOffset = 72;
+        const targetTop = window.scrollY + rect.top - headerOffset;
+        window.scrollTo({
+          top: Math.max(0, targetTop),
+          behavior: "smooth",
+        });
+      } else {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    }, 40);
   }
 
   return (

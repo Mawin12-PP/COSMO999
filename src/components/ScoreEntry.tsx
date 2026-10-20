@@ -36,17 +36,6 @@ function getMultiplierTheme(m: number) {
   return { name: "ปกติ", Icon: Target };
 }
 
-async function fireMiniConfetti() {
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  const { default: confetti } = await import("canvas-confetti");
-  confetti({
-    particleCount: 45,
-    spread: 60,
-    origin: { y: 0.3 },
-    zIndex: 9999,
-  });
-}
-
 async function fireConfetti() {
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   const { default: confetti } = await import("canvas-confetti");
@@ -112,15 +101,14 @@ export function ScoreEntry({
     setIsLanded(false);
 
     const steps = [
-      { delay: 60 },
-      { delay: 130 },
-      { delay: 210 },
-      { delay: 300 },
-      { delay: 410 },
-      { delay: 530 },
-      { delay: 660 },
-      { delay: 800 },
-      { delay: 960, isFinal: true },
+      { delay: 100 },
+      { delay: 220 },
+      { delay: 360 },
+      { delay: 520 },
+      { delay: 700 },
+      { delay: 900 },
+      { delay: 1120 },
+      { delay: 1360, isFinal: true },
     ];
 
     const timers: NodeJS.Timeout[] = [];
@@ -131,9 +119,6 @@ export function ScoreEntry({
           setDisplayMultiplier(multiplier);
           setIsRevealing(false);
           setIsLanded(true);
-          if (multiplier >= 4) {
-            void fireMiniConfetti();
-          }
         } else {
           const rand =
             MULTIPLIER_CANDIDATES[
@@ -153,9 +138,15 @@ export function ScoreEntry({
   const theme = getMultiplierTheme(displayMultiplier);
 
   useEffect(() => {
-    const firstId = players[0]?.id;
-    if (firstId) inputRefs.current[firstId]?.focus();
-  }, [players]);
+    if (isRevealing) return;
+    const isTouch =
+      typeof window !== "undefined" &&
+      ("ontouchstart" in window || navigator.maxTouchPoints > 0);
+    if (!isTouch) {
+      const firstId = players[0]?.id;
+      if (firstId) inputRefs.current[firstId]?.focus();
+    }
+  }, [players, isRevealing]);
 
   function updateScore(id: string, value: string) {
     setRawInputs((current) => ({ ...current, [id]: value }));
