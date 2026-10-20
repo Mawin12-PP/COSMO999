@@ -3,6 +3,11 @@
 // Live list of match history from dummyRoom/history. Read-only.
 import { useEffect, useState } from "react";
 import { DB_PATHS, isConfigured } from "@/lib/firebase";
+import {
+  getLocalRoom,
+  initializeLocalRoom,
+  subscribeToLocalRoom,
+} from "@/lib/localRoom";
 import { subscribeToList } from "@/lib/rtdb";
 import type { HistoryEntry } from "@/types/models";
 
@@ -16,20 +21,33 @@ export function useHistory(): {
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    // If Firebase is not configured (local development), load mock data immediately
-    if (process.env.NODE_ENV === "development" && !isConfigured) {
-      fetch("/mock-data.json")
-        .then((res) => res.json())
-        .then((data) => {
-          if (Array.isArray(data?.history) && data.history.length > 0) {
-            setHistory(data.history);
-            setError(null);
-          }
+    // If Firebase is not configured (local development), use reactive localStorage mock
+    if (!isConfigured) {
+      initializeLocalRoom()
+        .then((room) => {
+          const list = Object.values(room.history).sort(
+            (a, b) =>
+              new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+          );
+          setHistory(list);
+          setError(null);
         })
         .catch((err) => setError(err))
         .finally(() => setLoading(false));
-      return;
+
+      const unsubscribe = subscribeToLocalRoom(() => {
+        const room = getLocalRoom();
+        if (room) {
+          const list = Object.values(room.history).sort(
+            (a, b) =>
+              new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+          );
+          setHistory(list);
+        }
+      });
+      return unsubscribe;
     }
+
     const unsubscribe = subscribeToList<HistoryEntry>(
       DB_PATHS.history,
       (items) => {
@@ -38,21 +56,6 @@ export function useHistory(): {
         setLoading(false);
       },
       (err) => {
-        if (process.env.NODE_ENV === "development" && !isConfigured) {
-          fetch("/mock-data.json")
-            .then((res) => res.json())
-            .then((data) => {
-              if (Array.isArray(data?.history) && data.history.length > 0) {
-                setHistory(data.history);
-                setError(null);
-              } else {
-                setError(err);
-              }
-            })
-            .catch(() => setError(err))
-            .finally(() => setLoading(false));
-          return;
-        }
         setError(err);
         setLoading(false);
       },

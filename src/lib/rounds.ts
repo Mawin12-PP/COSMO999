@@ -4,9 +4,11 @@
 // Every write uses runTransaction on DB_PATHS.root so players / groups /
 // history are always consistent and no write ever touches a hardcoded path.
 import { ref, runTransaction } from "firebase/database";
-import { database, DB_PATHS } from "./firebase";
-import { normalizeList } from "./rtdb";
+import { database, DB_PATHS, isConfigured } from "./firebase";
+import { initializeLocalRoom, normalizeRoom, setLocalRoom } from "./localRoom";
 import type { Group, HistoryEntry, Player, RoomData } from "@/types/models";
+
+export { normalizeRoom };
 
 export interface SaveRoundArgs {
   // Ids of the players in this round, in selection order (not sorted - the
@@ -17,38 +19,15 @@ export interface SaveRoundArgs {
   multiplier: number;
   // Pre-computed by generateRoundCommentary; "" means no roast this round.
   commentary: string;
+  sessionId?: string;
 }
 
 export interface SaveRoundResult {
   committed: boolean;
 }
 
-// Firebase's transaction updater is untyped (v9 hands the raw current value
-// as `unknown`, previously `any` in the v8 API this was ported from). This is
-// the single boundary where that raw value is narrowed into RoomData -
-// mirrors normalizeList's role for the read hooks. currentData is null on
-// the optimistic first local pass; treat that the same as an empty room
-// rather than aborting, since returning undefined here would cancel the
-// whole write once Firebase re-runs with real server data.
-// Exported so History.tsx's undo/recalc transactions can use the same
-// normalisation boundary without duplicating the narrowing logic.
-export function normalizeRoom(raw: unknown): RoomData {
-  if (raw === null || typeof raw !== "object") {
-    return { players: [], groups: [], history: {} };
-  }
-  const room = raw as Record<string, unknown>;
-  const players = normalizeList<Player>(room.players);
-  const groups = normalizeList<Group>(room.groups);
-  const rawHistory = room.history;
-  const history: Record<string, HistoryEntry> =
-    rawHistory !== null && typeof rawHistory === "object"
-      ? (rawHistory as Record<string, HistoryEntry>)
-      : {};
-  return { players, groups, history };
-}
-
 function applyRound(room: RoomData, args: SaveRoundArgs): RoomData {
-  const { playerIds, netScores, multiplier, commentary } = args;
+  const { playerIds, netScores, multiplier, commentary, sessionId } = args;
 
   const players = [...room.players];
   for (const id of playerIds) {
@@ -99,6 +78,7 @@ function applyRound(room: RoomData, args: SaveRoundArgs): RoomData {
     multiplier,
     playerScores: netScores,
     commentary,
+    ...(sessionId ? { sessionId } : {}),
   };
 
   return {
@@ -110,25 +90,36 @@ function applyRound(room: RoomData, args: SaveRoundArgs): RoomData {
 
 /**
  * Save one round: player totals, the group's running score, and a history
- * entry all update in a single transaction on DB_PATHS.root. Never throws -
- * a failed or aborted write comes back as `committed: false` so the caller
- * can show an inline error instead of losing data.
+ * entry all update in a single transaction on DB_PATHS.root.
+ * In local dev mode (!isConfigured), persists atomically to localStorage.
  */
 export async function saveRound(args: SaveRoundArgs): Promise<SaveRoundResult> {
+  if (!isConfigured) {
+    try {
+      const room = await initializeLocalRoom();
+      const updated = applyRound(room, args);
+      setLocalRoom(updated);
+      return { committed: true };
+    } catch {
+      return { committed: false };
+    }
+  }
+
   try {
-    const result = await runTransaction(
+    const transactionPromise = runTransaction(
       ref(database, DB_PATHS.root),
       (currentData: unknown) => applyRound(normalizeRoom(currentData), args),
-      // The room root has no active listener (only its players/groups/history
-      // children do), so the SDK cannot serve a cached value here and this
-      // transaction's first pass always runs on `currentData: null`. With the
-      // default applyLocally: true, that null-derived result (an otherwise-
-      // empty room plus just this round) would flash into the UI for one
-      // round trip before the server value arrives and the transaction
-      // re-runs. Disabling it skips that optimistic broadcast; the write
-      // itself is unaffected.
       { applyLocally: false },
     );
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error("Timeout saving round")), 12000),
+    );
+
+    const result = (await Promise.race([
+      transactionPromise,
+      timeoutPromise,
+    ])) as { committed: boolean };
+
     return { committed: result.committed };
   } catch {
     return { committed: false };
@@ -138,24 +129,53 @@ export async function saveRound(args: SaveRoundArgs): Promise<SaveRoundResult> {
 /**
  * Undo one history entry: subtract the round's player scores from each
  * player's totalScore and from the group's scores, then delete the history
- * entry. All three mutations happen in one transaction on DB_PATHS.root.
- * Ported from legacy undoMatch (reference/legacy-prototype.sanitized.html
- * L1044-1090) with confirm() replaced by the UI-level ConfirmDialog.
- * Never throws - returns committed: false on failure so the caller can show
- * an inline error without losing data.
+ * entry.
+ * In local dev mode (!isConfigured), persists atomically to localStorage.
  */
 export async function undoRound(matchId: string): Promise<SaveRoundResult> {
+  if (!isConfigured) {
+    try {
+      const room = await initializeLocalRoom();
+      const log = room.history[matchId];
+      if (!log) return { committed: true };
+
+      const players = [...room.players];
+      const groups = [...room.groups];
+
+      for (const [pId, scoreToRevert] of Object.entries(log.playerScores)) {
+        const pIndex = players.findIndex((p) => p.id === pId);
+        if (pIndex > -1) {
+          players[pIndex] = {
+            ...players[pIndex],
+            totalScore: (players[pIndex].totalScore ?? 0) - scoreToRevert,
+          };
+        }
+
+        const gIndex = groups.findIndex((g) => g.id === log.groupId);
+        if (gIndex > -1 && groups[gIndex].scores) {
+          const updatedGroup: Group = {
+            ...groups[gIndex],
+            scores: { ...groups[gIndex].scores },
+          };
+          updatedGroup.scores[pId] = (updatedGroup.scores[pId] ?? 0) - scoreToRevert;
+          groups[gIndex] = updatedGroup;
+        }
+      }
+
+      const newHistory = { ...room.history };
+      delete newHistory[matchId];
+
+      setLocalRoom({ players, groups, history: newHistory });
+      return { committed: true };
+    } catch {
+      return { committed: false };
+    }
+  }
+
   try {
-    const result = await runTransaction(
+    const transactionPromise = runTransaction(
       ref(database, DB_PATHS.root),
       (currentData: unknown) => {
-        // Firebase transactions often run with null on the first local pass.
-        // If we return undefined here, the transaction aborts locally without
-        // ever reaching the server. Instead, return currentData to force a
-        // server round-trip. If the server is actually empty or missing the
-        // entry, writing currentData back is a safe no-op that resolves the
-        // transaction successfully (since the end goal - the round being gone
-        // - is already met).
         if (currentData === null || typeof currentData !== "object") {
           return currentData;
         }
@@ -176,8 +196,6 @@ export async function undoRound(matchId: string): Promise<SaveRoundResult> {
         const groups = [...room.groups];
 
         for (const [pId, scoreToRevert] of Object.entries(log.playerScores)) {
-          // Subtract from the player's running total (guard: player may have
-          // been deleted since the round was saved).
           const pIndex = players.findIndex((p) => p.id === pId);
           if (pIndex > -1) {
             players[pIndex] = {
@@ -186,8 +204,6 @@ export async function undoRound(matchId: string): Promise<SaveRoundResult> {
             };
           }
 
-          // Subtract from the group's per-player score (guard: group must
-          // exist and have a scores map).
           const gIndex = groups.findIndex((g) => g.id === log.groupId);
           if (gIndex > -1 && groups[gIndex].scores) {
             const updatedGroup: Group = {
@@ -199,9 +215,6 @@ export async function undoRound(matchId: string): Promise<SaveRoundResult> {
           }
         }
 
-        // Remove the entry from history and write all three collections back.
-        // players/groups go back as arrays; history stays as an object keyed
-        // by matchId, matching the legacy dummyRoom/history shape exactly.
         const newHistory = { ...room.history };
         delete newHistory[matchId];
 
@@ -209,6 +222,15 @@ export async function undoRound(matchId: string): Promise<SaveRoundResult> {
       },
       { applyLocally: false },
     );
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error("Timeout undoing round")), 12000),
+    );
+
+    const result = (await Promise.race([
+      transactionPromise,
+      timeoutPromise,
+    ])) as { committed: boolean };
+
     return { committed: result.committed };
   } catch {
     return { committed: false };
@@ -216,15 +238,53 @@ export async function undoRound(matchId: string): Promise<SaveRoundResult> {
 }
 
 /**
- * Recalculate all player and group scores from scratch by replaying every
- * history entry. Ported from legacy recalculateScoresFromHistory
- * (reference/legacy-prototype.sanitized.html L1092-1122). Zeros every
- * totalScore / latestScore / group.scores entry, then sums each history
- * entry back in. History itself is not modified. Runs as a single
- * transaction on DB_PATHS.root so the write is atomic. Never throws -
- * returns committed: false so the caller can surface an inline error.
+ * Recalculate all player and group scores from scratch by replaying every history entry.
  */
 export async function recalculateScores(): Promise<SaveRoundResult> {
+  if (!isConfigured) {
+    try {
+      const room = await initializeLocalRoom();
+      const players: Player[] = room.players.map((p) => ({
+        ...p,
+        totalScore: 0,
+        latestScore: null,
+      }));
+
+      const groups: Group[] = room.groups.map((g) => {
+        const zeroed: Record<string, number> = {};
+        for (const key of Object.keys(g.scores)) zeroed[key] = 0;
+        return { ...g, scores: zeroed };
+      });
+
+      for (const log of Object.values(room.history)) {
+        for (const [pId, score] of Object.entries(log.playerScores)) {
+          const pIndex = players.findIndex((p) => p.id === pId);
+          if (pIndex > -1) {
+            players[pIndex] = {
+              ...players[pIndex],
+              totalScore: (players[pIndex].totalScore ?? 0) + score,
+            };
+          }
+
+          const gIndex = groups.findIndex((g) => g.id === log.groupId);
+          if (gIndex > -1) {
+            const updatedGroup: Group = {
+              ...groups[gIndex],
+              scores: { ...groups[gIndex].scores },
+            };
+            updatedGroup.scores[pId] = (updatedGroup.scores[pId] ?? 0) + score;
+            groups[gIndex] = updatedGroup;
+          }
+        }
+      }
+
+      setLocalRoom({ players, groups, history: room.history });
+      return { committed: true };
+    } catch {
+      return { committed: false };
+    }
+  }
+
   try {
     const result = await runTransaction(
       ref(database, DB_PATHS.root),
@@ -245,9 +305,7 @@ export async function recalculateScores(): Promise<SaveRoundResult> {
           return { ...g, scores: zeroed };
         });
 
-        // Replay every history entry in insertion order (Firebase preserves
-        // object key insertion order for numeric-string keys, which matchIds
-        // are). totalScore accumulates; group scores accumulate per player.
+        // Replay every history entry in insertion order
         for (const log of Object.values(room.history)) {
           for (const [pId, score] of Object.entries(log.playerScores)) {
             const pIndex = players.findIndex((p) => p.id === pId);
@@ -270,7 +328,6 @@ export async function recalculateScores(): Promise<SaveRoundResult> {
           }
         }
 
-        // History shape is unchanged; only players and groups are rewritten.
         return { players, groups, history: room.history };
       },
       { applyLocally: false },

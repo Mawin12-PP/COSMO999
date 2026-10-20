@@ -9,10 +9,11 @@
 // - Apple typography: font-semibold tracking-tight text-[#1C1C1E] & text-[#8E8E93]
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowRight, Play } from "lucide-react";
+import { ArrowRight, Play, Radio } from "lucide-react";
 import { MultiplierPicker } from "@/components/MultiplierPicker";
 import { RoundPlayerSelect } from "@/components/RoundPlayerSelect";
 import { ScoreEntry } from "@/components/ScoreEntry";
+import { getRandomMultiplier } from "@/lib/scoring";
 import type { HistoryEntry, Player } from "@/types/models";
 
 const MIN_PLAYERS = 2;
@@ -34,6 +35,18 @@ function lastPlayedByPlayer(history: HistoryEntry[]): Record<string, number> {
 export interface PresetTrigger {
   ids: string[];
   timestamp: number;
+  autoStart?: boolean;
+}
+
+export interface RoundSetupProps {
+  players: Player[];
+  history: HistoryEntry[];
+  loading: boolean;
+  presetTrigger?: PresetTrigger | null;
+  isLive?: boolean;
+  liveRoundCount?: number;
+  onOpenLiveSession?: () => void;
+  onStartLiveSession?: () => void;
 }
 
 function RoundSetupInner({
@@ -41,12 +54,11 @@ function RoundSetupInner({
   history,
   loading,
   presetTrigger,
-}: {
-  players: Player[];
-  history: HistoryEntry[];
-  loading: boolean;
-  presetTrigger?: PresetTrigger | null;
-}) {
+  isLive = false,
+  liveRoundCount = 0,
+  onOpenLiveSession,
+  onStartLiveSession,
+}: RoundSetupProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -81,31 +93,29 @@ function RoundSetupInner({
 
   const appliedTriggerRef = useRef<number | null>(null);
 
-  function getRandomMultiplier(): number {
-    const rand = Math.random() * 100;
-    if (rand < 5) return 1;
-    if (rand < 15) return 2;
-    if (rand < 25) return 4;
-    if (rand < 50) return 5;
-    if (rand < 75) return 8;
-    if (rand < 95) return 10;
-    return 20;
-  }
-
   useEffect(() => {
     if (!presetTrigger || !presetTrigger.ids.length) return;
     if (appliedTriggerRef.current === presetTrigger.timestamp) return;
     const validIds = presetTrigger.ids.filter((id) =>
       players.some((p) => p.id === id),
     );
-    if (validIds.length > 0) {
+    if (validIds.length >= MIN_PLAYERS) {
       appliedTriggerRef.current = presetTrigger.timestamp;
       setSelectedIds(validIds);
       const nextMultiplier = getRandomMultiplier();
       setMultiplier(nextMultiplier);
       setIsRandom(true);
-      setRoundPlayers([]);
-      setStep("setup");
+
+      if (presetTrigger.autoStart) {
+        const snapshot = validIds
+          .map((id) => players.find((p) => p.id === id))
+          .filter((p): p is Player => p !== undefined);
+        setRoundPlayers(snapshot);
+        setStep("entry");
+      } else {
+        setRoundPlayers([]);
+        setStep("setup");
+      }
     }
   }, [presetTrigger, players]);
 
@@ -154,6 +164,7 @@ function RoundSetupInner({
       <ScoreEntry
         players={roundPlayers}
         multiplier={multiplier}
+        triggerReveal={false}
         onBack={() => setStep("setup")}
         onReset={resetRound}
       />
@@ -165,13 +176,36 @@ function RoundSetupInner({
       id="round-setup-section"
       className="flex flex-col gap-6 rounded-[20px] border border-black/[0.04] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] p-5 sm:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none transition-all"
     >
-      <div className="flex items-center gap-2.5">
-        <span className="grid size-8 place-items-center rounded-xl bg-blue-50 dark:bg-blue-950/40 text-[#007AFF]">
-          <Play className="size-4 fill-current" />
-        </span>
-        <h2 className="text-lg font-semibold tracking-tight text-[#1C1C1E] dark:text-[#F2F2F7]">
-          เริ่มเกม
-        </h2>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <span className="grid size-8 place-items-center rounded-xl bg-blue-50 dark:bg-blue-950/40 text-[#007AFF]">
+            <Play className="size-4 fill-current" />
+          </span>
+          <h2 className="text-lg font-semibold tracking-tight text-[#1C1C1E] dark:text-[#F2F2F7]">
+            เริ่มเกม
+          </h2>
+        </div>
+
+        {/* Live Session Pill beside "เริ่มเกม" */}
+        {isLive ? (
+          <button
+            type="button"
+            onClick={onOpenLiveSession}
+            className="flex items-center gap-1.5 rounded-full border border-green-500/30 bg-green-50 dark:bg-green-950/40 hover:bg-green-100 dark:hover:bg-green-950/60 active:scale-95 text-[#34C759] text-xs font-bold px-3 py-1.5 transition-all cursor-pointer shadow-xs"
+          >
+            <span className="size-2 rounded-full bg-[#34C759] animate-pulse" />
+            <span>เข้าสู่โต๊ะสด (รอบที่ {liveRoundCount})</span>
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={onStartLiveSession}
+            className="flex items-center gap-1.5 rounded-full border border-blue-500/30 bg-blue-50 dark:bg-blue-950/40 text-[#007AFF] dark:text-[#2E8BFF] hover:bg-blue-100 dark:hover:bg-blue-950/60 active:scale-95 text-xs font-semibold px-3 py-1.5 transition-all cursor-pointer shadow-xs"
+          >
+            <Radio className="size-3.5 text-current" />
+            <span>เปิดโต๊ะสด</span>
+          </button>
+        )}
       </div>
 
       <div className="@container flex flex-col gap-2.5">
@@ -216,17 +250,7 @@ function RoundSetupInner({
   );
 }
 
-export function RoundSetup({
-  players,
-  history,
-  loading,
-  presetTrigger,
-}: {
-  players: Player[];
-  history: HistoryEntry[];
-  loading: boolean;
-  presetTrigger?: PresetTrigger | null;
-}) {
+export function RoundSetup(props: RoundSetupProps) {
   return (
     <Suspense
       fallback={
@@ -242,12 +266,7 @@ export function RoundSetup({
         </section>
       }
     >
-      <RoundSetupInner
-        players={players}
-        history={history}
-        loading={loading}
-        presetTrigger={presetTrigger}
-      />
+      <RoundSetupInner {...props} />
     </Suspense>
   );
 }

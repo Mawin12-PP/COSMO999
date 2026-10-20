@@ -30,6 +30,7 @@ export interface HistoryEntry {
   multiplier: number;
   playerScores: Record<string, number>;
   commentary: string;
+  sessionId?: string;
 }
 
 // Shape of the whole room node (DB_PATHS.root). history stays an object

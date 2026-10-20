@@ -3,13 +3,18 @@
 // iOS-style Modal Sheet for Adding or Editing a Player.
 // Follows Apple iOS guidelines: 44px+ touch targets, active:scale-90 squish feedback,
 // scale-in-animation, frosted glass backdrop, and full Dark Mode support.
+// Supports personalized Emoji avatars (strict original theme) or custom uploaded photo.
 import { useEffect, useRef, useState } from "react";
-import { Check, ImagePlus, Loader2, Pencil, Trash2, UserPlus, X } from "lucide-react";
+import { Check, Crop, ImagePlus, Loader2, Pencil, Shuffle, Trash2, UserPlus, X } from "lucide-react";
+import { AvatarCropperModal } from "@/components/AvatarCropperModal";
 import { GlobalModal } from "@/components/GlobalModal";
 import { PlayerAvatar } from "@/components/PlayerAvatar";
-import { fileToResizedDataUrl } from "@/lib/image";
 import { createPlayer, updatePlayer } from "@/lib/players";
-import { getUniqueThematicAvatar, type ThematicAvatarId } from "@/lib/suits";
+import {
+  EMOJI_AVATARS,
+  getRandomEmoji,
+  parseEmojiAvatar,
+} from "@/lib/suits";
 import type { Player } from "@/types/models";
 
 export function PlayerModal({
@@ -25,11 +30,14 @@ export function PlayerModal({
 }) {
   const isEdit = Boolean(player);
   const [name, setName] = useState(player?.name ?? "");
+  const [avatarMode, setAvatarMode] = useState<"emoji" | "photo">("emoji");
+  const [selectedEmoji, setSelectedEmoji] = useState<string>("🦁");
   const [previewImage, setPreviewImage] = useState<string | undefined>(player?.image);
   const [fileName, setFileName] = useState<string | null>(null);
+  const [isCropperOpen, setIsCropperOpen] = useState(false);
+  const [cropSource, setCropSource] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [assignedAvatar, setAssignedAvatar] = useState<ThematicAvatarId>("spade");
   const fileRef = useRef<HTMLInputElement>(null);
 
   const wasOpenRef = useRef(false);
@@ -39,14 +47,34 @@ export function PlayerModal({
     if (isOpen) {
       if (!wasOpenRef.current) {
         setName(player?.name ?? "");
-        setPreviewImage(player?.image);
-        setFileName(null);
         setError(null);
+        setFileName(null);
         if (fileRef.current) fileRef.current.value = "";
-        if (!player) {
-          // Pick an avatar that is balanced and not repeating in the room
-          const existingImages = existingPlayers.map((p) => p.image);
-          setAssignedAvatar(getUniqueThematicAvatar(existingImages));
+
+        const existingImages = existingPlayers.map((p) => p.image);
+
+        if (player) {
+          const hasPhoto = Boolean(
+            player.image &&
+              (player.image.startsWith("data:") ||
+                player.image.startsWith("http://") ||
+                player.image.startsWith("https://")),
+          );
+          if (hasPhoto) {
+            setAvatarMode("photo");
+            setPreviewImage(player.image);
+            setSelectedEmoji(getRandomEmoji(existingImages));
+          } else {
+            setAvatarMode("emoji");
+            const parsed = parseEmojiAvatar(player.image);
+            setSelectedEmoji(parsed || getRandomEmoji(existingImages));
+            setPreviewImage(undefined);
+          }
+        } else {
+          // Add mode: default to random unique emoji, ready to go!
+          setAvatarMode("emoji");
+          setPreviewImage(undefined);
+          setSelectedEmoji(getRandomEmoji(existingImages));
         }
       }
     }
@@ -67,22 +95,53 @@ export function PlayerModal({
 
   if (!isOpen) return null;
 
-  async function handleImagePick(event: React.ChangeEvent<HTMLInputElement>) {
+  function handleImagePick(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
     setFileName(file.name);
-    try {
-      const resized = await fileToResizedDataUrl(file);
-      setPreviewImage(resized);
-    } catch {
-      setError("ไม่สามารถแปลงไฟล์รูปภาพได้");
-    }
+    setError(null);
+
+    const reader = new FileReader();
+    reader.onerror = () => setError("ไม่สามารถอ่านไฟล์รูปภาพได้");
+    reader.onload = () => {
+      if (typeof reader.result === "string") {
+        setCropSource(reader.result);
+        setIsCropperOpen(true);
+      }
+    };
+    reader.readAsDataURL(file);
+    // Reset file input value so choosing the same file again still fires change
+    event.target.value = "";
+  }
+
+  function handleOpenCropper() {
+    if (!previewImage) return;
+    setCropSource(previewImage);
+    setIsCropperOpen(true);
+  }
+
+  function handleCropComplete(croppedDataUrl: string) {
+    setPreviewImage(croppedDataUrl);
+    setAvatarMode("photo");
+    setIsCropperOpen(false);
+    setCropSource(null);
   }
 
   function handleRemoveImage() {
     setPreviewImage(undefined);
     setFileName(null);
+    setCropSource(null);
     if (fileRef.current) fileRef.current.value = "";
+    setAvatarMode("emoji");
+  }
+
+  function handleRandomizeEmoji() {
+    const existingImages = existingPlayers.map((p) => p.image);
+    const newEmoji = getRandomEmoji(existingImages);
+    setSelectedEmoji(newEmoji);
+    setPreviewImage(undefined);
+    setFileName(null);
+    setAvatarMode("emoji");
   }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -96,15 +155,20 @@ export function PlayerModal({
     setPending(true);
     setError(null);
     try {
+      // Determine final avatar: photo or emoji
+      let finalImage = "";
+      if (avatarMode === "photo" && previewImage) {
+        finalImage = previewImage;
+      } else {
+        finalImage = `emoji:${selectedEmoji || getRandomEmoji(existingPlayers.map((p) => p.image))}`;
+      }
+
       if (isEdit && player) {
         await updatePlayer(player.id, {
           name: trimmed,
-          image: previewImage ?? player.image,
+          image: finalImage,
         });
       } else {
-        // Automatically assign persistent unique thematic avatar if no image uploaded
-        const chosenAvatar = assignedAvatar || getUniqueThematicAvatar(existingPlayers.map((p) => p.image));
-        const finalImage = previewImage || `suit:${chosenAvatar}`;
         await createPlayer(trimmed, finalImage);
       }
       onClose();
@@ -122,7 +186,7 @@ export function PlayerModal({
       preventClose={pending}
       ariaLabelledby="player-modal-title"
     >
-      <div className="bg-white dark:bg-[#1C1C1E] w-full max-w-md p-6 rounded-[24px] shadow-2xl scale-in-animation border border-gray-100 dark:border-white/10 flex flex-col gap-5">
+      <div className="bg-white dark:bg-[#1C1C1E] w-full max-w-md p-5 sm:p-6 rounded-[24px] shadow-2xl scale-in-animation border border-gray-100 dark:border-white/10 flex flex-col gap-4 sm:gap-4.5">
         {/* Header */}
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
@@ -141,7 +205,7 @@ export function PlayerModal({
             onClick={onClose}
             disabled={pending}
             aria-label="ปิด"
-            className="flex size-11 min-h-[44px] min-w-[44px] items-center justify-center -mr-2 -mt-2 rounded-full text-[#8E8E93] dark:text-[#98989D] transition-all duration-200 active:scale-90 hover:bg-black/[0.04] dark:hover:bg-white/[0.06] hover:text-[#1C1C1E] dark:hover:text-[#F2F2F7] disabled:opacity-50"
+            className="flex size-11 min-h-[44px] min-w-[44px] items-center justify-center -mr-2 -mt-2 rounded-full text-[#8E8E93] dark:text-[#98989D] transition-all duration-200 active:scale-90 hover:bg-black/[0.04] dark:hover:bg-white/[0.06] hover:text-[#1C1C1E] dark:hover:text-[#F2F2F7] disabled:opacity-50 cursor-pointer"
           >
             <X className="size-5" />
           </button>
@@ -149,29 +213,35 @@ export function PlayerModal({
 
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          {/* Avatar preview if image is selected or editing player */}
-          <div className="flex items-center gap-3.5 self-center my-1">
-            {previewImage ? (
-              <span
-                role="img"
-                aria-label={name || "รูปผู้เล่น"}
-                className="size-16 rounded-full border border-gray-100 dark:border-white/10 bg-cover bg-center shadow-sm"
+          {/* Live Avatar Preview */}
+          <div className="flex flex-col items-center gap-1.5 self-center my-0.5">
+            {avatarMode === "photo" && previewImage ? (
+              <button
+                type="button"
+                onClick={handleOpenCropper}
+                title="กดเพื่อครอบตัดหรือปรับแต่งมุมรูป"
+                className="group relative size-18 rounded-full border border-gray-100 dark:border-white/10 bg-cover bg-center shadow-md block cursor-pointer transition-transform active:scale-95 hover:ring-2 hover:ring-[#007AFF]/50"
                 style={{ backgroundImage: `url(${previewImage})` }}
-              />
-            ) : isEdit && player ? (
-              <PlayerAvatar player={{ ...player, name: name || player.name }} className="size-16" />
+              >
+                <span className="absolute inset-0 flex items-center justify-center rounded-full bg-black/35 text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Crop className="size-5" />
+                </span>
+              </button>
             ) : (
               <PlayerAvatar
                 player={{
                   id: "preview",
                   name: name || "ผู้เล่นใหม่",
-                  image: `suit:${assignedAvatar}`,
+                  image: `emoji:${selectedEmoji}`,
                   totalScore: 0,
                   latestScore: null,
                 }}
-                className="size-16"
+                className="size-18 text-3xl"
               />
             )}
+            <span className="text-[11px] font-medium text-[#8E8E93] dark:text-[#98989D]">
+              {avatarMode === "photo" && previewImage ? "รูปถ่ายโปรไฟล์" : `Emoji: ${selectedEmoji}`}
+            </span>
           </div>
 
           {/* Name input */}
@@ -197,40 +267,129 @@ export function PlayerModal({
             />
           </div>
 
-          {/* Profile photo picker */}
-          <div className="flex flex-col gap-1.5">
+          {/* Avatar Chooser Mode (Segmented Toggle) */}
+          <div className="flex flex-col gap-2">
             <span className="text-xs font-semibold uppercase tracking-wider text-[#8E8E93] dark:text-[#98989D]">
-              รูปโปรไฟล์ (ไม่บังคับ)
+              รูปโปรไฟล์
             </span>
-            <div className="flex items-center gap-2">
+
+            <div className="flex rounded-full bg-black/[0.05] dark:bg-white/[0.06] p-1 text-xs font-semibold">
               <button
                 type="button"
-                onClick={() => fileRef.current?.click()}
-                disabled={pending}
-                className="flex min-h-[40px] sm:min-h-[44px] items-center gap-2 rounded-xl bg-[#F2F2F7] dark:bg-[#2C2C2E] px-3.5 py-2 sm:px-4 sm:py-2.5 text-xs sm:text-sm font-semibold text-[#007AFF] dark:text-[#2E8BFF] active:scale-90 transition-transform hover:opacity-90 disabled:opacity-50"
+                onClick={() => setAvatarMode("emoji")}
+                className={`flex-1 min-h-[36px] py-1.5 rounded-full transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                  avatarMode === "emoji"
+                    ? "bg-white dark:bg-[#2C2C2E] text-[#1C1C1E] dark:text-[#F2F2F7] shadow-xs"
+                    : "text-[#8E8E93] dark:text-[#98989D] hover:text-[#1C1C1E] dark:hover:text-[#F2F2F7]"
+                }`}
               >
-                <ImagePlus className="size-4 sm:size-4.5" />
-                {fileName ?? (previewImage ? "เปลี่ยนรูป" : "เลือกรูป")}
+                <span>🎭 เลือก Emoji</span>
               </button>
-              {previewImage ? (
-                <button
-                  type="button"
-                  onClick={handleRemoveImage}
-                  disabled={pending}
-                  className="flex min-h-[40px] sm:min-h-[44px] items-center gap-1 rounded-xl bg-red-50 dark:bg-red-500/10 px-3 py-2 text-xs font-semibold text-[#FF3B30] dark:text-[#FF453A] active:scale-90 transition-transform"
-                >
-                  <Trash2 className="size-3.5" />
-                  ลบรูป
-                </button>
-              ) : null}
+              <button
+                type="button"
+                onClick={() => setAvatarMode("photo")}
+                className={`flex-1 min-h-[36px] py-1.5 rounded-full transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                  avatarMode === "photo"
+                    ? "bg-white dark:bg-[#2C2C2E] text-[#1C1C1E] dark:text-[#F2F2F7] shadow-xs"
+                    : "text-[#8E8E93] dark:text-[#98989D] hover:text-[#1C1C1E] dark:hover:text-[#F2F2F7]"
+                }`}
+              >
+                <span>📷 อัปโหลดรูป</span>
+              </button>
             </div>
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleImagePick}
-            />
+
+            {/* Mode 1: Emoji Grid */}
+            {avatarMode === "emoji" ? (
+              <div className="flex flex-col gap-2 rounded-2xl border border-black/[0.06] dark:border-white/[0.08] bg-[#F2F2F7]/50 dark:bg-[#2C2C2E]/40 p-2.5">
+                <div className="flex items-center justify-between px-1">
+                  <span className="text-[11px] font-semibold text-[#8E8E93] dark:text-[#98989D]">
+                    เลือก Emoji ประจำตัว
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleRandomizeEmoji}
+                    className="flex items-center gap-1 text-[11px] font-semibold text-[#007AFF] dark:text-[#2E8BFF] hover:opacity-80 active:scale-95 transition-all cursor-pointer"
+                  >
+                    <Shuffle className="size-3" />
+                    <span>สุ่มใหม่</span>
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-7 sm:grid-cols-8 gap-1.5 max-h-[140px] overflow-y-auto p-0.5">
+                  {EMOJI_AVATARS.map((emoji) => {
+                    const isSelected = selectedEmoji === emoji && !previewImage;
+                    return (
+                      <button
+                        key={emoji}
+                        type="button"
+                        onClick={() => {
+                          setSelectedEmoji(emoji);
+                          setPreviewImage(undefined);
+                          setFileName(null);
+                        }}
+                        className={`size-9 sm:size-10 rounded-full flex items-center justify-center text-lg sm:text-xl transition-all cursor-pointer ${
+                          isSelected
+                            ? "ring-2 ring-[#007AFF] bg-blue-50 dark:bg-blue-950/60 scale-110 shadow-xs"
+                            : "hover:bg-black/[0.05] dark:hover:bg-white/[0.08] active:scale-90"
+                        }`}
+                      >
+                        <span className="transform-gpu select-none">{emoji}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              /* Mode 2: Photo Upload */
+              <div className="flex flex-col gap-2 rounded-2xl border border-black/[0.06] dark:border-white/[0.08] bg-[#F2F2F7]/50 dark:bg-[#2C2C2E]/40 p-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => fileRef.current?.click()}
+                    disabled={pending}
+                    className="flex min-h-[42px] sm:min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl bg-white dark:bg-[#2C2C2E] px-4 py-2 text-xs sm:text-sm font-semibold text-[#007AFF] dark:text-[#2E8BFF] shadow-2xs active:scale-95 transition-all hover:opacity-90 disabled:opacity-50 cursor-pointer border border-black/[0.05] dark:border-white/[0.08]"
+                  >
+                    <ImagePlus className="size-4 sm:size-4.5 shrink-0" />
+                    <span>{fileName ?? (previewImage ? "เปลี่ยนรูป" : "เลือกรูปจากเครื่อง")}</span>
+                  </button>
+                  {previewImage ? (
+                    <>
+                      <button
+                        type="button"
+                        onClick={handleOpenCropper}
+                        disabled={pending}
+                        title="ครอบตัดหรือปรับแต่งตำแหน่งรูป"
+                        className="flex min-h-[42px] sm:min-h-[44px] items-center gap-1.5 rounded-xl bg-blue-50 dark:bg-blue-500/10 px-3 py-2 text-xs font-semibold text-[#007AFF] dark:text-[#2E8BFF] active:scale-95 transition-transform cursor-pointer border border-blue-200/50 dark:border-blue-900/40"
+                      >
+                        <Crop className="size-3.5 shrink-0" />
+                        <span>ครอปรูป</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleRemoveImage}
+                        disabled={pending}
+                        className="flex min-h-[42px] sm:min-h-[44px] items-center gap-1 rounded-xl bg-red-50 dark:bg-red-500/10 px-3 py-2 text-xs font-semibold text-[#FF3B30] dark:text-[#FF453A] active:scale-95 transition-transform cursor-pointer border border-red-200/50 dark:border-red-900/40"
+                      >
+                        <Trash2 className="size-3.5 shrink-0" />
+                        <span>ลบรูป</span>
+                      </button>
+                    </>
+                  ) : null}
+                </div>
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImagePick}
+                />
+                <p className="text-[11px] text-[#8E8E93] dark:text-[#98989D] px-1">
+                  {previewImage
+                    ? `ครอบตัดโซนที่เลือกแล้ว (กด "ครอปรูป" เพื่อปรับมุมได้ตลอด)`
+                    : "รองรับไฟล์ภาพ JPG, PNG (สามารถเลือกซูมและครอบตัดโซนที่ต้องการได้)"}
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Inline error */}
@@ -244,7 +403,7 @@ export function PlayerModal({
           ) : null}
 
           {/* Action buttons */}
-          <div className="mt-2 flex flex-col gap-2.5 sm:flex-row-reverse">
+          <div className="mt-1 flex flex-col gap-2.5 sm:flex-row-reverse">
             <button
               type="submit"
               disabled={pending}
@@ -270,6 +429,13 @@ export function PlayerModal({
           </div>
         </form>
       </div>
+
+      <AvatarCropperModal
+        isOpen={isCropperOpen}
+        imageSrc={cropSource}
+        onClose={() => setIsCropperOpen(false)}
+        onApply={handleCropComplete}
+      />
     </GlobalModal>
   );
 }

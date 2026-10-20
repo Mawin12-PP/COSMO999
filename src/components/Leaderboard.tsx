@@ -443,7 +443,7 @@ function ViewSwitcher({
         activeKey={isPastPeriodActive ? null : viewKey}
         onChange={onChange}
         className="w-fit"
-        buttonClassName="min-w-[76px] sm:min-w-[90px]"
+        buttonClassName="min-w-[88px] sm:min-w-[100px]"
       />
 
       {pastPeriods.length > 0 ? (

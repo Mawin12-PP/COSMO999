@@ -162,14 +162,14 @@ export function InteractiveSegmentedControl<T extends string>({
             role="tab"
             aria-selected={isSelected}
             onClick={() => onChange(key)}
-            className={`relative z-10 flex min-h-[40px] sm:min-h-[44px] flex-1 items-center justify-center gap-2 rounded-full px-4 py-1.5 sm:px-5 sm:py-2 text-xs sm:text-sm font-semibold transition-colors duration-200 ease-out active:scale-[0.97] cursor-pointer ${
+            className={`relative z-10 flex min-h-[40px] sm:min-h-[44px] flex-1 items-center justify-center gap-2 rounded-full px-3.5 py-1.5 sm:px-5 sm:py-2 text-xs sm:text-sm font-semibold transition-colors duration-200 ease-out active:scale-[0.97] cursor-pointer ${
               isSelected
                 ? "text-[#1C1C1E] dark:text-[#F2F2F7]"
                 : "text-[#8E8E93] dark:text-[#98989D] hover:text-[#1C1C1E] dark:hover:text-[#F2F2F7]"
             } ${buttonClassName}`}
           >
             {Icon && <Icon className="size-4 sm:size-4.5 shrink-0" aria-hidden />}
-            <span className="truncate">{label}</span>
+            <span className="whitespace-nowrap shrink-0">{label}</span>
           </button>
         );
       })}

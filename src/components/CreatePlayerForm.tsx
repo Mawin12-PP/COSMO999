@@ -5,9 +5,11 @@
 import { useState } from "react";
 import { Plus } from "lucide-react";
 import { PlayerModal } from "@/components/PlayerModal";
+import { usePlayers } from "@/hooks/usePlayers";
 
 export function CreatePlayerForm() {
   const [isOpen, setIsOpen] = useState(false);
+  const { players } = usePlayers();
 
   return (
     <>
@@ -23,6 +25,7 @@ export function CreatePlayerForm() {
       <PlayerModal
         isOpen={isOpen}
         player={null}
+        existingPlayers={players}
         onClose={() => setIsOpen(false)}
       />
     </>

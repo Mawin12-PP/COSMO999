@@ -43,3 +43,19 @@ export function calculateRoundScores(
 
   return { netScores, totalNetScore, hasPositive };
 }
+
+/**
+ * Weighted random multiplier roll
+ * Covers [1, 2, 4, 5, 8, 10, 20, 50] with exciting probability weights.
+ */
+export function getRandomMultiplier(): number {
+  const rand = Math.random() * 100;
+  if (rand < 5) return 1;
+  if (rand < 15) return 2;
+  if (rand < 25) return 4;
+  if (rand < 45) return 5;
+  if (rand < 70) return 8;
+  if (rand < 88) return 10;
+  if (rand < 98) return 20;
+  return 50; // Rare 2% jackpot for x50
+}

@@ -1,63 +1,15 @@
 "use client";
 
 // Player profile image: the uploaded photo if there is one, otherwise the
-// thematic card & game avatar in vibrant iOS Blue (#007AFF).
+// personalized Emoji avatar on the clean iOS original theme.
 // Follows COSMO999 Apple iOS design tokens:
 // Container: rounded-full flex items-center justify-center border border-gray-100 dark:border-white/10
 // Background: bg-[#F2F2F7] dark:bg-[#1C1C1E]
-// Icon: text-[#007AFF]
 import {
-  Club,
-  Coins,
-  Crown,
-  Dices,
-  Diamond,
-  Flame,
-  Heart,
-  Layers,
-  Shield,
-  Spade,
-  Sparkles,
-  Trophy,
-} from "lucide-react";
-import {
-  getDeterministicThematicAvatar,
-  parseThematicAvatar,
-  THEMATIC_AVATAR_LABELS,
-  type ThematicAvatarId,
+  parseEmojiAvatar,
+  getDeterministicEmoji,
 } from "@/lib/suits";
 import type { Player } from "@/types/models";
-
-function ThematicIcon({ id, className = "size-5" }: { id: ThematicAvatarId; className?: string }) {
-  switch (id) {
-    case "spade":
-      return <Spade className={`${className} fill-current`} aria-hidden="true" />;
-    case "heart":
-      return <Heart className={`${className} fill-current`} aria-hidden="true" />;
-    case "club":
-      return <Club className={`${className} fill-current`} aria-hidden="true" />;
-    case "diamond":
-      return <Diamond className={`${className} fill-current`} aria-hidden="true" />;
-    case "joker":
-      return <Sparkles className={`${className}`} aria-hidden="true" />;
-    case "king":
-      return <Crown className={`${className}`} aria-hidden="true" />;
-    case "deck":
-      return <Layers className={`${className}`} aria-hidden="true" />;
-    case "dice":
-      return <Dices className={`${className}`} aria-hidden="true" />;
-    case "chip":
-      return <Coins className={`${className}`} aria-hidden="true" />;
-    case "fire":
-      return <Flame className={`${className} fill-current`} aria-hidden="true" />;
-    case "shield":
-      return <Shield className={`${className} fill-current`} aria-hidden="true" />;
-    case "trophy":
-      return <Trophy className={`${className} fill-current`} aria-hidden="true" />;
-    default:
-      return <Spade className={`${className} fill-current`} aria-hidden="true" />;
-  }
-}
 
 export function PlayerAvatar({
   player,
@@ -66,18 +18,22 @@ export function PlayerAvatar({
   player: Player;
   className?: string;
 }) {
-  const avatarId = parseThematicAvatar(player.image);
+  const emoji = parseEmojiAvatar(player.image);
 
-  // If a photo is stored (data URL or external URL, not a thematic token)
+  // If a photo is stored (data URL or external URL, not an emoji or legacy suit)
   const isPhoto = Boolean(
     player.image &&
       !player.image.startsWith("suit:") &&
-      !avatarId,
+      !player.image.startsWith("emoji:") &&
+      (player.image.startsWith("data:") ||
+        player.image.startsWith("http://") ||
+        player.image.startsWith("https://")),
   );
 
   if (isPhoto) {
     return (
       <span
+        data-avatar-root="true"
         role="img"
         aria-label={player.name}
         className={`${className} block shrink-0 rounded-full border border-gray-100 dark:border-white/10 bg-cover bg-center shadow-2xs`}
@@ -86,17 +42,17 @@ export function PlayerAvatar({
     );
   }
 
-  // Thematic Default Avatar
-  const effectiveAvatar = avatarId ?? getDeterministicThematicAvatar(player.id || player.name || "player");
-  const label = THEMATIC_AVATAR_LABELS[effectiveAvatar] || effectiveAvatar;
+  // All non-photo profiles strictly render system Emoji on the original theme (#F2F2F7 / #1C1C1E)
+  const effectiveEmoji = emoji || getDeterministicEmoji(player.id || player.name || "player");
 
   return (
     <span
+      data-avatar-root="true"
       role="img"
-      aria-label={`${player.name} (${label})`}
-      className={`${className} flex shrink-0 items-center justify-center rounded-full border border-gray-100 dark:border-white/10 bg-[#F2F2F7] dark:bg-[#1C1C1E] text-[#007AFF] shadow-2xs`}
+      aria-label={`${player.name} (${effectiveEmoji})`}
+      className={`${className} flex shrink-0 items-center justify-center rounded-full border border-gray-100 dark:border-white/10 bg-[#F2F2F7] dark:bg-[#1C1C1E] shadow-2xs select-none`}
     >
-      <ThematicIcon id={effectiveAvatar} className="w-[52%] h-[52%]" />
+      <span className="leading-none text-[1.25em] transform-gpu">{effectiveEmoji}</span>
     </span>
   );
 }

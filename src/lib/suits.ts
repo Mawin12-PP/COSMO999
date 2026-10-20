@@ -42,6 +42,16 @@ export const THEMATIC_AVATARS: ThematicAvatarId[] = [
   "trophy",
 ];
 
+// Curated versatile emoji avatars (Animals, Characters, Luck & Gaming)
+export const EMOJI_AVATARS: string[] = [
+  // สัตว์ & ตัวละคร (Animals & Creatures)
+  "🦁", "🐯", "🦊", "🐻", "🐼", "🐶", "🐱", "🐵", "🦉", "🦅", "🦈", "🐙",
+  // อารมณ์ & คาแรกเตอร์ (Faces & Personas)
+  "😎", "🤠", "🤡", "🥷", "🧙", "🤖", "👽", "👻",
+  // เกม โชคลาภ & กิจกรรม (Gaming, Luck & Action)
+  "🃏", "👑", "🎲", "🪙", "🎯", "🏆", "🚀", "💎", "🔥", "⚡", "🍀", "🎱",
+];
+
 // Human-readable labels in Thai
 export const THEMATIC_AVATAR_LABELS: Record<ThematicAvatarId, string> = {
   spade: "โพดำ ♠",
@@ -80,6 +90,60 @@ export function parseThematicAvatar(image?: string | null): ThematicAvatarId | n
 }
 
 /**
+ * Check if the stored image string represents an emoji avatar.
+ */
+export function isEmojiAvatar(image?: string | null): boolean {
+  if (!image) return false;
+  if (image.startsWith("emoji:")) return true;
+  return EMOJI_AVATARS.includes(image);
+}
+
+/**
+ * Extract the emoji character from an avatar string, or null if it's not an emoji.
+ */
+export function parseEmojiAvatar(image?: string | null): string | null {
+  if (!image) return null;
+  if (image.startsWith("emoji:")) {
+    const raw = image.slice(6).trim();
+    if (raw) return raw;
+  }
+  if (EMOJI_AVATARS.includes(image)) return image;
+  return null;
+}
+
+/**
+ * Smart Pick Random Emoji:
+ * Prioritizes emojis that are not currently in use by existing players.
+ */
+export function getRandomEmoji(
+  existingImages: (string | undefined | null)[] = [],
+): string {
+  const counts: Record<string, number> = {};
+  for (const e of EMOJI_AVATARS) counts[e] = 0;
+
+  for (const img of existingImages) {
+    if (!img) continue;
+    const parsed = parseEmojiAvatar(img);
+    if (parsed && parsed in counts) {
+      counts[parsed]++;
+    }
+  }
+
+  // 1. Pick among unused emojis
+  const unused = EMOJI_AVATARS.filter((e) => counts[e] === 0);
+  if (unused.length > 0) {
+    const randomIndex = Math.floor(Math.random() * unused.length);
+    return unused[randomIndex];
+  }
+
+  // 2. All emojis in use -> pick lowest frequency
+  const minCount = Math.min(...Object.values(counts));
+  const candidates = EMOJI_AVATARS.filter((e) => counts[e] === minCount);
+  const randomIndex = Math.floor(Math.random() * candidates.length);
+  return candidates[randomIndex];
+}
+
+/**
  * 32-bit FNV-1a hash algorithm. Uniformly distributes strings and numeric timestamps
  * across buckets without mathematical degenerate collisions.
  */
@@ -90,6 +154,15 @@ export function getRobustHash(seed: string): number {
     h = Math.imul(h, 16777619);
   }
   return h >>> 0;
+}
+
+/**
+ * Deterministically pick an emoji based on player id/name or seed
+ * using the full EMOJI_AVATARS pool and FNV-1a distribution.
+ */
+export function getDeterministicEmoji(seed: string): string {
+  const hash = getRobustHash(seed);
+  return EMOJI_AVATARS[hash % EMOJI_AVATARS.length];
 }
 
 /**

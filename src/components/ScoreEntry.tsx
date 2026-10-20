@@ -8,9 +8,15 @@ import { useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
   ClipboardCheck,
+  Crown,
+  Dices,
+  Flame,
   MessageSquareHeart,
   PartyPopper,
   RotateCcw,
+  Sparkles,
+  Target,
+  Zap,
 } from "lucide-react";
 import { PlayerAvatar } from "@/components/PlayerAvatar";
 import { PreviewDialog } from "@/components/PreviewDialog";
@@ -19,6 +25,27 @@ import { saveRound } from "@/lib/rounds";
 import { calculateRoundScores, type RoundScoreResult } from "@/lib/scoring";
 import { useHistory } from "@/hooks/useHistory";
 import type { Player } from "@/types/models";
+
+const MULTIPLIER_CANDIDATES = [1, 2, 4, 5, 8, 10, 20, 50];
+
+function getMultiplierTheme(m: number) {
+  if (m >= 50) return { name: "x50", Icon: Crown };
+  if (m >= 10) return { name: `x${m}`, Icon: Flame };
+  if (m >= 4) return { name: `x${m}`, Icon: Zap };
+  if (m >= 2) return { name: `x${m}`, Icon: Sparkles };
+  return { name: "ปกติ", Icon: Target };
+}
+
+async function fireMiniConfetti() {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const { default: confetti } = await import("canvas-confetti");
+  confetti({
+    particleCount: 45,
+    spread: 60,
+    origin: { y: 0.3 },
+    zIndex: 9999,
+  });
+}
 
 async function fireConfetti() {
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -45,14 +72,25 @@ interface CheckedRound {
 export function ScoreEntry({
   players,
   multiplier,
+  triggerReveal = false,
+  liveSessionActive = false,
+  sessionId,
   onBack,
   onReset,
 }: {
   players: Player[];
   multiplier: number;
+  triggerReveal?: boolean;
+  liveSessionActive?: boolean;
+  sessionId?: string;
   onBack: () => void;
   onReset: () => void;
 }) {
+  const [displayMultiplier, setDisplayMultiplier] = useState<number>(
+    triggerReveal ? 1 : multiplier,
+  );
+  const [isRevealing, setIsRevealing] = useState<boolean>(Boolean(triggerReveal));
+  const [isLanded, setIsLanded] = useState<boolean>(!triggerReveal);
   const [rawInputs, setRawInputs] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
   const [checked, setChecked] = useState<CheckedRound | null>(null);
@@ -60,6 +98,59 @@ export function ScoreEntry({
 
   const inputRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const { history } = useHistory();
+
+  // Multiplier Reveal Suspense Animation
+  useEffect(() => {
+    if (!triggerReveal) {
+      setDisplayMultiplier(multiplier);
+      setIsRevealing(false);
+      setIsLanded(true);
+      return;
+    }
+
+    setIsRevealing(true);
+    setIsLanded(false);
+
+    const steps = [
+      { delay: 60 },
+      { delay: 130 },
+      { delay: 210 },
+      { delay: 300 },
+      { delay: 410 },
+      { delay: 530 },
+      { delay: 660 },
+      { delay: 800 },
+      { delay: 960, isFinal: true },
+    ];
+
+    const timers: NodeJS.Timeout[] = [];
+
+    steps.forEach((step) => {
+      const t = setTimeout(() => {
+        if (step.isFinal) {
+          setDisplayMultiplier(multiplier);
+          setIsRevealing(false);
+          setIsLanded(true);
+          if (multiplier >= 4) {
+            void fireMiniConfetti();
+          }
+        } else {
+          const rand =
+            MULTIPLIER_CANDIDATES[
+              Math.floor(Math.random() * MULTIPLIER_CANDIDATES.length)
+            ];
+          setDisplayMultiplier(rand);
+        }
+      }, step.delay);
+      timers.push(t);
+    });
+
+    return () => {
+      timers.forEach((t) => clearTimeout(t));
+    };
+  }, [triggerReveal, multiplier]);
+
+  const theme = getMultiplierTheme(displayMultiplier);
 
   useEffect(() => {
     const firstId = players[0]?.id;
@@ -113,6 +204,7 @@ export function ScoreEntry({
       netScores: checked.result.netScores,
       multiplier,
       commentary,
+      sessionId,
     });
 
     if (!outcome.committed) {
@@ -145,7 +237,7 @@ export function ScoreEntry({
             className="flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] px-6 py-3 text-base font-semibold text-white shadow-lg shadow-blue-500/25 transition-all duration-200 ease-out active:scale-[0.97] hover:opacity-90"
           >
             <RotateCcw className="size-4.5" />
-            เริ่มรอบใหม่
+            {liveSessionActive ? "กลับไปที่โต๊ะสด (ดูผลรวม)" : "เริ่มรอบใหม่"}
           </button>
           <a
             href="https://forms.gle/BicBxvKyLrqoQHj89"
@@ -163,19 +255,44 @@ export function ScoreEntry({
   }
 
   return (
-    <section className="reveal flex flex-col gap-6 rounded-[20px] border border-black/[0.04] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] p-5 sm:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none">
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-2.5">
-          <span className="grid size-9 place-items-center rounded-full bg-blue-50 dark:bg-blue-950/40 text-[#007AFF] shadow-xs">
-            <ClipboardCheck className="size-4.5" />
+    <section className="reveal flex flex-col gap-5 rounded-[20px] border border-black/[0.04] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] p-5 sm:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none">
+      {/* Header with Title (Left) and Compact Multiplier Box (Right) */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <span className="grid size-9 sm:size-10 place-items-center rounded-xl bg-blue-50 dark:bg-blue-950/40 text-[#007AFF] shadow-xs shrink-0">
+            <ClipboardCheck className="size-4.5 sm:size-5" />
           </span>
-          <h2 className="text-lg font-semibold tracking-tight text-[#1C1C1E] dark:text-[#F2F2F7]">
-            กรอกคะแนนดิบ
-          </h2>
+          <div className="min-w-0">
+            <h2 className="text-base sm:text-lg font-semibold tracking-tight text-[#1C1C1E] dark:text-[#F2F2F7] truncate">
+              กรอกคะแนน
+            </h2>
+            <p className="text-xs text-[#8E8E93] dark:text-[#98989D]">
+              ผู้เล่น {players.length} คน
+            </p>
+          </div>
         </div>
-        <span className="rounded-full bg-black/[0.04] dark:bg-white/[0.06] px-3.5 py-1 text-xs font-semibold text-[#8E8E93] dark:text-[#98989D] tabular-nums">
-          {players.length} คน • x{multiplier}
-        </span>
+
+        {/* Compact Multiplier Frame (Placed at Top-Right, Default Project Theme) */}
+        <div
+          className={`flex items-center gap-2 rounded-2xl border border-black/[0.06] dark:border-[#38383A] bg-black/[0.03] dark:bg-white/[0.05] px-3 sm:px-3.5 py-1.5 shadow-xs transition-all duration-300 shrink-0 ${
+            isLanded ? "ring-2 ring-blue-500/25 dark:ring-blue-500/30" : ""
+          }`}
+        >
+          <span className="grid size-7 sm:size-8 place-items-center rounded-xl bg-white dark:bg-[#1C1C1E] text-[#007AFF] dark:text-[#2E8BFF] border border-black/[0.04] dark:border-white/5 shadow-xs">
+            {isRevealing ? (
+              <Dices className="size-3.5 sm:size-4 animate-spin text-[#007AFF]" />
+            ) : (
+              <theme.Icon className="size-3.5 sm:size-4 text-[#007AFF] dark:text-[#2E8BFF]" />
+            )}
+          </span>
+          <span
+            className={`text-base sm:text-lg font-black tabular-nums tracking-tight text-[#007AFF] dark:text-[#2E8BFF] transition-transform duration-300 ${
+              isLanded ? "scale-105" : "scale-100"
+            }`}
+          >
+            x{displayMultiplier}
+          </span>
+        </div>
       </div>
 
       <ul className="overflow-hidden rounded-[16px] border border-black/[0.04] dark:border-[#38383A] divide-y divide-gray-100/80 dark:divide-[#38383A] bg-white dark:bg-[#1C1C1E]">

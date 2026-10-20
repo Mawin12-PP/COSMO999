@@ -3,9 +3,18 @@
 // Live list of players from dummyRoom/players. Read-only.
 import { useEffect, useState } from "react";
 import { DB_PATHS, isConfigured } from "@/lib/firebase";
+import {
+  getLocalRoom,
+  initializeLocalRoom,
+  subscribeToLocalRoom,
+} from "@/lib/localRoom";
 import { writeAll } from "@/lib/players";
 import { subscribeToList } from "@/lib/rtdb";
-import { parseThematicAvatar, getUniqueThematicAvatar } from "@/lib/suits";
+import {
+  parseThematicAvatar,
+  parseEmojiAvatar,
+  getRandomEmoji,
+} from "@/lib/suits";
 import type { Player } from "@/types/models";
 
 export function usePlayers(): {
@@ -18,24 +27,29 @@ export function usePlayers(): {
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    // If Firebase is not configured (local development), load mock data immediately
-    if (process.env.NODE_ENV === "development" && !isConfigured) {
-      fetch("/mock-data.json")
-        .then((res) => res.json())
-        .then((data) => {
-          if (Array.isArray(data?.players) && data.players.length > 0) {
-            setPlayers(data.players);
-            setError(null);
-          }
+    // If Firebase is not configured (local development), use reactive localStorage mock
+    if (!isConfigured) {
+      initializeLocalRoom()
+        .then((room) => {
+          setPlayers(room.players);
+          setError(null);
         })
         .catch((err) => setError(err))
         .finally(() => setLoading(false));
-      return;
+
+      const unsubscribe = subscribeToLocalRoom(() => {
+        const room = getLocalRoom();
+        if (room) {
+          setPlayers(room.players);
+        }
+      });
+      return unsubscribe;
     }
+
     const unsubscribe = subscribeToList<Player>(
       DB_PATHS.players,
       (items) => {
-        // Detect and migrate any legacy players who do not have a photo or suit token
+        // Detect and migrate any legacy players who do not have a photo, suit, or emoji
         let needsSync = false;
         const currentImages = items.map((p) => p.image);
 
@@ -47,11 +61,12 @@ export function usePlayers(): {
                 player.image.startsWith("https://")),
           );
           const hasSuit = Boolean(parseThematicAvatar(player.image));
+          const hasEmoji = Boolean(parseEmojiAvatar(player.image));
 
-          if (!hasPhoto && !hasSuit) {
+          if (!hasPhoto && !hasSuit && !hasEmoji) {
             needsSync = true;
-            const assignedSuit = getUniqueThematicAvatar(currentImages);
-            const token = `suit:${assignedSuit}`;
+            const assignedEmoji = getRandomEmoji(currentImages);
+            const token = `emoji:${assignedEmoji}`;
             currentImages.push(token);
             return {
               ...player,

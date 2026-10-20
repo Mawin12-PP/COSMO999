@@ -6,11 +6,16 @@
 // behaviour, deleting a group shortcut only removes the groups entry, not
 // the history records that mention it.
 import { ref, set } from "firebase/database";
-import { database, DB_PATHS } from "./firebase";
+import { database, DB_PATHS, isConfigured } from "./firebase";
+import { getLocalGroups, setLocalGroups } from "./localRoom";
 import { readList } from "./rtdb";
 import type { Group } from "@/types/models";
 
 async function writeAll(groups: Group[]): Promise<void> {
+  if (!isConfigured) {
+    await setLocalGroups(groups);
+    return;
+  }
   await set(ref(database, DB_PATHS.groups), groups);
 }
 
@@ -20,7 +25,9 @@ async function writeAll(groups: Group[]): Promise<void> {
  * display an inline error.
  */
 export async function renameGroup(groupId: string, newName: string): Promise<void> {
-  const groups = await readList<Group>(DB_PATHS.groups);
+  const groups = !isConfigured
+    ? await getLocalGroups()
+    : await readList<Group>(DB_PATHS.groups);
   const next = groups.map((g) =>
     g.id === groupId ? { ...g, name: newName.trim() } : g,
   );
@@ -33,6 +40,8 @@ export async function renameGroup(groupId: string, newName: string): Promise<voi
  * id are preserved - the legacy app does the same.
  */
 export async function deleteGroup(groupId: string): Promise<void> {
-  const groups = await readList<Group>(DB_PATHS.groups);
+  const groups = !isConfigured
+    ? await getLocalGroups()
+    : await readList<Group>(DB_PATHS.groups);
   await writeAll(groups.filter((g) => g.id !== groupId));
 }
