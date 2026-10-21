@@ -222,7 +222,7 @@ export function PlayerModal({
               />
             )}
             <span className="text-[11px] font-medium text-[#8E8E93] dark:text-[#98989D]">
-              {avatarMode === "photo" && previewImage ? "รูปถ่ายโปรไฟล์" : "อวาตาร์สร้างอัตโนมัติ (Boring)"}
+              {avatarMode === "photo" && previewImage ? "รูปถ่ายโปรไฟล์" : "อวาตาร์อัตโนมัติ"}
             </span>
           </div>
 
@@ -265,7 +265,7 @@ export function PlayerModal({
                     : "text-[#8E8E93] dark:text-[#98989D] hover:text-[#1C1C1E] dark:hover:text-[#F2F2F7]"
                 }`}
               >
-                <span>✨ อวาตาร์อัตโนมัติ (Boring)</span>
+                <span>อวาตาร์อัตโนมัติ</span>
               </button>
               <button
                 type="button"
@@ -276,35 +276,11 @@ export function PlayerModal({
                     : "text-[#8E8E93] dark:text-[#98989D] hover:text-[#1C1C1E] dark:hover:text-[#F2F2F7]"
                 }`}
               >
-                <span>📷 อัปโหลดรูป</span>
+                <span>อัปโหลดรูป</span>
               </button>
             </div>
 
-            {/* Mode 1: Auto Boring Avatar Card */}
-            {avatarMode === "boring" ? (
-              <div className="flex items-center gap-3 rounded-2xl border border-black/[0.06] dark:border-white/[0.08] bg-[#F2F2F7]/50 dark:bg-[#2C2C2E]/40 p-3.5">
-                <div className="size-10 shrink-0">
-                  <PlayerAvatar
-                    player={{
-                      id: "preview-mini",
-                      name: name || "ผู้เล่นใหม่",
-                      image: "boring:beam",
-                      totalScore: 0,
-                      latestScore: null,
-                    }}
-                    className="size-10"
-                  />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs font-semibold text-[#1C1C1E] dark:text-[#F2F2F7]">
-                    สร้างลายและสีเฉพาะตัวตามชื่ออัตโนมัติ
-                  </p>
-                  <p className="text-[11px] text-[#8E8E93] dark:text-[#98989D]">
-                    ไม่ต้องปรับเอง ระบบ Boring Avatars (Beam) จะคำนวณให้ทันที
-                  </p>
-                </div>
-              </div>
-            ) : (
+            {avatarMode === "photo" ? (
               /* Mode 2: Photo Upload */
               <div className="flex flex-col gap-2 rounded-2xl border border-black/[0.06] dark:border-white/[0.08] bg-[#F2F2F7]/50 dark:bg-[#2C2C2E]/40 p-3">
                 <div className="flex flex-wrap items-center gap-2">
@@ -354,7 +330,7 @@ export function PlayerModal({
                     : "รองรับไฟล์ภาพ JPG, PNG (สามารถเลือกซูมและครอบตัดโซนที่ต้องการได้)"}
                 </p>
               </div>
-            )}
+            ) : null}
           </div>
 
           {/* Inline error */}
