@@ -5,16 +5,11 @@
 // scale-in-animation, frosted glass backdrop, and full Dark Mode support.
 // Supports personalized Emoji avatars (strict original theme) or custom uploaded photo.
 import { useEffect, useRef, useState } from "react";
-import { Check, Crop, ImagePlus, Loader2, Pencil, Shuffle, Trash2, UserPlus, X } from "lucide-react";
+import { Check, Crop, ImagePlus, Loader2, Pencil, Trash2, UserPlus, X } from "lucide-react";
 import { AvatarCropperModal } from "@/components/AvatarCropperModal";
 import { GlobalModal } from "@/components/GlobalModal";
 import { PlayerAvatar } from "@/components/PlayerAvatar";
 import { createPlayer, updatePlayer } from "@/lib/players";
-import {
-  EMOJI_AVATARS,
-  getRandomEmoji,
-  parseEmojiAvatar,
-} from "@/lib/suits";
 import type { Player } from "@/types/models";
 
 export function PlayerModal({
@@ -30,8 +25,7 @@ export function PlayerModal({
 }) {
   const isEdit = Boolean(player);
   const [name, setName] = useState(player?.name ?? "");
-  const [avatarMode, setAvatarMode] = useState<"emoji" | "photo">("emoji");
-  const [selectedEmoji, setSelectedEmoji] = useState<string>("🦁");
+  const [avatarMode, setAvatarMode] = useState<"boring" | "photo">("boring");
   const [previewImage, setPreviewImage] = useState<string | undefined>(player?.image);
   const [fileName, setFileName] = useState<string | null>(null);
   const [isCropperOpen, setIsCropperOpen] = useState(false);
@@ -51,11 +45,12 @@ export function PlayerModal({
         setFileName(null);
         if (fileRef.current) fileRef.current.value = "";
 
-        const existingImages = existingPlayers.map((p) => p.image);
-
         if (player) {
           const hasPhoto = Boolean(
             player.image &&
+              !player.image.startsWith("suit:") &&
+              !player.image.startsWith("emoji:") &&
+              !player.image.startsWith("boring:") &&
               (player.image.startsWith("data:") ||
                 player.image.startsWith("http://") ||
                 player.image.startsWith("https://")),
@@ -63,18 +58,14 @@ export function PlayerModal({
           if (hasPhoto) {
             setAvatarMode("photo");
             setPreviewImage(player.image);
-            setSelectedEmoji(getRandomEmoji(existingImages));
           } else {
-            setAvatarMode("emoji");
-            const parsed = parseEmojiAvatar(player.image);
-            setSelectedEmoji(parsed || getRandomEmoji(existingImages));
+            setAvatarMode("boring");
             setPreviewImage(undefined);
           }
         } else {
-          // Add mode: default to random unique emoji, ready to go!
-          setAvatarMode("emoji");
+          // Add mode: default to automatic Boring avatar
+          setAvatarMode("boring");
           setPreviewImage(undefined);
-          setSelectedEmoji(getRandomEmoji(existingImages));
         }
       }
     }
@@ -132,16 +123,7 @@ export function PlayerModal({
     setFileName(null);
     setCropSource(null);
     if (fileRef.current) fileRef.current.value = "";
-    setAvatarMode("emoji");
-  }
-
-  function handleRandomizeEmoji() {
-    const existingImages = existingPlayers.map((p) => p.image);
-    const newEmoji = getRandomEmoji(existingImages);
-    setSelectedEmoji(newEmoji);
-    setPreviewImage(undefined);
-    setFileName(null);
-    setAvatarMode("emoji");
+    setAvatarMode("boring");
   }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -155,12 +137,12 @@ export function PlayerModal({
     setPending(true);
     setError(null);
     try {
-      // Determine final avatar: photo or emoji
+      // Determine final avatar: photo or boring avatar
       let finalImage = "";
       if (avatarMode === "photo" && previewImage) {
         finalImage = previewImage;
       } else {
-        finalImage = `emoji:${selectedEmoji || getRandomEmoji(existingPlayers.map((p) => p.image))}`;
+        finalImage = "boring:beam";
       }
 
       if (isEdit && player) {
@@ -230,17 +212,17 @@ export function PlayerModal({
             ) : (
               <PlayerAvatar
                 player={{
-                  id: "preview",
+                  id: player?.id ?? "preview",
                   name: name || "ผู้เล่นใหม่",
-                  image: `emoji:${selectedEmoji}`,
+                  image: "boring:beam",
                   totalScore: 0,
                   latestScore: null,
                 }}
-                className="size-18 text-3xl"
+                className="size-18"
               />
             )}
             <span className="text-[11px] font-medium text-[#8E8E93] dark:text-[#98989D]">
-              {avatarMode === "photo" && previewImage ? "รูปถ่ายโปรไฟล์" : `Emoji: ${selectedEmoji}`}
+              {avatarMode === "photo" && previewImage ? "รูปถ่ายโปรไฟล์" : "อวาตาร์สร้างอัตโนมัติ (Boring)"}
             </span>
           </div>
 
@@ -276,14 +258,14 @@ export function PlayerModal({
             <div className="flex rounded-full bg-black/[0.05] dark:bg-white/[0.06] p-1 text-xs font-semibold">
               <button
                 type="button"
-                onClick={() => setAvatarMode("emoji")}
+                onClick={() => setAvatarMode("boring")}
                 className={`flex-1 min-h-[36px] py-1.5 rounded-full transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                  avatarMode === "emoji"
+                  avatarMode === "boring"
                     ? "bg-white dark:bg-[#2C2C2E] text-[#1C1C1E] dark:text-[#F2F2F7] shadow-xs"
                     : "text-[#8E8E93] dark:text-[#98989D] hover:text-[#1C1C1E] dark:hover:text-[#F2F2F7]"
                 }`}
               >
-                <span>🎭 เลือก Emoji</span>
+                <span>✨ อวาตาร์อัตโนมัติ (Boring)</span>
               </button>
               <button
                 type="button"
@@ -298,45 +280,28 @@ export function PlayerModal({
               </button>
             </div>
 
-            {/* Mode 1: Emoji Grid */}
-            {avatarMode === "emoji" ? (
-              <div className="flex flex-col gap-2 rounded-2xl border border-black/[0.06] dark:border-white/[0.08] bg-[#F2F2F7]/50 dark:bg-[#2C2C2E]/40 p-2.5">
-                <div className="flex items-center justify-between px-1">
-                  <span className="text-[11px] font-semibold text-[#8E8E93] dark:text-[#98989D]">
-                    เลือก Emoji ประจำตัว
-                  </span>
-                  <button
-                    type="button"
-                    onClick={handleRandomizeEmoji}
-                    className="flex items-center gap-1 text-[11px] font-semibold text-[#007AFF] dark:text-[#2E8BFF] hover:opacity-80 active:scale-95 transition-all cursor-pointer"
-                  >
-                    <Shuffle className="size-3" />
-                    <span>สุ่มใหม่</span>
-                  </button>
+            {/* Mode 1: Auto Boring Avatar Card */}
+            {avatarMode === "boring" ? (
+              <div className="flex items-center gap-3 rounded-2xl border border-black/[0.06] dark:border-white/[0.08] bg-[#F2F2F7]/50 dark:bg-[#2C2C2E]/40 p-3.5">
+                <div className="size-10 shrink-0">
+                  <PlayerAvatar
+                    player={{
+                      id: "preview-mini",
+                      name: name || "ผู้เล่นใหม่",
+                      image: "boring:beam",
+                      totalScore: 0,
+                      latestScore: null,
+                    }}
+                    className="size-10"
+                  />
                 </div>
-
-                <div className="grid grid-cols-7 sm:grid-cols-8 gap-1.5 max-h-[140px] overflow-y-auto p-0.5">
-                  {EMOJI_AVATARS.map((emoji) => {
-                    const isSelected = selectedEmoji === emoji && !previewImage;
-                    return (
-                      <button
-                        key={emoji}
-                        type="button"
-                        onClick={() => {
-                          setSelectedEmoji(emoji);
-                          setPreviewImage(undefined);
-                          setFileName(null);
-                        }}
-                        className={`size-9 sm:size-10 rounded-full flex items-center justify-center text-lg sm:text-xl transition-all cursor-pointer ${
-                          isSelected
-                            ? "ring-2 ring-[#007AFF] bg-blue-50 dark:bg-blue-950/60 scale-110 shadow-xs"
-                            : "hover:bg-black/[0.05] dark:hover:bg-white/[0.08] active:scale-90"
-                        }`}
-                      >
-                        <span className="transform-gpu select-none">{emoji}</span>
-                      </button>
-                    );
-                  })}
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-semibold text-[#1C1C1E] dark:text-[#F2F2F7]">
+                    สร้างลายและสีเฉพาะตัวตามชื่ออัตโนมัติ
+                  </p>
+                  <p className="text-[11px] text-[#8E8E93] dark:text-[#98989D]">
+                    ไม่ต้องปรับเอง ระบบ Boring Avatars (Beam) จะคำนวณให้ทันที
+                  </p>
                 </div>
               </div>
             ) : (

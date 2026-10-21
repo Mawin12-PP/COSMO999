@@ -233,7 +233,7 @@ export function LiveSessionModal({
             </button>
 
             <span className="text-xs font-bold text-[#007AFF] bg-blue-50 dark:bg-blue-950/40 border border-blue-500/20 rounded-full px-3 py-1">
-              เริ่มโต๊ะสดใหม่
+              เริ่มโต๊ะใหม่
             </span>
 
             <button
@@ -354,7 +354,7 @@ export function LiveSessionModal({
           <div className="flex items-center gap-2 sm:gap-3 text-xs font-semibold bg-white dark:bg-[#1C1C1E] border border-black/[0.06] dark:border-[#38383A] rounded-full px-3.5 py-1.5 shadow-xs">
             <span className="flex items-center gap-1.5 text-[#34C759]">
               <span className="size-2 rounded-full bg-[#34C759] animate-pulse" />
-              <span className="hidden sm:inline">โต๊ะสด</span>
+              <span className="hidden sm:inline">โต๊ะ</span>
             </span>
             <span className="text-[#8E8E93] dark:text-[#98989D] hidden sm:inline">•</span>
             <span className="text-[#1C1C1E] dark:text-[#F2F2F7]">
@@ -411,11 +411,11 @@ export function LiveSessionModal({
           {/* 2 & 3. TWO COLUMNS UNDERNEATH (PC/iPad: 2 cols side-by-side | iPhone: stacked) */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-start">
             
-            {/* 2. STANDINGS (อันดับคะแนนโต๊ะสด) */}
+            {/* 2. STANDINGS (อันดับคะแนนในโต๊ะ) */}
             <div className="flex flex-col gap-2.5">
               <div className="flex items-center justify-between px-1">
                 <span className="text-xs font-bold text-[#8E8E93] dark:text-[#98989D] uppercase tracking-wider">
-                  อันดับคะแนนโต๊ะสด
+                  อันดับคะแนนในโต๊ะ
                 </span>
               </div>
 

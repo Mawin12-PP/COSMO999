@@ -11,7 +11,6 @@ import {
   Crown,
   Dices,
   Flame,
-  MessageSquareHeart,
   PartyPopper,
   RotateCcw,
   Sparkles,
@@ -225,21 +224,11 @@ export function ScoreEntry({
           <button
             type="button"
             onClick={onReset}
-            className="flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] px-6 py-3 text-base font-semibold text-white shadow-lg shadow-blue-500/25 transition-all duration-200 ease-out active:scale-[0.97] hover:opacity-90"
+            className="flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] px-6 py-3 text-base font-semibold text-white shadow-lg shadow-blue-500/25 transition-all duration-200 ease-out ios-spring-button hover:opacity-90"
           >
             <RotateCcw className="size-4.5" />
-            {liveSessionActive ? "กลับไปที่โต๊ะสด (ดูผลรวม)" : "เริ่มรอบใหม่"}
+            {liveSessionActive ? "กลับไปที่โต๊ะ (ดูผลรวม)" : "เริ่มรอบใหม่"}
           </button>
-          <a
-            href="https://forms.gle/BicBxvKyLrqoQHj89"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="แจ้งปัญหา / เสนอไอเดีย (เปิดในแท็บใหม่)"
-            className="flex min-h-[44px] sm:min-h-[48px] items-center justify-center gap-2 rounded-full border border-black/[0.06] dark:border-[#38383A] bg-white dark:bg-[#2C2C2E] px-4 py-2 sm:px-5 sm:py-2.5 text-xs sm:text-sm font-semibold text-[#8E8E93] dark:text-[#98989D] shadow-xs transition-all duration-200 ease-out active:scale-[0.97] hover:bg-gray-50 dark:hover:bg-[#38383A] hover:text-[#1C1C1E] dark:hover:text-[#F2F2F7]"
-          >
-            <MessageSquareHeart className="size-4 sm:size-4.5" />
-            แจ้งปัญหา / เสนอไอเดีย
-          </a>
         </div>
       </section>
     );

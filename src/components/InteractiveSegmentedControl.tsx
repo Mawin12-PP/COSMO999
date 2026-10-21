@@ -29,6 +29,7 @@ export function InteractiveSegmentedControl<T extends string>({
   buttonClassName?: string;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [isPressed, setIsPressed] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [dragPercent, setDragPercent] = useState<number | null>(null);
 
@@ -56,6 +57,13 @@ export function InteractiveSegmentedControl<T extends string>({
     hasDraggedRef.current = false;
     pointerIdRef.current = e.pointerId;
     startXRef.current = e.clientX;
+    setIsPressed(true);
+
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {
+      // ignore
+    }
   }
 
   function handlePointerMove(e: React.PointerEvent<HTMLDivElement>) {
@@ -65,13 +73,6 @@ export function InteractiveSegmentedControl<T extends string>({
     // Only engage drag and capture pointer when actual movement occurs (> 7px)
     if (!hasDraggedRef.current && deltaX > 7) {
       hasDraggedRef.current = true;
-      if (pointerIdRef.current !== null) {
-        try {
-          e.currentTarget.setPointerCapture(pointerIdRef.current);
-        } catch {
-          // ignore
-        }
-      }
       setIsDragging(true);
     }
 
@@ -92,6 +93,7 @@ export function InteractiveSegmentedControl<T extends string>({
     const didDrag = hasDraggedRef.current;
     isPointerDownRef.current = false;
     hasDraggedRef.current = false;
+    setIsPressed(false);
     setIsDragging(false);
 
     if (pointerIdRef.current !== null) {
@@ -127,7 +129,15 @@ export function InteractiveSegmentedControl<T extends string>({
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerUp}
-      className={`relative inline-flex select-none touch-none rounded-full bg-black/[0.06] dark:bg-[#2C2C2E] p-1 shadow-2xs cursor-pointer ${className}`}
+      style={{
+        touchAction: "none",
+        transform: isPressed ? "scale(0.9)" : "scale(1)",
+        transformOrigin: "center center",
+        transition: isPressed
+          ? "transform 90ms cubic-bezier(0.25, 1, 0.5, 1)"
+          : "transform 420ms cubic-bezier(0.34, 1.56, 0.64, 1)",
+      }}
+      className={`relative inline-flex select-none touch-none rounded-full bg-black/[0.06] dark:bg-[#2C2C2E] p-1 shadow-2xs cursor-pointer will-change-transform ${className}`}
     >
       {/* Sliding Magic Indicator Pill with Dynamic Island squish */}
       <div
@@ -162,7 +172,7 @@ export function InteractiveSegmentedControl<T extends string>({
             role="tab"
             aria-selected={isSelected}
             onClick={() => onChange(key)}
-            className={`relative z-10 flex min-h-[40px] sm:min-h-[44px] flex-1 items-center justify-center gap-2 rounded-full px-3.5 py-1.5 sm:px-5 sm:py-2 text-xs sm:text-sm font-semibold transition-colors duration-200 ease-out active:scale-[0.97] cursor-pointer ${
+            className={`relative z-10 flex min-h-[40px] sm:min-h-[44px] flex-1 items-center justify-center gap-2 rounded-full px-3.5 py-1.5 sm:px-5 sm:py-2 text-xs sm:text-sm font-semibold transition-colors duration-200 ease-out cursor-pointer ${
               isSelected
                 ? "text-[#1C1C1E] dark:text-[#F2F2F7]"
                 : "text-[#8E8E93] dark:text-[#98989D] hover:text-[#1C1C1E] dark:hover:text-[#F2F2F7]"

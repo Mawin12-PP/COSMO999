@@ -89,6 +89,12 @@ export function AppNav() {
     if (isDesktop) {
       initialYRef.current = activeIndex * VERTICAL_STEP;
     }
+
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {
+      // ignore
+    }
   }
 
   function handlePointerMove(e: React.PointerEvent<HTMLUListElement>) {
@@ -189,7 +195,18 @@ export function AppNav() {
   return (
     <nav
       aria-label="เมนูหลัก"
-      className="fixed z-40 left-1/2 -translate-x-1/2 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] w-[calc(100%-1.75rem)] max-w-sm sm:max-w-md rounded-full border border-black/[0.08] dark:border-white/15 bg-white/90 dark:bg-[#1C1C1E]/90 backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.5)] p-1.5 md:sticky md:inset-x-auto md:left-auto md:right-auto md:bottom-auto md:top-0 md:translate-x-0 md:h-dvh md:w-60 md:max-w-none md:shrink-0 md:rounded-none md:border-0 md:border-r md:border-gray-200 dark:md:border-[#38383A] md:bg-[#F2F2F7]/70 dark:md:bg-[#000000]/70 md:shadow-none md:p-0"
+      style={{
+        scale: isDraggingH ? 1.055 : undefined,
+        transformOrigin: "center center",
+        transition: isDraggingH
+          ? "scale 140ms cubic-bezier(0.2, 0.9, 0.3, 1), box-shadow 200ms ease"
+          : "scale 420ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 300ms ease",
+      }}
+      className={`fixed z-40 left-1/2 -translate-x-1/2 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] w-[calc(100%-1.75rem)] max-w-sm sm:max-w-md rounded-full border bg-white/90 dark:bg-[#1C1C1E]/90 backdrop-blur-2xl p-1.5 will-change-transform ${
+        isDraggingH
+          ? "border-blue-500/30 shadow-[0_12px_44px_rgba(0,122,255,0.22)] dark:shadow-[0_12px_44px_rgba(0,0,0,0.8)]"
+          : "border-black/[0.08] dark:border-white/15 shadow-[0_8px_32px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.5)]"
+      } md:sticky md:inset-x-auto md:left-auto md:right-auto md:bottom-auto md:top-0 md:translate-x-0 md:h-dvh md:w-60 md:max-w-none md:shrink-0 md:rounded-none md:border-0 md:border-r md:border-gray-200 dark:md:border-[#38383A] md:bg-[#F2F2F7]/70 dark:md:bg-[#000000]/70 md:shadow-none md:p-0`}
     >
       <div className="flex w-full md:h-full md:flex-col md:justify-between">
         {/* Navigation links with gesture dragging */}
@@ -198,6 +215,7 @@ export function AppNav() {
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
           onPointerCancel={handlePointerUp}
+          style={{ touchAction: "none" }}
           className="relative flex flex-1 select-none touch-none md:touch-auto items-center justify-around md:flex-none md:flex-col md:justify-start md:gap-2 md:px-3.5 md:pt-6 md:pb-2"
         >
           {/* Mobile Horizontal Sliding Magic Indicator */}
@@ -255,7 +273,7 @@ export function AppNav() {
                   aria-current={active ? "page" : undefined}
                   aria-label={label}
                   title={label}
-                  className={`group flex min-h-[44px] h-11 items-center justify-center rounded-full transition-colors duration-200 ease-out active:scale-95 md:flex-row md:justify-start md:gap-3 md:rounded-xl md:px-4 md:py-3 md:text-sm ${
+                  className={`group flex min-h-[44px] h-11 items-center justify-center rounded-full transition-colors duration-200 ease-out ios-spring-button md:flex-row md:justify-start md:gap-3 md:rounded-xl md:px-4 md:py-3 md:text-sm ${
                     active
                       ? "text-[#007AFF] font-bold"
                       : "text-[#8E8E93] dark:text-[#98989D] hover:text-[#1C1C1E] dark:hover:text-[#F2F2F7]"

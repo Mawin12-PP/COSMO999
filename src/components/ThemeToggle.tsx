@@ -52,6 +52,11 @@ export function ThemeToggle() {
     pointerIdRef.current = e.pointerId;
     startXRef.current = e.clientX;
     initialXRef.current = isDark ? MAX_DRAG_X : 0;
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {
+      // ignore
+    }
   }
 
   function handlePointerMove(e: React.PointerEvent<HTMLButtonElement>) {
@@ -60,13 +65,6 @@ export function ThemeToggle() {
 
     if (!hasDraggedRef.current && Math.abs(delta) > 5) {
       hasDraggedRef.current = true;
-      if (pointerIdRef.current !== null) {
-        try {
-          e.currentTarget.setPointerCapture(pointerIdRef.current);
-        } catch {
-          // ignore
-        }
-      }
       setIsDragging(true);
     }
 
@@ -126,7 +124,8 @@ export function ThemeToggle() {
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerUp}
       onKeyDown={handleKeyDown}
-      className={`relative inline-flex h-8 w-16 select-none touch-none items-center justify-between rounded-full p-1 transition-colors duration-300 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] active:scale-[0.98] cursor-pointer ${
+      style={{ touchAction: "none" }}
+      className={`relative inline-flex h-8 w-16 select-none touch-none items-center justify-between rounded-full p-1 transition-colors duration-300 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] ios-spring-button cursor-pointer ${
         isDark ? "bg-[#38383A]" : "bg-[#E5E5EA]"
       }`}
     >

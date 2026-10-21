@@ -1,15 +1,30 @@
 "use client";
 
-// Player profile image: the uploaded photo if there is one, otherwise the
-// personalized Emoji avatar on the clean iOS original theme.
-// Follows COSMO999 Apple iOS design tokens:
-// Container: rounded-full flex items-center justify-center border border-gray-100 dark:border-white/10
-// Background: bg-[#F2F2F7] dark:bg-[#1C1C1E]
-import {
-  parseEmojiAvatar,
-  getDeterministicEmoji,
-} from "@/lib/suits";
+// Player profile avatar using Boring Avatars (Beam variant) on iOS 18 design tokens,
+// or custom uploaded photo if provided.
+// Automatically and deterministically generated from the player's name/seed.
+import Avatar from "boring-avatars";
 import type { Player } from "@/types/models";
+
+const BORING_PALETTES = [
+  ["#007AFF", "#5856D6", "#AF52DE", "#34C759", "#64D2FF"], // Apple Blue-Purple
+  ["#FF2D55", "#FF9500", "#FFCC00", "#AF52DE", "#FF3B30"], // Sunset Berry
+  ["#30D158", "#007AFF", "#64D2FF", "#32ADE6", "#5856D6"], // Neon Aurora
+  ["#BF5AF2", "#FF375F", "#FF9F0A", "#5E5CE6", "#007AFF"], // Cyberpunk Dusk
+  ["#FF6482", "#F2A33A", "#F8DC72", "#68D8D6", "#3B82F6"], // Pastel Candy
+  ["#10B981", "#3B82F6", "#6366F1", "#EC4899", "#8B5CF6"], // Emerald Sky
+  ["#F59E0B", "#EF4444", "#8B5CF6", "#3B82F6", "#10B981"], // Warm Lava
+  ["#06B6D4", "#3B82F6", "#8B5CF6", "#D946EF", "#F43F5E"], // Deep Ocean
+];
+
+function hashString(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash << 5) - hash + str.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash);
+}
 
 export function PlayerAvatar({
   player,
@@ -18,13 +33,11 @@ export function PlayerAvatar({
   player: Player;
   className?: string;
 }) {
-  const emoji = parseEmojiAvatar(player.image);
-
-  // If a photo is stored (data URL or external URL, not an emoji or legacy suit)
   const isPhoto = Boolean(
     player.image &&
       !player.image.startsWith("suit:") &&
       !player.image.startsWith("emoji:") &&
+      !player.image.startsWith("boring:") &&
       (player.image.startsWith("data:") ||
         player.image.startsWith("http://") ||
         player.image.startsWith("https://")),
@@ -36,23 +49,28 @@ export function PlayerAvatar({
         data-avatar-root="true"
         role="img"
         aria-label={player.name}
-        className={`${className} block shrink-0 rounded-full border border-gray-100 dark:border-white/10 bg-cover bg-center shadow-2xs`}
+        className={`${className} block shrink-0 rounded-full border border-gray-100 dark:border-white/10 bg-cover bg-center shadow-2xs overflow-hidden`}
         style={{ backgroundImage: `url(${player.image})` }}
       />
     );
   }
 
-  // All non-photo profiles strictly render system Emoji on the original theme (#F2F2F7 / #1C1C1E)
-  const effectiveEmoji = emoji || getDeterministicEmoji(player.id || player.name || "player");
+  const seed = player.name?.trim() || player.id || "player";
+  const palette = BORING_PALETTES[hashString(seed) % BORING_PALETTES.length];
 
   return (
     <span
       data-avatar-root="true"
       role="img"
-      aria-label={`${player.name} (${effectiveEmoji})`}
-      className={`${className} flex shrink-0 items-center justify-center rounded-full border border-gray-100 dark:border-white/10 bg-[#F2F2F7] dark:bg-[#1C1C1E] shadow-2xs select-none`}
+      aria-label={player.name}
+      className={`${className} flex shrink-0 items-center justify-center rounded-full border border-gray-100 dark:border-white/10 shadow-2xs overflow-hidden select-none bg-[#F2F2F7] dark:bg-[#1C1C1E]`}
     >
-      <span className="leading-none text-[1.25em] transform-gpu">{effectiveEmoji}</span>
+      <Avatar
+        size="100%"
+        name={seed}
+        variant="beam"
+        colors={palette}
+      />
     </span>
   );
 }

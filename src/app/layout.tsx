@@ -46,6 +46,11 @@ export default function RootLayout({
         <link rel="icon" href="/icon.svg?v=3" type="image/svg+xml" />
         <link rel="shortcut icon" href="/icon.svg?v=3" />
         <link rel="apple-touch-icon" href="/icon.svg?v=3" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: "document.addEventListener('touchstart',function(){},{passive:true});",
+          }}
+        />
       </head>
       <body className="bg-[var(--background)] text-[var(--text-primary)] antialiased selection:bg-[#007AFF]/20 transition-colors duration-200">
         <ThemeProvider

@@ -29,6 +29,7 @@ import {
 import { AnimatedNumber } from "@/components/AnimatedNumber";
 import { HallOfFameCard } from "@/components/HallOfFameCard";
 import { InteractiveSegmentedControl } from "@/components/InteractiveSegmentedControl";
+import { PeriodDropdownPicker } from "@/components/PeriodDropdownPicker";
 import { PlayerAvatar } from "@/components/PlayerAvatar";
 import { usePlayers } from "@/hooks/usePlayers";
 import { useHistory } from "@/hooks/useHistory";
@@ -447,21 +448,13 @@ function ViewSwitcher({
       />
 
       {pastPeriods.length > 0 ? (
-        <select
-          aria-label="ดูงวดย้อนหลัง"
-          value={isPastPeriodActive ? viewKey : ""}
-          onChange={(e) => {
-            if (e.target.value) onChange(e.target.value);
-          }}
-          className="min-h-[40px] sm:min-h-[44px] w-full sm:w-auto rounded-full border border-black/[0.06] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] px-4 py-2 sm:px-5 sm:py-2 text-xs sm:text-sm font-semibold text-[#1C1C1E] dark:text-[#F2F2F7] shadow-xs transition-all duration-200 ease-out focus:border-[#007AFF] focus:outline-none cursor-pointer"
-        >
-          <option value="">ดูงวดย้อนหลัง...</option>
-          {pastPeriods.map((period) => (
-            <option key={period.key} value={period.key}>
-              {period.label}
-            </option>
-          ))}
-        </select>
+        <PeriodDropdownPicker
+          periods={pastPeriods}
+          selectedKey={isPastPeriodActive ? viewKey : null}
+          onSelect={onChange}
+          placeholder="ดูงวดย้อนหลัง..."
+          className="w-full sm:w-auto sm:min-w-[190px]"
+        />
       ) : null}
     </div>
   );

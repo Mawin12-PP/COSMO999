@@ -218,19 +218,19 @@ function RoundSetupInner({
           <button
             type="button"
             onClick={onOpenLiveSession}
-            className="flex items-center gap-1.5 rounded-full border border-green-500/30 bg-green-50 dark:bg-green-950/40 hover:bg-green-100 dark:hover:bg-green-950/60 active:scale-95 text-[#34C759] text-xs font-bold px-3 py-1.5 transition-all cursor-pointer shadow-xs"
+            className="flex items-center gap-1.5 rounded-full border border-green-500/30 bg-green-50 dark:bg-green-950/40 hover:bg-green-100 dark:hover:bg-green-950/60 ios-spring-button text-[#34C759] text-xs font-bold px-3 py-1.5 transition-all cursor-pointer shadow-xs"
           >
             <span className="size-2 rounded-full bg-[#34C759] animate-pulse" />
-            <span>เข้าสู่โต๊ะสด (รอบที่ {liveRoundCount})</span>
+            <span>เข้าสู่โต๊ะ (รอบที่ {liveRoundCount})</span>
           </button>
         ) : (
           <button
             type="button"
             onClick={onStartLiveSession}
-            className="flex items-center gap-1.5 rounded-full border border-blue-500/30 bg-blue-50 dark:bg-blue-950/40 text-[#007AFF] dark:text-[#2E8BFF] hover:bg-blue-100 dark:hover:bg-blue-950/60 active:scale-95 text-xs font-semibold px-3 py-1.5 transition-all cursor-pointer shadow-xs"
+            className="flex items-center gap-1.5 rounded-full border border-blue-500/30 bg-blue-50 dark:bg-blue-950/40 text-[#007AFF] dark:text-[#2E8BFF] hover:bg-blue-100 dark:hover:bg-blue-950/60 ios-spring-button text-xs font-semibold px-3 py-1.5 transition-all cursor-pointer shadow-xs"
           >
             <Radio className="size-3.5 text-current" />
-            <span>เปิดโต๊ะสด</span>
+            <span>เปิดโต๊ะ</span>
           </button>
         )}
       </div>
