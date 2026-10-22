@@ -3,18 +3,13 @@
 import { useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import {
-  Banknote,
   Check,
   ChevronLeft,
-  Crown,
   Dices,
   Plus,
   Power,
   Radio,
-  Scale,
   Shuffle,
-  TrendingDown,
-  TrendingUp,
   UserPlus,
   X,
 } from "lucide-react";
@@ -29,7 +24,7 @@ import {
   updateSessionPlayerIds,
 } from "@/lib/session";
 import type { HistoryEntry, Player } from "@/types/models";
-import type { FunAwardItem, LiveSession } from "@/types/session";
+import type { LiveSession } from "@/types/session";
 
 const LiveSessionChart = dynamic(
   () => import("@/components/LiveSessionChart").then((m) => m.LiveSessionChart),
@@ -40,17 +35,6 @@ const LiveSessionChart = dynamic(
     ),
   },
 );
-
-const AWARD_ICONS: Record<
-  FunAwardItem["id"],
-  React.ComponentType<{ className?: string }>
-> = {
-  leader: Crown,
-  sponsor: Banknote,
-  biggest_loss: TrendingDown,
-  biggest_win: TrendingUp,
-  steady: Scale,
-};
 
 const MULTIPLIERS = [1, 2, 4, 5, 8, 10, 20, 50];
 
@@ -333,13 +317,13 @@ export function LiveSessionModal({
   // VIEW 2: ACTIVE FULL-SCREEN LIVE SESSION DASHBOARD
   // =========================================================
   return (
-    <div className="fixed inset-0 z-[100] w-screen h-screen min-h-dvh overflow-y-auto bg-[#F2F2F7] dark:bg-[#121214] flex flex-col">
-      <div className="mx-auto w-full max-w-6xl min-h-screen flex flex-col p-3 sm:p-5 md:p-6">
+    <div className="fixed inset-0 z-[100] w-screen h-dvh overflow-y-auto bg-[#F2F2F7] dark:bg-[#121214] flex flex-col">
+      <div className="mx-auto w-full max-w-6xl flex-1 flex flex-col p-3 sm:p-4 md:p-5">
         
         {/* ========================================================= */}
         {/* TOP TOOLBAR: Return home (Left) | Pulse (Mid) | End (Right) */}
         {/* ========================================================= */}
-        <header className="flex items-center justify-between border-b border-black/[0.06] dark:border-white/10 pb-3.5 mb-4">
+        <header className="flex items-center justify-between border-b border-black/[0.06] dark:border-white/10 pb-2.5 mb-3">
           {/* Left: Return home without closing session */}
           <button
             type="button"
@@ -384,45 +368,27 @@ export function LiveSessionModal({
 
         {/* ========================================================= */}
         {/* MAIN DASHBOARD CONTENT AREA                               */}
-        {/* PC/iPad: Chart on top (full width), Standings & Awards in 2 columns below */}
-        {/* iPhone: Naturally stacked in order: Chart -> Standings -> Awards */}
+        {/* PC/iPad: Standings (Left) & Chart (Right) side-by-side    */}
+        {/* iPhone: Naturally stacked: Chart -> Standings             */}
         {/* ========================================================= */}
-        <div className="flex-1 flex flex-col gap-5 mb-4">
-          
-          {/* 1. CHART (Top standalone, prominent & wide across PC/iPad) */}
-          <div className="flex flex-col gap-1.5">
-            <div className="flex items-center justify-between px-1">
-              <span className="text-xs font-bold text-[#8E8E93] dark:text-[#98989D] uppercase tracking-wider">
-                คะแนนรายรอบ
-              </span>
-              <span className="text-[10px] text-[#8E8E93] dark:text-[#98989D]">
-                {stats.totalRounds > 0 ? `รอบ 1–${stats.totalRounds}` : "ยังไม่มีรอบ"}
-              </span>
-            </div>
-            <div className="rounded-[24px] border border-black/[0.05] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] p-3.5 sm:p-4 shadow-xs">
-              <LiveSessionChart
-                chartData={stats.chartData}
-                players={tablePlayers}
-                height={230}
-              />
-            </div>
-          </div>
-
-          {/* 2 & 3. TWO COLUMNS UNDERNEATH (PC/iPad: 2 cols side-by-side | iPhone: stacked) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-start">
+        <div className="flex-1 flex flex-col gap-3 sm:gap-4 mb-3 sm:mb-4 min-h-0">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-4 lg:gap-5 items-stretch flex-1 min-h-0">
             
-            {/* 2. STANDINGS (อันดับคะแนนในโต๊ะ) */}
-            <div className="flex flex-col gap-2.5">
+            {/* 1. STANDINGS (อันดับคะแนนในโต๊ะ) */}
+            <div className="flex flex-col gap-1.5 min-w-0 flex-1">
               <div className="flex items-center justify-between px-1">
                 <span className="text-xs font-bold text-[#8E8E93] dark:text-[#98989D] uppercase tracking-wider">
                   อันดับคะแนนในโต๊ะ
                 </span>
+                <span className="text-[10px] font-semibold text-[#007AFF] dark:text-[#2E8BFF]">
+                  {tablePlayers.length} คน
+                </span>
               </div>
 
               {stats.standings.length === 0 ? (
-                <div className="flex flex-col items-center justify-center p-8 sm:p-12 rounded-[22px] border border-black/[0.05] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] text-center shadow-xs">
-                  <Dices className="size-8 sm:size-10 text-[#8E8E93] dark:text-[#98989D] mb-2.5 opacity-60" />
-                  <span className="text-sm sm:text-base font-semibold text-[#1C1C1E] dark:text-[#F2F2F7]">
+                <div className="flex flex-1 min-h-[160px] sm:min-h-[200px] flex-col items-center justify-center p-6 rounded-[22px] border border-black/[0.05] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] text-center shadow-xs">
+                  <Dices className="size-8 sm:size-9 text-[#8E8E93] dark:text-[#98989D] mb-2 opacity-60" />
+                  <span className="text-sm font-semibold text-[#1C1C1E] dark:text-[#F2F2F7]">
                     ยังไม่มีคะแนนในโต๊ะนี้
                   </span>
                   <span className="text-xs text-[#8E8E93] dark:text-[#98989D] mt-1">
@@ -430,124 +396,87 @@ export function LiveSessionModal({
                   </span>
                 </div>
               ) : (
-                <ul className="flex flex-col gap-2 sm:gap-2.5">
-                  {stats.standings.map((st, index) => {
-                    const rank = index + 1;
-                    const isPlayingNext = selectedRoundPlayerIds.includes(st.player.id);
+                <div className="flex-1 rounded-[22px] border border-black/[0.05] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] p-2.5 sm:p-3 shadow-xs flex flex-col justify-between overflow-hidden">
+                  <ul className="flex flex-col gap-2 max-h-[220px] sm:max-h-[240px] overflow-y-auto pr-1 [scrollbar-width:thin]">
+                    {stats.standings.map((st, index) => {
+                      const rank = index + 1;
+                      const isPlayingNext = selectedRoundPlayerIds.includes(st.player.id);
 
-                    return (
-                      <li
-                        key={st.player.id}
-                        className="flex items-center justify-between rounded-2xl border border-black/[0.05] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] px-3.5 sm:px-4 py-2.5 sm:py-3 shadow-xs transition-all"
-                      >
-                        <div className="flex items-center gap-3 sm:gap-3.5 min-w-0">
-                          <span
-                            className={`font-black text-xs sm:text-sm w-4 text-center tabular-nums ${
-                              rank === 1
-                                ? "text-amber-500"
-                                : rank === 2
-                                  ? "text-slate-400"
-                                  : rank === 3
-                                    ? "text-amber-700 dark:text-amber-600"
-                                    : "text-[#8E8E93] dark:text-[#98989D]"
-                            }`}
-                          >
-                            {rank}
-                          </span>
-                          <PlayerAvatar
-                            player={st.player}
-                            className="size-8 sm:size-9 text-xs shrink-0"
-                          />
-                          <div className="flex flex-col min-w-0">
-                            <div className="flex items-center gap-1.5">
-                              <span className="font-semibold text-xs sm:text-sm text-[#1C1C1E] dark:text-[#F2F2F7] truncate max-w-[140px] sm:max-w-[200px]">
-                                {st.player.name}
-                              </span>
-                              {!isPlayingNext && (
-                                <span className="rounded-full bg-black/[0.05] dark:bg-white/[0.08] px-1.5 py-0.5 text-[9px] font-medium text-[#8E8E93] dark:text-[#98989D]">
-                                  พัก
-                                </span>
-                              )}
-                            </div>
-                            {/* Real-time Period Comparison */}
-                            <span className="text-[10px] sm:text-[11px] text-[#8E8E93] dark:text-[#98989D] truncate">
-                              {st.periodRank ? (
-                                <>
-                                  อันดับที่ {st.periodRank} ในงวดนี้ (
-                                  {st.periodScore > 0
-                                    ? `+${st.periodScore.toLocaleString()}`
-                                    : st.periodScore.toLocaleString()}
-                                  )
-                                </>
-                              ) : (
-                                "ยังไม่มีอันดับงวด"
-                              )}
+                      return (
+                        <li
+                          key={st.player.id}
+                          className="flex items-center justify-between rounded-xl sm:rounded-2xl border border-black/[0.04] dark:border-[#38383A] bg-black/[0.015] dark:bg-white/[0.02] px-3 sm:px-3.5 py-2 sm:py-2.5 shadow-2xs transition-all"
+                        >
+                          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                            <span
+                              className={`font-black text-xs sm:text-sm w-4 text-center tabular-nums ${
+                                rank === 1
+                                  ? "text-amber-500"
+                                  : rank === 2
+                                    ? "text-slate-400"
+                                    : rank === 3
+                                      ? "text-amber-700 dark:text-amber-600"
+                                      : "text-[#8E8E93] dark:text-[#98989D]"
+                              }`}
+                            >
+                              {rank}
                             </span>
+                            <PlayerAvatar
+                              player={st.player}
+                              className="size-7 sm:size-8 text-xs shrink-0"
+                            />
+                            <div className="flex flex-col min-w-0">
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-semibold text-xs sm:text-sm text-[#1C1C1E] dark:text-[#F2F2F7] truncate max-w-[120px] sm:max-w-[160px]">
+                                  {st.player.name}
+                                </span>
+                                {!isPlayingNext && (
+                                  <span className="rounded-full bg-black/[0.05] dark:bg-white/[0.08] px-1.5 py-0.5 text-[9px] font-medium text-[#8E8E93] dark:text-[#98989D]">
+                                    พัก
+                                  </span>
+                                )}
+                              </div>
+                              <span className="text-[10px] text-[#8E8E93] dark:text-[#98989D] truncate">
+                                {st.periodRank ? (
+                                  <>
+                                    ที่ {st.periodRank} งวดนี้ ({st.periodScore > 0 ? `+${st.periodScore.toLocaleString()}` : st.periodScore.toLocaleString()})
+                                  </>
+                                ) : (
+                                  "ยังไม่มีอันดับงวด"
+                                )}
+                              </span>
+                            </div>
                           </div>
-                        </div>
 
-                        {/* Session Score */}
-                        <AnimatedNumber
-                          value={st.sessionScore}
-                          className={`text-lg sm:text-xl font-black tabular-nums shrink-0 ml-2 ${scoreTone(st.sessionScore)}`}
-                        />
-                      </li>
-                    );
-                  })}
-                </ul>
+                          <AnimatedNumber
+                            value={st.sessionScore}
+                            className={`text-base sm:text-lg font-black tabular-nums shrink-0 ml-2 ${scoreTone(st.sessionScore)}`}
+                          />
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
               )}
             </div>
 
-            {/* 3. AWARDS (ฉายาประจำคืน) */}
-            <div className="flex flex-col gap-2.5">
-              <span className="text-xs font-bold text-[#8E8E93] dark:text-[#98989D] uppercase tracking-wider px-1">
-                ฉายาประจำคืน
-              </span>
-              {stats.awards.length === 0 ? (
-                <div className="flex flex-col items-center justify-center p-8 sm:p-12 rounded-[22px] border border-black/[0.05] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] text-center shadow-xs">
-                  <Crown className="size-8 sm:size-10 text-[#8E8E93] dark:text-[#98989D] mb-2.5 opacity-60" />
-                  <span className="text-sm sm:text-base font-semibold text-[#1C1C1E] dark:text-[#F2F2F7]">
-                    ยังไม่มีฉายา
-                  </span>
-                  <span className="text-xs text-[#8E8E93] dark:text-[#98989D] mt-1">
-                    เล่นครบ 1 รอบเพื่อปลดล็อกฉายา
-                  </span>
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 gap-2.5">
-                  {stats.awards.map((award) => {
-                    const Icon = AWARD_ICONS[award.id] ?? Crown;
-                    const iconTone =
-                      award.id === "leader"
-                        ? "text-amber-500"
-                        : award.id === "sponsor" || award.id === "biggest_loss"
-                          ? "text-[#FF3B30]"
-                          : award.id === "biggest_win"
-                            ? "text-[#34C759]"
-                            : "text-[#007AFF]";
-
-                    return (
-                      <div
-                        key={award.id}
-                        className="rounded-2xl border border-black/[0.05] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] p-3 sm:p-3.5 flex flex-col justify-between shadow-xs transition-all"
-                      >
-                        <div className="flex items-center gap-1.5">
-                          <Icon className={`size-3.5 shrink-0 ${iconTone}`} />
-                          <span className="text-[10px] font-bold text-[#8E8E93] dark:text-[#98989D] uppercase tracking-wider truncate">
-                            {award.title}
-                          </span>
-                        </div>
-                        <span className="font-bold text-xs sm:text-sm text-[#1C1C1E] dark:text-[#F2F2F7] truncate mt-2">
-                          {award.playerName}
-                        </span>
-                        <span className="text-[10px] text-[#8E8E93] dark:text-[#98989D] tabular-nums mt-0.5">
-                          {award.detail}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+            {/* 2. CHART (คะแนนรายรอบ) */}
+            <div className="flex flex-col gap-1.5 min-w-0 flex-1 order-first md:order-last">
+              <div className="flex items-center justify-between px-1">
+                <span className="text-xs font-bold text-[#8E8E93] dark:text-[#98989D] uppercase tracking-wider">
+                  คะแนนรายรอบ
+                </span>
+                <span className="text-[10px] text-[#8E8E93] dark:text-[#98989D]">
+                  {stats.totalRounds > 0 ? `รอบ 1–${stats.totalRounds}` : "ยังไม่มีรอบ"}
+                </span>
+              </div>
+              <div className="rounded-[22px] border border-black/[0.05] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] p-3 sm:p-3.5 shadow-xs flex-1 flex flex-col justify-center">
+                <LiveSessionChart
+                  chartData={stats.chartData}
+                  players={tablePlayers}
+                  height={200}
+                />
+              </div>
             </div>
 
           </div>
@@ -556,13 +485,13 @@ export function LiveSessionModal({
         {/* ========================================================= */}
         {/* BOTTOM ROUND PREP BAR: Ergonomic Player Swap + Multiplier */}
         {/* ========================================================= */}
-        <footer className="mt-auto rounded-[24px] sm:rounded-[28px] border border-black/[0.06] dark:border-[#38383A] p-4 sm:p-5 bg-white dark:bg-[#1C1C1E] shadow-sm flex flex-col gap-3.5 sm:gap-4">
+        <footer className="mt-auto rounded-[22px] sm:rounded-[24px] border border-black/[0.06] dark:border-[#38383A] p-3 sm:p-3.5 bg-white dark:bg-[#1C1C1E] shadow-sm flex flex-col gap-2.5 sm:gap-3">
           
           {/* Controls: 2-column grid on desktop/iPad, stacked on iPhone */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 sm:gap-4">
             
             {/* 1. Players in Round */}
-            <div className="flex flex-col gap-2 min-w-0">
+            <div className="flex flex-col gap-1 min-w-0">
               <div className="flex items-center justify-between text-xs px-0.5">
                 <span className="font-bold text-[#8E8E93] dark:text-[#98989D] uppercase tracking-wider text-[11px]">
                   ผู้เล่นในรอบนี้ ({selectedCount} คน)
@@ -580,7 +509,7 @@ export function LiveSessionModal({
               </div>
 
               {/* Player Chips Row (Clean, scrollable with no visible native scrollbar) */}
-              <div className="flex items-center gap-2 overflow-x-auto py-1 px-0.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+              <div className="flex items-center gap-1.5 overflow-x-auto py-0.5 px-0.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                 {tablePlayers.map((tp) => {
                   const isSelected = selectedRoundPlayerIds.includes(tp.id);
                   return (
@@ -588,7 +517,7 @@ export function LiveSessionModal({
                       key={tp.id}
                       type="button"
                       onClick={() => toggleRoundPlayer(tp.id)}
-                      className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold shrink-0 transition-all cursor-pointer active:scale-95 ${
+                      className={`flex items-center gap-1.5 rounded-full px-2.5 sm:px-3 py-1.5 text-xs font-semibold shrink-0 transition-all cursor-pointer active:scale-95 ${
                         isSelected
                           ? "bg-blue-50 dark:bg-blue-950/40 text-[#007AFF] dark:text-[#2E8BFF] border border-blue-500/30 shadow-xs"
                           : "bg-black/[0.04] dark:bg-white/[0.06] text-[#8E8E93] dark:text-[#98989D] border border-transparent opacity-60"
@@ -608,7 +537,7 @@ export function LiveSessionModal({
             </div>
 
             {/* 2. Multiplier Picker */}
-            <div className="flex flex-col gap-2 min-w-0">
+            <div className="flex flex-col gap-1 min-w-0">
               <div className="flex items-center justify-between text-xs px-0.5">
                 <span className="font-bold text-[#8E8E93] dark:text-[#98989D] uppercase tracking-wider text-[11px]">
                   ตัวคูณ
@@ -619,7 +548,7 @@ export function LiveSessionModal({
               </div>
 
               {/* Multiplier Pills with comfortable touch targets and no scrollbar */}
-              <div className="flex items-center gap-1.5 overflow-x-auto py-1 px-0.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+              <div className="flex items-center gap-1.5 overflow-x-auto py-0.5 px-0.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                 {MULTIPLIERS.map((m) => (
                   <button
                     key={m}
@@ -628,7 +557,7 @@ export function LiveSessionModal({
                       setRoundMultiplier(m);
                       setIsRandomMultiplier(false);
                     }}
-                    className={`min-w-[42px] h-9 sm:h-9.5 px-3 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-bold transition-all cursor-pointer tabular-nums flex items-center justify-center shrink-0 active:scale-95 ${
+                    className={`min-w-[40px] h-8 sm:h-8.5 px-2.5 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-bold transition-all cursor-pointer tabular-nums flex items-center justify-center shrink-0 active:scale-95 ${
                       !isRandomMultiplier && roundMultiplier === m
                         ? "bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] text-white shadow-xs"
                         : "bg-black/[0.04] dark:bg-white/[0.06] text-[#8E8E93] dark:text-[#98989D] hover:text-[#1C1C1E] dark:hover:text-[#F2F2F7]"
@@ -640,7 +569,7 @@ export function LiveSessionModal({
                 <button
                   type="button"
                   onClick={() => setIsRandomMultiplier(true)}
-                  className={`h-9 sm:h-9.5 px-3.5 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 shrink-0 active:scale-95 ${
+                  className={`h-8 sm:h-8.5 px-3 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 shrink-0 active:scale-95 ${
                     isRandomMultiplier
                       ? "bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] text-white shadow-xs"
                       : "bg-black/[0.04] dark:bg-white/[0.06] text-[#8E8E93] dark:text-[#98989D] hover:text-[#1C1C1E] dark:hover:text-[#F2F2F7]"
@@ -660,9 +589,9 @@ export function LiveSessionModal({
               type="button"
               onClick={handleStartScoreEntry}
               disabled={selectedCount < 2}
-              className={`flex min-h-[50px] w-full max-w-xl items-center justify-center gap-2 rounded-2xl px-6 py-3.5 text-sm sm:text-base font-bold transition-all ${
+              className={`flex min-h-[46px] sm:min-h-[48px] w-full max-w-lg items-center justify-center gap-2 rounded-2xl px-6 py-2.5 sm:py-3 text-sm sm:text-base font-bold transition-all ${
                 selectedCount >= 2
-                  ? "bg-gradient-to-r from-[#2E8BFF] to-[#007AFF] text-white shadow-lg shadow-blue-500/25 active:scale-[0.98] cursor-pointer hover:opacity-95"
+                  ? "bg-gradient-to-r from-[#2E8BFF] to-[#007AFF] text-white shadow-md shadow-blue-500/25 active:scale-[0.98] cursor-pointer hover:opacity-95"
                   : "bg-gray-300 text-gray-500 dark:bg-gray-800 dark:text-gray-400 cursor-not-allowed shadow-none"
               }`}
             >

@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { Trophy, TrendingUp } from "lucide-react";
 import { useTheme } from "next-themes";
 import {
@@ -84,6 +85,49 @@ function RoundScoreTooltip({
   );
 }
 
+// Custom dot renderer for cumulative score chart (blue for >=0, red for <0).
+function CumulativeDot(props: {
+  cx?: number;
+  cy?: number;
+  payload?: unknown;
+}) {
+  const { cx, cy, payload } = props;
+  if (cx === undefined || cy === undefined || !payload) return null;
+  const p = payload as CumulativeDataPoint;
+  const fill = (p.cumulative ?? 0) >= 0 ? "#007AFF" : "#FF3B30";
+  return (
+    <circle
+      cx={cx}
+      cy={cy}
+      r={3.5}
+      fill={fill}
+      strokeWidth={2}
+      className="stroke-white dark:stroke-[#1C1C1E]"
+    />
+  );
+}
+
+function CumulativeActiveDot(props: {
+  cx?: number;
+  cy?: number;
+  payload?: unknown;
+}) {
+  const { cx, cy, payload } = props;
+  if (cx === undefined || cy === undefined || !payload) return null;
+  const p = payload as CumulativeDataPoint;
+  const fill = (p.cumulative ?? 0) >= 0 ? "#007AFF" : "#FF3B30";
+  return (
+    <circle
+      cx={cx}
+      cy={cy}
+      r={6}
+      fill={fill}
+      strokeWidth={2}
+      className="stroke-white dark:stroke-[#1C1C1E]"
+    />
+  );
+}
+
 // Interactive tooltip popup for cumulative scores on hover, touch, or click.
 function CumulativeScoreTooltip({
   active,
@@ -104,7 +148,7 @@ function CumulativeScoreTooltip({
       <span
         className={`text-sm font-bold tabular-nums ${
           cumulative > 0
-            ? "text-[#34C759]"
+            ? "text-[#007AFF] dark:text-[#2E8BFF]"
             : cumulative < 0
               ? "text-[#FF3B30]"
               : "text-[#8E8E93] dark:text-[#98989D]"
@@ -133,7 +177,37 @@ export function StatsCharts({
   const gridColour = isDark ? "#38383A" : "#E5E5EA";
   const mutedColour = isDark ? "#98989D" : "#8E8E93";
   const iosBlue = "#007AFF";
+  const iosRed = "#FF3B30";
   const noAnimate = prefersReducedMotion();
+
+  const { off, isAllPositive, isAllNegative } = useMemo(() => {
+    if (!cumulativeData || cumulativeData.length === 0) {
+      return { off: 1, isAllPositive: true, isAllNegative: false };
+    }
+    const values = cumulativeData.map((d) => d.cumulative);
+    const dataMax = Math.max(...values);
+    const dataMin = Math.min(...values);
+
+    if (dataMax <= 0 && dataMin < 0) {
+      return { off: 0, isAllPositive: false, isAllNegative: true };
+    }
+    if (dataMin >= 0) {
+      return { off: 1, isAllPositive: true, isAllNegative: false };
+    }
+    const range = dataMax - dataMin;
+    const calculatedOff = range === 0 ? 0.5 : dataMax / range;
+    return {
+      off: Math.max(0, Math.min(1, calculatedOff)),
+      isAllPositive: false,
+      isAllNegative: false,
+    };
+  }, [cumulativeData]);
+
+  const strokeColor = isAllPositive
+    ? iosBlue
+    : isAllNegative
+      ? iosRed
+      : "url(#cumStroke)";
 
   return (
     <div className="flex flex-col gap-6">
@@ -217,18 +291,30 @@ export function StatsCharts({
               margin={{ top: 20, right: 16, bottom: 8, left: 12 }}
             >
               <defs>
-                <linearGradient id="cumGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop
-                    offset="5%"
-                    stopColor={iosBlue}
-                    stopOpacity={0.25}
-                  />
-                  <stop
-                    offset="95%"
-                    stopColor={iosBlue}
-                    stopOpacity={0.0}
-                  />
-                </linearGradient>
+                {isAllPositive ? (
+                  <linearGradient id="cumGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor={iosBlue} stopOpacity={0.28} />
+                    <stop offset="95%" stopColor={iosBlue} stopOpacity={0.0} />
+                  </linearGradient>
+                ) : isAllNegative ? (
+                  <linearGradient id="cumGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor={iosRed} stopOpacity={0.0} />
+                    <stop offset="95%" stopColor={iosRed} stopOpacity={0.28} />
+                  </linearGradient>
+                ) : (
+                  <>
+                    <linearGradient id="cumGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={iosBlue} stopOpacity={0.28} />
+                      <stop offset={`${off * 100}%`} stopColor={iosBlue} stopOpacity={0.02} />
+                      <stop offset={`${off * 100}%`} stopColor={iosRed} stopOpacity={0.02} />
+                      <stop offset="100%" stopColor={iosRed} stopOpacity={0.28} />
+                    </linearGradient>
+                    <linearGradient id="cumStroke" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset={`${off * 100}%`} stopColor={iosBlue} />
+                      <stop offset={`${off * 100}%`} stopColor={iosRed} />
+                    </linearGradient>
+                  </>
+                )}
               </defs>
               <CartesianGrid
                 strokeDasharray="3 3"
@@ -260,21 +346,12 @@ export function StatsCharts({
               <Area
                 type="monotone"
                 dataKey="cumulative"
-                stroke={iosBlue}
+                baseValue={0}
+                stroke={strokeColor}
                 strokeWidth={3}
                 fill="url(#cumGradient)"
-                dot={{
-                  fill: iosBlue,
-                  stroke: isDark ? "#1C1C1E" : "#FFFFFF",
-                  strokeWidth: 2,
-                  r: 3.5,
-                }}
-                activeDot={{
-                  r: 6,
-                  fill: iosBlue,
-                  stroke: isDark ? "#1C1C1E" : "#FFFFFF",
-                  strokeWidth: 2,
-                }}
+                dot={<CumulativeDot />}
+                activeDot={<CumulativeActiveDot />}
                 isAnimationActive={!noAnimate}
               />
             </AreaChart>

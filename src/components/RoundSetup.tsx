@@ -9,7 +9,7 @@
 // - Apple typography: font-semibold tracking-tight text-[#1C1C1E] & text-[#8E8E93]
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowRight, Play, Radio } from "lucide-react";
+import { ArrowRight, Play } from "lucide-react";
 import { MultiplierPicker } from "@/components/MultiplierPicker";
 import { RoundPlayerSelect } from "@/components/RoundPlayerSelect";
 import { ScoreEntry } from "@/components/ScoreEntry";
@@ -49,16 +49,13 @@ export interface RoundSetupProps {
   onStartLiveSession?: () => void;
 }
 
-function RoundSetupInner({
-  players,
-  history,
-  loading,
-  presetTrigger,
-  isLive = false,
-  liveRoundCount = 0,
-  onOpenLiveSession,
-  onStartLiveSession,
-}: RoundSetupProps) {
+function RoundSetupInner(props: RoundSetupProps) {
+  const {
+    players,
+    history,
+    loading,
+    presetTrigger,
+  } = props;
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -76,7 +73,7 @@ function RoundSetupInner({
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [multiplier, setMultiplier] = useState<number>(1);
-  const [isRandom, setIsRandom] = useState(false);
+  const [isRandom, setIsRandom] = useState(true);
   const [triggerReveal, setTriggerReveal] = useState<boolean>(false);
   const [step, setStep] = useState<"setup" | "entry">("setup");
   const [roundPlayers, setRoundPlayers] = useState<Player[]>([]);
@@ -153,7 +150,6 @@ function RoundSetupInner({
   }
 
   function randomizeMultiplier() {
-    setMultiplier(getRandomMultiplier());
     setIsRandom(true);
   }
 
@@ -167,15 +163,23 @@ function RoundSetupInner({
       .map((id) => players.find((player) => player.id === id))
       .filter((player): player is Player => player !== undefined);
     if (snapshot.length < MIN_PLAYERS) return;
+
+    if (isRandom) {
+      const rolled = getRandomMultiplier();
+      setMultiplier(rolled);
+      setTriggerReveal(true);
+    } else {
+      setTriggerReveal(false);
+    }
+
     setRoundPlayers(snapshot);
-    setTriggerReveal(false);
     setStep("entry");
   }
 
   function resetRound() {
     setSelectedIds([]);
     setMultiplier(1);
-    setIsRandom(false);
+    setIsRandom(true);
     setRoundPlayers([]);
     setTriggerReveal(false);
     setStep("setup");
@@ -213,7 +217,8 @@ function RoundSetupInner({
           </h2>
         </div>
 
-        {/* Live Session Pill beside "เริ่มเกม" */}
+        {/* Live Session Pill temporarily hidden as requested */}
+        {/*
         {isLive ? (
           <button
             type="button"
@@ -233,6 +238,7 @@ function RoundSetupInner({
             <span>เปิดโต๊ะ</span>
           </button>
         )}
+        */}
       </div>
 
       <div className="@container flex flex-col gap-2.5">
@@ -245,7 +251,7 @@ function RoundSetupInner({
       </div>
 
       <div className="flex flex-col gap-2.5">
-        <div className={multiplier >= 20 ? "animate-shake" : ""}>
+        <div className={!isRandom && multiplier >= 20 ? "animate-shake" : ""}>
           <MultiplierPicker
             value={multiplier}
             onChange={pickMultiplier}
@@ -257,7 +263,7 @@ function RoundSetupInner({
 
       <div className="flex flex-col gap-3 border-t border-black/[0.04] dark:border-[#38383A] pt-5">
         <div className="flex items-center justify-end text-xs font-medium text-[#8E8E93] dark:text-[#98989D] tabular-nums">
-          <span>ตัวคูณ x{multiplier}</span>
+          <span>{isRandom ? "ตัวคูณ สุ่ม" : `ตัวคูณ x${multiplier}`}</span>
         </div>
         <button
           type="button"
