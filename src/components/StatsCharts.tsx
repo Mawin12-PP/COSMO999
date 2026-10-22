@@ -85,28 +85,7 @@ function RoundScoreTooltip({
   );
 }
 
-// Custom dot renderer for cumulative score chart (blue for >=0, red for <0).
-function CumulativeDot(props: {
-  cx?: number;
-  cy?: number;
-  payload?: unknown;
-}) {
-  const { cx, cy, payload } = props;
-  if (cx === undefined || cy === undefined || !payload) return null;
-  const p = payload as CumulativeDataPoint;
-  const fill = (p.cumulative ?? 0) >= 0 ? "#007AFF" : "#FF3B30";
-  return (
-    <circle
-      cx={cx}
-      cy={cy}
-      r={3.5}
-      fill={fill}
-      strokeWidth={2}
-      className="stroke-white dark:stroke-[#1C1C1E]"
-    />
-  );
-}
-
+// Custom active dot renderer for cumulative score chart on hover/touch (blue for >=0, red for <0).
 function CumulativeActiveDot(props: {
   cx?: number;
   cy?: number;
@@ -323,9 +302,10 @@ export function StatsCharts({
               />
               <XAxis
                 dataKey="label"
-                tick={{ fill: mutedColour, fontSize: 11 }}
+                tick={false}
                 axisLine={false}
                 tickLine={false}
+                height={6}
               />
               <YAxis
                 tick={{ fill: mutedColour, fontSize: 10 }}
@@ -348,9 +328,9 @@ export function StatsCharts({
                 dataKey="cumulative"
                 baseValue={0}
                 stroke={strokeColor}
-                strokeWidth={3}
+                strokeWidth={2.5}
                 fill="url(#cumGradient)"
-                dot={<CumulativeDot />}
+                dot={false}
                 activeDot={<CumulativeActiveDot />}
                 isAnimationActive={!noAnimate}
               />

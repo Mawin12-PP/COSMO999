@@ -141,7 +141,6 @@ export function computePlayerStats(
   const CHART_LIMIT = 10;
   const startIndex = Math.max(0, rounds.length - CHART_LIMIT);
   const slicedRounds = rounds.slice(startIndex);
-  const slicedCumulative = fullCumulative.slice(startIndex);
 
   // Round score chart data - label uses the global round index R1, R2, ...
   const roundData: RoundDataPoint[] = slicedRounds.map((m, i) => ({
@@ -149,17 +148,12 @@ export function computePlayerStats(
     score: m.playerScores[playerId],
   }));
 
-  // Cumulative chart data - prepend the "before window" starting point
-  // (matches legacy L1306-1312: if startIndex > 0, show fullCumulative
-  // at startIndex-1 labelled "ก่อนหน้า"; else show 0 labelled "เริ่มต้น").
-  const startLabel = startIndex > 0 ? "ก่อนหน้า" : "เริ่มต้น";
-  const startValue = startIndex > 0 ? fullCumulative[startIndex - 1] : 0;
-
+  // Cumulative chart data - includes all rounds from start (เริ่มต้น: 0) to current
   const cumulativeData: CumulativeDataPoint[] = [
-    { label: startLabel, cumulative: startValue },
-    ...slicedRounds.map((_, i) => ({
-      label: `R${startIndex + i + 1}`,
-      cumulative: slicedCumulative[i],
+    { label: "เริ่มต้น", cumulative: 0 },
+    ...rounds.map((_, i) => ({
+      label: `R${i + 1}`,
+      cumulative: fullCumulative[i],
     })),
   ];
 
