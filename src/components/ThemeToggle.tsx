@@ -52,11 +52,6 @@ export function ThemeToggle() {
     pointerIdRef.current = e.pointerId;
     startXRef.current = e.clientX;
     initialXRef.current = isDark ? MAX_DRAG_X : 0;
-    try {
-      e.currentTarget.setPointerCapture(e.pointerId);
-    } catch {
-      // ignore
-    }
   }
 
   function handlePointerMove(e: React.PointerEvent<HTMLButtonElement>) {
@@ -65,6 +60,13 @@ export function ThemeToggle() {
 
     if (!hasDraggedRef.current && Math.abs(delta) > 5) {
       hasDraggedRef.current = true;
+      if (pointerIdRef.current !== null) {
+        try {
+          e.currentTarget.setPointerCapture(pointerIdRef.current);
+        } catch {
+          // ignore
+        }
+      }
       setIsDragging(true);
     }
 

@@ -438,7 +438,7 @@ function ViewSwitcher({
   ];
 
   return (
-    <div className="reveal flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="reveal relative z-30 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <InteractiveSegmentedControl
         items={viewItems}
         activeKey={isPastPeriodActive ? null : viewKey}

@@ -89,12 +89,6 @@ export function AppNav() {
     if (isDesktop) {
       initialYRef.current = activeIndex * VERTICAL_STEP;
     }
-
-    try {
-      e.currentTarget.setPointerCapture(e.pointerId);
-    } catch {
-      // ignore
-    }
   }
 
   function handlePointerMove(e: React.PointerEvent<HTMLUListElement>) {

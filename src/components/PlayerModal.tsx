@@ -324,11 +324,11 @@ export function PlayerModal({
                   className="hidden"
                   onChange={handleImagePick}
                 />
-                <p className="text-[11px] text-[#8E8E93] dark:text-[#98989D] px-1">
-                  {previewImage
-                    ? `ครอบตัดโซนที่เลือกแล้ว (กด "ครอปรูป" เพื่อปรับมุมได้ตลอด)`
-                    : "รองรับไฟล์ภาพ JPG, PNG (สามารถเลือกซูมและครอบตัดโซนที่ต้องการได้)"}
-                </p>
+                {previewImage ? (
+                  <p className="text-[11px] text-[#8E8E93] dark:text-[#98989D] px-1">
+                    ครอบตัดโซนที่เลือกแล้ว (กด &quot;ครอปรูป&quot; เพื่อปรับมุมได้ตลอด)
+                  </p>
+                ) : null}
               </div>
             ) : null}
           </div>

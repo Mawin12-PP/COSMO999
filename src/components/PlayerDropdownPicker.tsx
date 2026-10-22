@@ -81,7 +81,10 @@ export function PlayerDropdownPicker({
   }
 
   return (
-    <div ref={containerRef} className={`relative flex flex-col ${className}`}>
+    <div
+      ref={containerRef}
+      className={`relative flex flex-col ${isOpen || isClosing ? "z-30" : ""} ${className}`}
+    >
       {/* Trigger Button */}
       <button
         type="button"
@@ -109,7 +112,7 @@ export function PlayerDropdownPicker({
       {/* Floating Dropdown Menu: 1 Column List with Slide Down/Up + Fade In/Out */}
       {(isOpen || isClosing) && (
         <div
-          className={`absolute left-0 right-0 top-full mt-1.5 z-40 overflow-hidden rounded-2xl border border-black/[0.08] dark:border-[#38383A] bg-white/95 dark:bg-[#1C1C1E]/95 backdrop-blur-2xl shadow-xl transition-all duration-180 ease-out ${
+          className={`absolute left-0 right-0 top-full mt-1.5 z-50 overflow-hidden rounded-2xl border border-black/[0.08] dark:border-[#38383A] bg-white/95 dark:bg-[#1C1C1E]/95 backdrop-blur-2xl shadow-xl transition-all duration-180 ease-out ${
             isClosing
               ? "opacity-0 -translate-y-2 scale-[0.98] pointer-events-none"
               : "opacity-100 translate-y-0 scale-100 animate-in fade-in-0 slide-in-from-top-2 duration-200"

@@ -244,7 +244,7 @@ a[class*="rounded-2xl"]:not(:active),
               box-shadow 250ms ease !important;
 }
 
-/* Pressed state: quick compression to scale 0.9 */
+/* Pressed state: gentle compression to scale 0.97 without pulling boundaries away from cursor */
 button:active:not(:disabled):not([aria-disabled="true"]),
 [role="button"]:active:not([aria-disabled="true"]):not(:disabled),
 [role="switch"]:active:not([aria-disabled="true"]):not(:disabled),
@@ -256,8 +256,8 @@ a[class*="rounded-xl"]:active,
 a[class*="rounded-2xl"]:active,
 .ios-spring-button:active:not(:disabled),
 .interactive-tap:active {
-  transform: scale(0.9) !important;
-  transition: transform 90ms cubic-bezier(0.25, 1, 0.5, 1) !important;
+  transform: scale(0.97);
+  transition: transform 90ms cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 body {

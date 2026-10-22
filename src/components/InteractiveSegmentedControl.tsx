@@ -58,12 +58,6 @@ export function InteractiveSegmentedControl<T extends string>({
     pointerIdRef.current = e.pointerId;
     startXRef.current = e.clientX;
     setIsPressed(true);
-
-    try {
-      e.currentTarget.setPointerCapture(e.pointerId);
-    } catch {
-      // ignore
-    }
   }
 
   function handlePointerMove(e: React.PointerEvent<HTMLDivElement>) {
@@ -73,6 +67,13 @@ export function InteractiveSegmentedControl<T extends string>({
     // Only engage drag and capture pointer when actual movement occurs (> 7px)
     if (!hasDraggedRef.current && deltaX > 7) {
       hasDraggedRef.current = true;
+      if (pointerIdRef.current !== null) {
+        try {
+          e.currentTarget.setPointerCapture(pointerIdRef.current);
+        } catch {
+          // ignore
+        }
+      }
       setIsDragging(true);
     }
 
