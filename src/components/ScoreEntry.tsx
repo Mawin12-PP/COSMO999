@@ -4,7 +4,7 @@
 // confirm to atomically save it (players + group + history) to Firebase.
 // Mobile-first for iPhone/iPad: 48px+ touch targets, generous p-4 padding,
 // active:scale-[0.98] feedback, and crisp iOS typography.
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ArrowLeft,
   ClipboardCheck,
@@ -94,7 +94,6 @@ export function ScoreEntry({
   const [checked, setChecked] = useState<CheckedRound | null>(null);
   const [saveState, setSaveState] = useState<SaveState>({ status: "idle" });
 
-  const inputRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const { history } = useHistory();
 
   // Multiplier Reveal Suspense Animation
@@ -146,17 +145,6 @@ export function ScoreEntry({
 
   const theme = getMultiplierTheme(displayMultiplier);
 
-  useEffect(() => {
-    if (isRevealing) return;
-    const isTouch =
-      typeof window !== "undefined" &&
-      ("ontouchstart" in window || navigator.maxTouchPoints > 0);
-    if (!isTouch) {
-      const firstId = players[0]?.id;
-      if (firstId) inputRefs.current[firstId]?.focus();
-    }
-  }, [players, isRevealing]);
-
   function updateScore(id: string, value: string) {
     const digits = value.replace(/\D+/g, "").replace(/^0+(?=\d)/, "");
     setRawInputs((current) => ({ ...current, [id]: digits }));
@@ -168,38 +156,71 @@ export function ScoreEntry({
     if (error) setError(null);
   }
 
-  function advanceFromPlayer(index: number) {
-    const nextId = players[index + 1]?.id;
-    if (nextId) {
-      setActivePlayerId(nextId);
-      inputRefs.current[nextId]?.focus();
-    } else {
-      setActivePlayerId(null);
-      const currentId = players[index]?.id;
-      if (currentId) inputRefs.current[currentId]?.blur();
-    }
+  function goToPrevPlayer(index: number) {
+    const prevId = players[index - 1]?.id;
+    if (prevId) setActivePlayerId(prevId);
   }
 
-  function handleKeyDown(
-    event: React.KeyboardEvent<HTMLInputElement>,
-    id: string,
-    index: number,
-  ) {
-    if (event.key === "-") {
-      event.preventDefault();
-      toggleSign(id);
-      return;
-    }
-    if (event.key === "+") {
-      event.preventDefault();
-      setNegatives((current) => ({ ...current, [id]: false }));
-      if (error) setError(null);
-      return;
-    }
-    if (event.key !== "Enter") return;
-    event.preventDefault();
-    advanceFromPlayer(index);
+  function advanceFromPlayer(index: number) {
+    const nextId = players[index + 1]?.id;
+    setActivePlayerId(nextId ?? null);
   }
+
+  // Physical keyboard support on desktop without triggering iOS focus-scroll jumps
+  useEffect(() => {
+    if (!activePlayerId || checked) return;
+    function onWindowKeyDown(event: KeyboardEvent) {
+      const index = players.findIndex((p) => p.id === activePlayerId);
+      if (index < 0) return;
+      const id = players[index].id;
+
+      if (/^[0-9]$/.test(event.key)) {
+        event.preventDefault();
+        const currentDigits = rawInputs[id] ?? "";
+        const digits = `${currentDigits}${event.key}`
+          .replace(/\D+/g, "")
+          .replace(/^0+(?=\d)/, "");
+        setRawInputs((current) => ({ ...current, [id]: digits }));
+        if (error) setError(null);
+        return;
+      }
+      if (event.key === "Backspace") {
+        event.preventDefault();
+        const currentDigits = rawInputs[id] ?? "";
+        setRawInputs((current) => ({
+          ...current,
+          [id]: currentDigits.slice(0, -1),
+        }));
+        if (error) setError(null);
+        return;
+      }
+      if (event.key === "-") {
+        event.preventDefault();
+        setNegatives((current) => ({ ...current, [id]: !current[id] }));
+        if (error) setError(null);
+        return;
+      }
+      if (event.key === "+") {
+        event.preventDefault();
+        setNegatives((current) => ({ ...current, [id]: false }));
+        if (error) setError(null);
+        return;
+      }
+      if (event.key === "ArrowUp") {
+        event.preventDefault();
+        const prevId = players[index - 1]?.id;
+        if (prevId) setActivePlayerId(prevId);
+        return;
+      }
+      if (event.key === "ArrowDown" || event.key === "Enter") {
+        event.preventDefault();
+        const nextId = players[index + 1]?.id;
+        setActivePlayerId(nextId ?? null);
+      }
+    }
+    window.addEventListener("keydown", onWindowKeyDown);
+    return () => window.removeEventListener("keydown", onWindowKeyDown);
+  }, [activePlayerId, checked, error, players, rawInputs]);
 
   function handleCheck() {
     const rawScores: Record<string, number> = {};
@@ -316,7 +337,7 @@ export function ScoreEntry({
       </div>
 
       <ul className="overflow-hidden rounded-[16px] border border-black/[0.04] dark:border-[#38383A] divide-y divide-gray-100/80 dark:divide-[#38383A] bg-white dark:bg-[#1C1C1E]">
-        {players.map((player, index) => {
+        {players.map((player) => {
           const isNegative = Boolean(negatives[player.id]);
           const isActive = activePlayerId === player.id;
           const digits = rawInputs[player.id] ?? "";
@@ -329,10 +350,7 @@ export function ScoreEntry({
           return (
             <li
               key={player.id}
-              onClick={() => {
-                setActivePlayerId(player.id);
-                inputRefs.current[player.id]?.focus();
-              }}
+              onClick={() => setActivePlayerId(player.id)}
               className={`flex min-h-[56px] items-center gap-2.5 sm:gap-3.5 px-3.5 sm:px-4 py-3 transition-colors cursor-pointer ${
                 isActive
                   ? "bg-blue-50/40 dark:bg-blue-950/25"
@@ -374,18 +392,14 @@ export function ScoreEntry({
                 </button>
                 <input
                   id={`score-${player.id}`}
-                  ref={(node) => {
-                    inputRefs.current[player.id] = node;
-                  }}
                   type="text"
+                  readOnly
                   inputMode="none"
                   autoComplete="off"
                   placeholder={isNegative ? "-0" : "0"}
                   value={displayValue}
-                  onFocus={() => setActivePlayerId(player.id)}
-                  onChange={(event) => updateScore(player.id, event.target.value)}
-                  onKeyDown={(event) => handleKeyDown(event, player.id, index)}
-                  className={`h-11 w-24 sm:w-28 rounded-xl border bg-white dark:bg-[#2C2C2E] px-3.5 py-1.5 text-right text-lg font-bold tabular-nums outline-none shadow-xs transition-all ${
+                  onClick={() => setActivePlayerId(player.id)}
+                  className={`h-11 w-24 sm:w-28 rounded-xl border bg-white dark:bg-[#2C2C2E] px-3.5 py-1.5 text-right text-lg font-bold tabular-nums outline-none shadow-xs transition-all cursor-pointer select-none ${
                     isNegative
                       ? `border-[#FF3B30]/35 dark:border-[#FF453A]/40 text-[#FF3B30] dark:text-[#FF453A] placeholder:text-[#FF3B30]/45 dark:placeholder:text-[#FF453A]/45 ${
                           isActive ? "border-[#FF3B30] ring-2 ring-red-500/20" : ""
@@ -407,11 +421,21 @@ export function ScoreEntry({
         if (!activePlayer) return null;
         const nextPlayer = players[activeIndex + 1];
         const currentDigits = rawInputs[activePlayer.id] ?? "";
+        const isNegative = Boolean(negatives[activePlayer.id]);
+        const activeDisplay =
+          currentDigits && currentDigits !== "0"
+            ? isNegative
+              ? `-${currentDigits}`
+              : currentDigits
+            : currentDigits;
         return (
           <ScoreKeypad
+            activePlayer={activePlayer}
             activePlayerName={activePlayer.name}
+            displayValue={activeDisplay}
+            hasPrev={activeIndex > 0}
             nextPlayerName={nextPlayer?.name}
-            isNegative={Boolean(negatives[activePlayer.id])}
+            isNegative={isNegative}
             onDigit={(digit) =>
               updateScore(activePlayer.id, `${currentDigits}${digit}`)
             }
@@ -419,11 +443,9 @@ export function ScoreEntry({
               updateScore(activePlayer.id, currentDigits.slice(0, -1))
             }
             onToggleSign={() => toggleSign(activePlayer.id)}
+            onPrev={() => goToPrevPlayer(activeIndex)}
             onNext={() => advanceFromPlayer(activeIndex)}
-            onClose={() => {
-              setActivePlayerId(null);
-              inputRefs.current[activePlayer.id]?.blur();
-            }}
+            onClose={() => setActivePlayerId(null)}
           />
         );
       })()}

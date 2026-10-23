@@ -38,7 +38,6 @@ export function EditRoundDialog({
   onClose: () => void;
 }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
-  const inputRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const playerIds = useMemo(() => Object.keys(entry.playerScores), [entry]);
 
   const [multiplier, setMultiplier] = useState(entry.multiplier);
@@ -81,39 +80,71 @@ export function EditRoundDialog({
     if (error) setError(null);
   }
 
-  function advanceFromPlayer(index: number) {
-    const nextId = playerIds[index + 1];
-    if (nextId) {
-      setActivePlayerId(nextId);
-      inputRefs.current[nextId]?.focus();
-    } else {
-      setActivePlayerId(null);
-      const currentId = playerIds[index];
-      if (currentId) inputRefs.current[currentId]?.blur();
-    }
+  function goToPrevPlayer(index: number) {
+    const prevId = playerIds[index - 1];
+    if (prevId) setActivePlayerId(prevId);
   }
 
-  function handleKeyDown(
-    event: React.KeyboardEvent<HTMLInputElement>,
-    id: string,
-    index: number,
-  ) {
-    if (event.key === "-") {
-      event.preventDefault();
-      toggleSign(id);
-      return;
-    }
-    if (event.key === "+") {
-      event.preventDefault();
-      setNegatives((current) => ({ ...current, [id]: false }));
-      if (error) setError(null);
-      return;
-    }
-    if (event.key === "Enter") {
-      event.preventDefault();
-      advanceFromPlayer(index);
-    }
+  function advanceFromPlayer(index: number) {
+    const nextId = playerIds[index + 1];
+    setActivePlayerId(nextId ?? null);
   }
+
+  // Physical keyboard support on desktop without triggering iOS focus-scroll jumps
+  useEffect(() => {
+    if (!activePlayerId || busy) return;
+    function onWindowKeyDown(event: KeyboardEvent) {
+      const index = playerIds.findIndex((id) => id === activePlayerId);
+      if (index < 0) return;
+      const id = playerIds[index];
+
+      if (/^[0-9]$/.test(event.key)) {
+        event.preventDefault();
+        const currentDigits = inputs[id] ?? "";
+        const digits = `${currentDigits}${event.key}`
+          .replace(/\D+/g, "")
+          .replace(/^0+(?=\d)/, "");
+        setInputs((current) => ({ ...current, [id]: digits }));
+        if (error) setError(null);
+        return;
+      }
+      if (event.key === "Backspace") {
+        event.preventDefault();
+        const currentDigits = inputs[id] ?? "";
+        setInputs((current) => ({
+          ...current,
+          [id]: currentDigits.slice(0, -1),
+        }));
+        if (error) setError(null);
+        return;
+      }
+      if (event.key === "-") {
+        event.preventDefault();
+        setNegatives((current) => ({ ...current, [id]: !current[id] }));
+        if (error) setError(null);
+        return;
+      }
+      if (event.key === "+") {
+        event.preventDefault();
+        setNegatives((current) => ({ ...current, [id]: false }));
+        if (error) setError(null);
+        return;
+      }
+      if (event.key === "ArrowUp") {
+        event.preventDefault();
+        const prevId = playerIds[index - 1];
+        if (prevId) setActivePlayerId(prevId);
+        return;
+      }
+      if (event.key === "ArrowDown" || event.key === "Enter") {
+        event.preventDefault();
+        const nextId = playerIds[index + 1];
+        setActivePlayerId(nextId ?? null);
+      }
+    }
+    window.addEventListener("keydown", onWindowKeyDown);
+    return () => window.removeEventListener("keydown", onWindowKeyDown);
+  }, [activePlayerId, busy, error, inputs, playerIds]);
 
   const changed =
     multiplier !== entry.multiplier ||
@@ -210,7 +241,7 @@ export function EditRoundDialog({
 
         {/* Raw scores with live net preview */}
         <ul className="overflow-hidden rounded-[16px] border border-black/[0.04] dark:border-[#38383A] divide-y divide-gray-100/80 dark:divide-[#38383A]">
-          {playerIds.map((id, index) => {
+          {playerIds.map((id) => {
             const player = players.find((p) => p.id === id);
             const net = result.netScores[id] ?? 0;
             const isNegative = Boolean(negatives[id]);
@@ -225,10 +256,7 @@ export function EditRoundDialog({
             return (
               <li
                 key={id}
-                onClick={() => {
-                  setActivePlayerId(id);
-                  inputRefs.current[id]?.focus();
-                }}
+                onClick={() => setActivePlayerId(id)}
                 className={`flex min-h-[56px] items-center gap-2.5 sm:gap-3 px-3.5 py-2.5 transition-colors cursor-pointer ${
                   isActive
                     ? "bg-blue-50/40 dark:bg-blue-950/25"
@@ -277,18 +305,14 @@ export function EditRoundDialog({
                   </button>
                   <input
                     id={`edit-score-${id}`}
-                    ref={(node) => {
-                      inputRefs.current[id] = node;
-                    }}
                     type="text"
+                    readOnly
                     inputMode="none"
                     autoComplete="off"
                     placeholder={isNegative ? "-0" : "0"}
                     value={displayValue}
-                    onFocus={() => setActivePlayerId(id)}
-                    onChange={(event) => updateScore(id, event.target.value)}
-                    onKeyDown={(event) => handleKeyDown(event, id, index)}
-                    className={`h-11 w-24 rounded-xl border bg-white dark:bg-[#2C2C2E] px-3 py-1.5 text-right text-base font-bold tabular-nums outline-none shadow-xs transition-all ${
+                    onClick={() => setActivePlayerId(id)}
+                    className={`h-11 w-24 rounded-xl border bg-white dark:bg-[#2C2C2E] px-3 py-1.5 text-right text-base font-bold tabular-nums outline-none shadow-xs transition-all cursor-pointer select-none ${
                       isNegative
                         ? `border-[#FF3B30]/35 dark:border-[#FF453A]/40 text-[#FF3B30] dark:text-[#FF453A] placeholder:text-[#FF3B30]/45 dark:placeholder:text-[#FF453A]/45 ${
                             isActive ? "border-[#FF3B30] ring-2 ring-red-500/20" : ""
@@ -312,11 +336,21 @@ export function EditRoundDialog({
           const nextId = playerIds[activeIndex + 1];
           const nextPlayer = nextId ? players.find((p) => p.id === nextId) : undefined;
           const currentDigits = inputs[activeId] ?? "";
+          const isNegative = Boolean(negatives[activeId]);
+          const activeDisplay =
+            currentDigits && currentDigits !== "0"
+              ? isNegative
+                ? `-${currentDigits}`
+                : currentDigits
+              : currentDigits;
           return (
             <ScoreKeypad
+              activePlayer={activePlayer}
               activePlayerName={activePlayer ? activePlayer.name : "(ถูกลบ)"}
+              displayValue={activeDisplay}
+              hasPrev={activeIndex > 0}
               nextPlayerName={nextId ? (nextPlayer ? nextPlayer.name : "(ถูกลบ)") : undefined}
-              isNegative={Boolean(negatives[activeId])}
+              isNegative={isNegative}
               onDigit={(digit) =>
                 updateScore(activeId, `${currentDigits}${digit}`)
               }
@@ -324,11 +358,9 @@ export function EditRoundDialog({
                 updateScore(activeId, currentDigits.slice(0, -1))
               }
               onToggleSign={() => toggleSign(activeId)}
+              onPrev={() => goToPrevPlayer(activeIndex)}
               onNext={() => advanceFromPlayer(activeIndex)}
-              onClose={() => {
-                setActivePlayerId(null);
-                inputRefs.current[activeId]?.blur();
-              }}
+              onClose={() => setActivePlayerId(null)}
             />
           );
         })()}
