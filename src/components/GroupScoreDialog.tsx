@@ -7,15 +7,9 @@
 import { useEffect, useMemo, useRef } from "react";
 import { Gamepad2, X } from "lucide-react";
 import { PlayerAvatar } from "@/components/PlayerAvatar";
-import { formatNumber } from "@/lib/format";
+import { formatNumber, scoreTone } from "@/lib/format";
 import { computeGroupStats } from "@/lib/groupStats";
 import type { Group, HistoryEntry, Player } from "@/types/models";
-
-function scoreTone(score: number): string {
-  if (score > 0) return "text-[#34C759]";
-  if (score < 0) return "text-[#FF3B30]";
-  return "text-[#8E8E93]";
-}
 
 function formatScore(score: number): string {
   if (score > 0) return `+${score}`;

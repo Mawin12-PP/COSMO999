@@ -6,6 +6,7 @@
 import { ref, runTransaction } from "firebase/database";
 import { database, DB_PATHS, isConfigured } from "./firebase";
 import { initializeLocalRoom, normalizeRoom, setLocalRoom } from "./localRoom";
+import { applyRoundEdit } from "./roundEdit";
 import type { Group, HistoryEntry, Player, RoomData } from "@/types/models";
 
 export { normalizeRoom };
@@ -224,6 +225,56 @@ export async function undoRound(matchId: string): Promise<SaveRoundResult> {
     );
     const timeoutPromise = new Promise<never>((_, reject) =>
       setTimeout(() => reject(new Error("Timeout undoing round")), 12000),
+    );
+
+    const result = (await Promise.race([
+      transactionPromise,
+      timeoutPromise,
+    ])) as { committed: boolean };
+
+    return { committed: result.committed };
+  } catch {
+    return { committed: false };
+  }
+}
+
+/**
+ * Edit one history entry's scores / multiplier in a single transaction,
+ * keeping player totals and group scores consistent (see applyRoundEdit).
+ * In local dev mode (!isConfigured), persists atomically to localStorage.
+ */
+export async function editRound(
+  matchId: string,
+  netScores: Record<string, number>,
+  multiplier: number,
+  commentary: string,
+): Promise<SaveRoundResult> {
+  if (!isConfigured) {
+    try {
+      const room = await initializeLocalRoom();
+      if (!room.history[matchId]) return { committed: false };
+      setLocalRoom(applyRoundEdit(room, matchId, netScores, multiplier, commentary));
+      return { committed: true };
+    } catch {
+      return { committed: false };
+    }
+  }
+
+  try {
+    const transactionPromise = runTransaction(
+      ref(database, DB_PATHS.root),
+      (currentData: unknown) => {
+        if (currentData === null || typeof currentData !== "object") {
+          return currentData;
+        }
+        const room = normalizeRoom(currentData);
+        if (!room.history[matchId]) return currentData;
+        return applyRoundEdit(room, matchId, netScores, multiplier, commentary);
+      },
+      { applyLocally: false },
+    );
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error("Timeout editing round")), 12000),
     );
 
     const result = (await Promise.race([

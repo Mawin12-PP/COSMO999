@@ -1,0 +1,216 @@
+"use client";
+
+// Edit one saved round: change the multiplier and each player's raw score.
+// History only stores net scores, so the raw scores shown are the equivalent
+// set recovered by deriveRawScores (same net result, lowest score = 0).
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Loader2, X } from "lucide-react";
+import { Button } from "@/components/Button";
+import { MULTIPLIERS } from "@/components/MultiplierPicker";
+import { PlayerAvatar } from "@/components/PlayerAvatar";
+import { generateRoundCommentary } from "@/lib/commentary";
+import { editRound } from "@/lib/rounds";
+import { calculateRoundScores, deriveRawScores } from "@/lib/scoring";
+import type { HistoryEntry, Player } from "@/types/models";
+import { scoreTone as netTone } from "@/lib/format";
+
+function parseScore(value: string): number {
+  const parsed = Number.parseInt(value, 10);
+  return Number.isNaN(parsed) ? 0 : parsed;
+}
+
+function formatNet(score: number): string {
+  return score > 0 ? `+${score}` : `${score}`;
+}
+
+export function EditRoundDialog({
+  entry,
+  players,
+  history,
+  onClose,
+}: {
+  entry: HistoryEntry;
+  players: Player[];
+  history: HistoryEntry[];
+  onClose: () => void;
+}) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const playerIds = useMemo(() => Object.keys(entry.playerScores), [entry]);
+
+  const [multiplier, setMultiplier] = useState(entry.multiplier);
+  const [inputs, setInputs] = useState<Record<string, string>>(() => {
+    const raw = deriveRawScores(entry.playerScores, entry.multiplier);
+    return Object.fromEntries(playerIds.map((id) => [id, String(raw[id])]));
+  });
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    if (!dialog.open) dialog.showModal();
+    return () => {
+      if (dialog.open) dialog.close();
+    };
+  }, []);
+
+  const result = useMemo(() => {
+    const raw: Record<string, number> = {};
+    for (const id of playerIds) raw[id] = parseScore(inputs[id] ?? "");
+    return calculateRoundScores(playerIds, raw, multiplier);
+  }, [playerIds, inputs, multiplier]);
+
+  const changed =
+    multiplier !== entry.multiplier ||
+    playerIds.some((id) => result.netScores[id] !== entry.playerScores[id]);
+
+  function dismiss() {
+    if (busy) return;
+    dialogRef.current?.close();
+    onClose();
+  }
+
+  async function handleSave() {
+    if (busy || !changed) return;
+    setBusy(true);
+    setError(null);
+    const others = history.filter((h) => h.id !== entry.id);
+    const commentary = generateRoundCommentary(
+      result.netScores,
+      players,
+      others,
+    );
+    const { committed } = await editRound(
+      entry.id,
+      result.netScores,
+      multiplier,
+      commentary,
+    );
+    setBusy(false);
+    if (committed) {
+      dismiss();
+    } else {
+      setError("บันทึกการแก้ไขไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองใหม่");
+    }
+  }
+
+  return (
+    <dialog
+      ref={dialogRef}
+      onCancel={(event) => {
+        event.preventDefault();
+        dismiss();
+      }}
+      onClick={(event) => {
+        if (event.target === event.currentTarget) dismiss();
+      }}
+      aria-labelledby="edit-round-title"
+      className="m-auto max-h-[92dvh] w-[min(26rem,calc(100vw-2rem))] overflow-y-auto rounded-[20px] border border-black/[0.04] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] p-0 text-[#1C1C1E] dark:text-[#F2F2F7] shadow-2xl backdrop:bg-black/40 backdrop:backdrop-blur-sm"
+    >
+      <div className="flex flex-col gap-5 p-5 sm:p-6">
+        <div className="flex items-start justify-between gap-3">
+          <h2
+            id="edit-round-title"
+            className="text-base font-semibold leading-snug"
+          >
+            แก้ไขรอบนี้
+          </h2>
+          <button
+            type="button"
+            onClick={dismiss}
+            disabled={busy}
+            aria-label="ปิด"
+            className="flex size-11 min-h-[44px] min-w-[44px] items-center justify-center -mr-2 -mt-2 rounded-full text-[#8E8E93] dark:text-[#98989D] transition-all duration-200 ease-out active:scale-[0.97] hover:bg-black/[0.04] hover:text-[#1C1C1E] dark:hover:bg-white/[0.06] dark:hover:text-[#F2F2F7] disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <X className="size-5" />
+          </button>
+        </div>
+
+        {/* Multiplier */}
+        <div className="flex flex-col gap-2">
+          <span className="text-xs font-medium text-[#8E8E93] dark:text-[#98989D]">
+            ตัวคูณ
+          </span>
+          <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
+            {MULTIPLIERS.map((m) => {
+              const active = multiplier === m;
+              return (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => setMultiplier(m)}
+                  aria-pressed={active}
+                  className={`flex h-10 items-center justify-center rounded-xl text-sm font-semibold tabular-nums transition-all duration-150 ease-out cursor-pointer ${
+                    active
+                      ? "bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] text-white shadow-md shadow-blue-500/20"
+                      : "border border-black/[0.08] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] text-gray-800 dark:text-[#F2F2F7] shadow-2xs hover:bg-gray-50 dark:hover:bg-[#2C2C2E]"
+                  }`}
+                >
+                  x{m}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Raw scores with live net preview */}
+        <ul className="overflow-hidden rounded-[16px] border border-black/[0.04] dark:border-[#38383A] divide-y divide-gray-100/80 dark:divide-[#38383A]">
+          {playerIds.map((id) => {
+            const player = players.find((p) => p.id === id);
+            const net = result.netScores[id] ?? 0;
+            return (
+              <li key={id} className="flex min-h-[56px] items-center gap-3 px-3.5 py-2.5">
+                {player ? (
+                  <PlayerAvatar player={player} className="size-9 text-sm shrink-0" />
+                ) : null}
+                <div className="min-w-0 flex-1">
+                  <label
+                    htmlFor={`edit-score-${id}`}
+                    className="block truncate text-sm font-semibold"
+                  >
+                    {player ? player.name : "(ถูกลบ)"}
+                  </label>
+                  <span className={`text-xs font-bold tabular-nums ${netTone(net)}`}>
+                    {formatNet(net)}
+                  </span>
+                </div>
+                <input
+                  id={`edit-score-${id}`}
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="off"
+                  placeholder="0"
+                  value={inputs[id] ?? ""}
+                  onChange={(event) => {
+                    setInputs((current) => ({ ...current, [id]: event.target.value }));
+                    if (error) setError(null);
+                  }}
+                  className="h-11 w-24 rounded-xl border border-black/[0.06] dark:border-[#38383A] bg-white dark:bg-[#2C2C2E] px-3 py-1.5 text-right text-base font-bold tabular-nums text-[#1C1C1E] dark:text-[#F2F2F7] outline-none shadow-xs transition-all placeholder:text-[#8E8E93]/60 dark:placeholder:text-[#98989D]/60 focus:border-[#007AFF] focus:ring-2 focus:ring-blue-500/20"
+                />
+              </li>
+            );
+          })}
+        </ul>
+
+        {error ? (
+          <p
+            role="alert"
+            className="rounded-2xl border border-red-200/80 dark:border-red-500/30 bg-red-50/80 dark:bg-red-500/10 p-3 text-sm text-[#FF3B30] dark:text-[#FF453A]"
+          >
+            {error}
+          </p>
+        ) : null}
+
+        <div className="flex flex-col gap-2.5 sm:flex-row-reverse">
+          <Button onClick={handleSave} disabled={busy || !changed} className="flex-1">
+            {busy ? <Loader2 className="size-4.5 animate-spin" aria-hidden /> : null}
+            {busy ? "กำลังบันทึก..." : "บันทึกการแก้ไข"}
+          </Button>
+          <Button variant="secondary" onClick={dismiss} disabled={busy} className="flex-1">
+            ยกเลิก
+          </Button>
+        </div>
+      </div>
+    </dialog>
+  );
+}

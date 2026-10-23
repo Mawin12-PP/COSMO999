@@ -5,6 +5,7 @@
 // active:scale-95 feedback, and backdrop blur.
 import { useEffect, useRef } from "react";
 import { AlertTriangle, Loader2, X } from "lucide-react";
+import { Button } from "@/components/Button";
 
 export function ConfirmDialog({
   title,
@@ -43,10 +44,6 @@ export function ConfirmDialog({
     dialogRef.current?.close();
     onClose();
   }
-
-  const confirmButtonClass = destructive
-    ? "flex min-h-[44px] sm:min-h-[48px] flex-1 items-center justify-center gap-2 rounded-full bg-[#FF3B30] px-5 py-2.5 sm:px-6 sm:py-3 text-sm sm:text-base font-semibold text-white shadow-lg shadow-red-500/25 transition-all duration-200 ease-out active:scale-[0.97] hover:bg-[#D70015] disabled:cursor-not-allowed disabled:opacity-50"
-    : "flex min-h-[44px] sm:min-h-[48px] flex-1 items-center justify-center gap-2 rounded-full bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] px-5 py-2.5 sm:px-6 sm:py-3 text-sm sm:text-base font-semibold text-white shadow-lg shadow-blue-500/25 transition-all duration-200 ease-out active:scale-[0.97] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50";
 
   return (
     <dialog
@@ -109,25 +106,25 @@ export function ConfirmDialog({
 
         {/* Action buttons */}
         <div className="flex flex-col gap-2.5 sm:flex-row-reverse pt-2">
-          <button
-            type="button"
+          <Button
+            variant={destructive ? "danger" : "primary"}
             onClick={onConfirm}
             disabled={busy}
-            className={confirmButtonClass}
+            className="flex-1"
           >
             {busy ? (
               <Loader2 className="size-4.5 animate-spin" aria-hidden />
             ) : null}
             {busy ? "กำลังดำเนินการ..." : confirmLabel}
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button
+            variant="secondary"
             onClick={dismiss}
             disabled={busy}
-            className="flex min-h-[44px] sm:min-h-[48px] flex-1 items-center justify-center rounded-full border border-black/[0.06] dark:border-[#38383A] bg-white dark:bg-[#2C2C2E] px-5 py-2.5 sm:px-6 sm:py-3 text-sm sm:text-base font-semibold text-[#1C1C1E] dark:text-[#F2F2F7] shadow-xs transition-all duration-200 ease-out active:scale-[0.97] hover:bg-gray-50 dark:hover:bg-[#38383A] disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex-1"
           >
             {cancelLabel}
-          </button>
+          </Button>
         </div>
       </div>
     </dialog>

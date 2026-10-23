@@ -229,7 +229,7 @@ export function AppNav() {
                   : "transform 300ms cubic-bezier(0.25, 1, 0.5, 1)",
               }}
             >
-              <div className="h-full w-full rounded-full bg-black/[0.06] dark:bg-white/10 shadow-xs border border-black/[0.04] dark:border-white/10" />
+              <div className="h-full w-full rounded-full bg-blue-50 dark:bg-blue-500/15 shadow-xs border border-blue-500/20" />
             </div>
           </div>
 

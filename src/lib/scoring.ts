@@ -48,8 +48,7 @@ export function calculateRoundScores(
  * Weighted random multiplier roll
  * x1 5%, x2 10%, x4 15%, x5 25%, x8 25%, x10 15%, x20 5%, x50 0% (never rolled).
  */
-export function getRandomMultiplier(): number {
-  const rand = Math.random() * 100;
+export function getRandomMultiplier(rand: number = Math.random() * 100): number {
   if (rand < 5) return 1;
   if (rand < 15) return 2;
   if (rand < 30) return 4;
@@ -57,4 +56,31 @@ export function getRandomMultiplier(): number {
   if (rand < 80) return 8;
   if (rand < 95) return 10;
   return 20;
+}
+
+/**
+ * Recover raw scores from a saved round's net scores (history only stores the
+ * net). net[i] = multiplier * (n * raw[i] - sum(raw)), so raw scores are only
+ * known up to a constant shift. We return the equivalent set whose lowest
+ * score is 0, which re-computes to exactly the same net scores.
+ */
+export function deriveRawScores(
+  netScores: Record<string, number>,
+  multiplier: number,
+): Record<string, number> {
+  const ids = Object.keys(netScores);
+  const raw: Record<string, number> = {};
+  if (ids.length === 0) return raw;
+  if (ids.length < 2 || multiplier === 0) {
+    for (const id of ids) raw[id] = 0;
+    return raw;
+  }
+
+  const divisor = multiplier * ids.length;
+  const base = ids.map((id) => netScores[id] / divisor);
+  const min = Math.min(...base);
+  ids.forEach((id, i) => {
+    raw[id] = Math.round(base[i] - min);
+  });
+  return raw;
 }

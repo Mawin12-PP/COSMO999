@@ -25,6 +25,7 @@ import {
 } from "@/lib/session";
 import type { HistoryEntry, Player } from "@/types/models";
 import type { LiveSession } from "@/types/session";
+import { scoreTone } from "@/lib/format";
 
 const LiveSessionChart = dynamic(
   () => import("@/components/LiveSessionChart").then((m) => m.LiveSessionChart),
@@ -37,12 +38,6 @@ const LiveSessionChart = dynamic(
 );
 
 const MULTIPLIERS = [1, 2, 4, 5, 8, 10, 20, 50];
-
-function scoreTone(score: number): string {
-  if (score > 0) return "text-[#34C759]";
-  if (score < 0) return "text-[#FF3B30]";
-  return "text-[#8E8E93] dark:text-[#98989D]";
-}
 
 export function LiveSessionModal({
   isOpen,

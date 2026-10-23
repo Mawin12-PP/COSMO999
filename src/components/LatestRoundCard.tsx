@@ -7,12 +7,7 @@ import { useState } from "react";
 import { Clock, RotateCcw, Sparkles, Dices } from "lucide-react";
 import { PlayerAvatar } from "@/components/PlayerAvatar";
 import type { HistoryEntry, Player } from "@/types/models";
-
-function scoreTone(score: number): string {
-  if (score > 0) return "text-[#34C759]";
-  if (score < 0) return "text-[#FF3B30]";
-  return "text-[#8E8E93]";
-}
+import { scoreTone } from "@/lib/format";
 
 function formatScore(score: number): string {
   if (score > 0) return `+${score}`;

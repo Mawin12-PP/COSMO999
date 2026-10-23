@@ -5,15 +5,11 @@
 // active:scale-95 feedback, and backdrop blur.
 import { useEffect, useRef } from "react";
 import { Check, X } from "lucide-react";
+import { Button } from "@/components/Button";
 import { PlayerAvatar } from "@/components/PlayerAvatar";
+import { scoreTone as netTone } from "@/lib/format";
 import type { RoundScoreResult } from "@/lib/scoring";
 import type { Player } from "@/types/models";
-
-function netTone(net: number): string {
-  if (net > 0) return "text-[#34C759]";
-  if (net < 0) return "text-[#FF3B30]";
-  return "text-[#8E8E93]";
-}
 
 export function PreviewDialog({
   players,
@@ -129,23 +125,13 @@ export function PreviewDialog({
         ) : null}
 
         <div className="flex flex-col gap-2.5 sm:flex-row-reverse pt-1">
-          <button
-            type="button"
-            onClick={onConfirm}
-            disabled={saving}
-            className="flex min-h-[44px] sm:min-h-[48px] flex-1 items-center justify-center gap-2 rounded-full bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] px-5 py-2.5 sm:px-6 sm:py-3 text-sm sm:text-base font-semibold text-white shadow-lg shadow-blue-500/25 transition-all duration-200 ease-out active:scale-[0.97] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-          >
+          <Button onClick={onConfirm} disabled={saving} className="flex-1">
             <Check className="size-4.5" />
             {saving ? "กำลังบันทึก..." : "ยืนยันบันทึก"}
-          </button>
-          <button
-            type="button"
-            onClick={dismiss}
-            disabled={saving}
-            className="flex min-h-[44px] sm:min-h-[48px] flex-1 items-center justify-center rounded-full border border-black/[0.06] dark:border-[#38383A] bg-white dark:bg-[#2C2C2E] px-5 py-2.5 sm:px-6 sm:py-3 text-sm sm:text-base font-semibold text-[#1C1C1E] dark:text-[#F2F2F7] shadow-xs transition-all duration-200 ease-out active:scale-[0.97] hover:bg-gray-50 dark:hover:bg-[#38383A] disabled:cursor-not-allowed disabled:opacity-50"
-          >
+          </Button>
+          <Button variant="secondary" onClick={dismiss} disabled={saving} className="flex-1">
             แก้ไข
-          </button>
+          </Button>
         </div>
       </div>
     </dialog>

@@ -11,37 +11,36 @@ import {
   ClipboardList,
   Clock,
   Loader2,
+  Pencil,
   RefreshCw,
   Trash2,
   TriangleAlert,
 } from "lucide-react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { EditRoundDialog } from "@/components/EditRoundDialog";
 import { getPlayerGridCols } from "@/components/LatestRoundCard";
 import { PlayerAvatar } from "@/components/PlayerAvatar";
 import { useHistory } from "@/hooks/useHistory";
 import { usePlayers } from "@/hooks/usePlayers";
 import { undoRound, recalculateScores } from "@/lib/rounds";
 import type { HistoryEntry, Player } from "@/types/models";
+import { scoreTone } from "@/lib/format";
 
 function formatScore(score: number): string {
   if (score > 0) return `+${score}`;
   return `${score}`;
 }
 
-function scoreTone(score: number): string {
-  if (score > 0) return "text-[#34C759]";
-  if (score < 0) return "text-[#FF3B30]";
-  return "text-[#8E8E93] dark:text-[#98989D]";
-}
-
 function HistoryRow({
   entry,
   players,
   onUndo,
+  onEdit,
 }: {
   entry: HistoryEntry;
   players: Player[];
   onUndo: (matchId: string) => void;
+  onEdit: (entry: HistoryEntry) => void;
 }) {
   const timeStr = new Date(entry.timestamp).toLocaleString("th-TH");
 
@@ -61,6 +60,15 @@ function HistoryRow({
           <span className="inline-flex items-center rounded-full bg-[#007AFF]/10 dark:bg-[#007AFF]/20 border border-[#007AFF]/25 px-2.5 py-0.5 text-xs font-semibold tabular-nums text-[#007AFF]">
             x{entry.multiplier}
           </span>
+          <button
+            type="button"
+            title="แก้ไขรอบนี้"
+            aria-label="แก้ไขรอบนี้"
+            onClick={() => onEdit(entry)}
+            className="flex size-8 sm:size-8.5 min-h-[32px] min-w-[32px] items-center justify-center rounded-full border border-black/[0.06] dark:border-white/[0.08] bg-white dark:bg-[#2C2C2E] text-[#8E8E93] dark:text-[#98989D] shadow-2xs transition-all duration-200 ease-out active:scale-90 hover:border-blue-200 dark:hover:border-blue-900/40 hover:bg-blue-50/80 dark:hover:bg-blue-950/30 hover:text-[#007AFF] dark:hover:text-[#2E8BFF] cursor-pointer"
+          >
+            <Pencil className="size-3.5 sm:size-4" aria-hidden />
+          </button>
           <button
             type="button"
             title="ลบ / ยกเลิกผลรอบนี้"
@@ -111,6 +119,7 @@ export function History() {
   const { players } = usePlayers();
 
   const [visibleCount, setVisibleCount] = useState(INITIAL_LIMIT);
+  const [editingEntry, setEditingEntry] = useState<HistoryEntry | null>(null);
 
   const [undoPending, setUndoPending] = useState<string | null>(null);
   const [undoBusy, setUndoBusy] = useState(false);
@@ -239,6 +248,7 @@ export function History() {
                 entry={entry}
                 players={players}
                 onUndo={handleUndoRequest}
+                onEdit={setEditingEntry}
               />
             ))}
           </div>
@@ -269,6 +279,17 @@ export function History() {
           ) : null}
         </div>
       )}
+
+      {/* Edit round dialog */}
+      {editingEntry ? (
+        <EditRoundDialog
+          key={editingEntry.id}
+          entry={editingEntry}
+          players={players}
+          history={history}
+          onClose={() => setEditingEntry(null)}
+        />
+      ) : null}
 
       {/* Undo confirm dialog */}
       {undoPending !== null ? (

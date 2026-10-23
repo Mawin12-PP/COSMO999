@@ -220,7 +220,6 @@ a[class*="rounded-2xl"],
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
   transform-origin: center center;
-  will-change: transform;
 }
 
 /* Rebound on finger release: natural spring physics with subtle damping overshoot */

@@ -15,3 +15,12 @@ export function formatSignedScore(score: number): string {
   if (score === 0) return "0";
   return score > 0 ? `+${NUMBER_FORMAT.format(score)}` : NUMBER_FORMAT.format(score);
 }
+
+
+// Text colour for a score: green for gains, red for losses, grey for zero.
+// One shared rule so every screen colours scores the same in light and dark.
+export function scoreTone(score: number): string {
+  if (score > 0) return "text-[#34C759]";
+  if (score < 0) return "text-[#FF3B30]";
+  return "text-[#8E8E93] dark:text-[#98989D]";
+}

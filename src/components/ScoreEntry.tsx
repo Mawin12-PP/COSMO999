@@ -17,6 +17,7 @@ import {
   Target,
   Zap,
 } from "lucide-react";
+import { Button } from "@/components/Button";
 import { PlayerAvatar } from "@/components/PlayerAvatar";
 import { PreviewDialog } from "@/components/PreviewDialog";
 import { generateRoundCommentary } from "@/lib/commentary";
@@ -221,14 +222,10 @@ export function ScoreEntry({
           <p className="text-sm text-[#8E8E93] dark:text-[#98989D]">{saveState.commentary}</p>
         </div>
         <div className="flex flex-col gap-2.5 w-full max-w-xs mt-3">
-          <button
-            type="button"
-            onClick={onReset}
-            className="flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] px-6 py-3 text-base font-semibold text-white shadow-lg shadow-blue-500/25 transition-all duration-200 ease-out ios-spring-button hover:opacity-90"
-          >
+          <Button onClick={onReset}>
             <RotateCcw className="size-4.5" />
             {liveSessionActive ? "กลับไปที่โต๊ะ (ดูผลรวม)" : "เริ่มรอบใหม่"}
-          </button>
+          </Button>
         </div>
       </section>
     );
@@ -315,22 +312,14 @@ export function ScoreEntry({
       ) : null}
 
       <div className="flex flex-col gap-2.5 sm:gap-3 border-t border-black/[0.04] dark:border-[#38383A] pt-5 sm:flex-row-reverse">
-        <button
-          type="button"
-          onClick={handleCheck}
-          className="flex min-h-[44px] sm:min-h-[48px] flex-1 items-center justify-center gap-2 rounded-full bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] px-5 py-2.5 sm:px-6 sm:py-3 text-sm sm:text-base font-semibold text-white shadow-lg shadow-blue-500/25 transition-all duration-200 ease-out active:scale-[0.97] hover:opacity-90 cursor-pointer"
-        >
+        <Button onClick={handleCheck} className="flex-1">
           <ClipboardCheck className="size-4.5" />
           บันทึกคะแนน
-        </button>
-        <button
-          type="button"
-          onClick={onBack}
-          className="flex min-h-[44px] sm:min-h-[48px] flex-1 items-center justify-center gap-2 rounded-full border border-black/[0.06] dark:border-[#38383A] bg-white dark:bg-[#2C2C2E] px-5 py-2.5 sm:px-6 sm:py-3 text-sm sm:text-base font-semibold text-[#1C1C1E] dark:text-[#F2F2F7] shadow-xs transition-all duration-200 ease-out active:scale-[0.97] hover:bg-gray-50 dark:hover:bg-[#38383A] cursor-pointer"
-        >
+        </Button>
+        <Button variant="secondary" onClick={onBack} className="flex-1">
           <ArrowLeft className="size-4.5" />
           ย้อนกลับ
-        </button>
+        </Button>
       </div>
 
       {checked ? (

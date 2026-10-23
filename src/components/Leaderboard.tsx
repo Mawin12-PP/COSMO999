@@ -43,14 +43,9 @@ import {
   type TitleIcon,
 } from "@/lib/titles";
 import type { Player } from "@/types/models";
+import { scoreTone } from "@/lib/format";
 
 const PULSE_DURATION_MS = 520;
-
-function scoreTone(score: number): string {
-  if (score > 0) return "text-[#34C759]";
-  if (score < 0) return "text-[#FF3B30]";
-  return "text-[#8E8E93]";
-}
 
 
 function usePulseOnChange(
