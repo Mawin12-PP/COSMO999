@@ -25,7 +25,7 @@ import { calculateRoundScores, type RoundScoreResult } from "@/lib/scoring";
 import { useHistory } from "@/hooks/useHistory";
 import type { Player } from "@/types/models";
 
-const MULTIPLIER_CANDIDATES = [1, 2, 4, 5, 8, 10, 20, 50];
+const MULTIPLIER_CANDIDATES = [1, 2, 4, 5, 8, 10, 20];
 
 function getMultiplierTheme(m: number) {
   if (m >= 50) return { name: "x50", Icon: Crown };
@@ -256,7 +256,7 @@ export function ScoreEntry({
         <div
           className={`flex items-center gap-2 rounded-2xl border border-black/[0.06] dark:border-[#38383A] bg-black/[0.03] dark:bg-white/[0.05] px-3 sm:px-3.5 py-1.5 shadow-xs transition-all duration-300 shrink-0 ${
             isLanded ? "ring-2 ring-blue-500/25 dark:ring-blue-500/30" : ""
-          }`}
+          } ${triggerReveal && isLanded && displayMultiplier === 20 ? "animate-shake" : ""}`}
         >
           <span className="grid size-7 sm:size-8 place-items-center rounded-xl bg-white dark:bg-[#1C1C1E] text-[#007AFF] dark:text-[#2E8BFF] border border-black/[0.04] dark:border-white/5 shadow-xs">
             {isRevealing ? (

@@ -135,7 +135,7 @@ export function GroupScoreDialog({
                   </span>
                   {record ? (
                     <p className="mt-0.5 text-xs tabular-nums text-[#8E8E93] dark:text-[#98989D]">
-                      ชนะ {record.wins} - แพ้ {record.losses}
+                      ชนะ {record.wins}
                     </p>
                   ) : null}
                 </div>

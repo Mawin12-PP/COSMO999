@@ -222,7 +222,7 @@ export function AppNav() {
               style={{
                 width: `${100 / NAV_ITEMS.length}%`,
                 transform: `translateX(${currentXPercent}%) ${
-                  isDraggingH ? "scaleX(1.08) scaleY(0.96)" : "scale(1)"
+                  isDraggingH ? "scaleX(1.14) scaleY(1.08)" : "scale(1)"
                 }`,
                 transition: isDraggingH
                   ? "transform 0ms linear"

@@ -708,7 +708,7 @@ export function Leaderboard() {
         <h1 className="text-2xl font-semibold tracking-tight text-[#1C1C1E] dark:text-[#F2F2F7] sm:text-3xl">
           อันดับ
         </h1>
-        {viewKey !== "all" && activePeriod?.label ? (
+        {viewKey !== "all" && viewKey !== currentPeriod.key && activePeriod?.label ? (
           <p className="mt-1 text-sm text-[#8E8E93] dark:text-[#98989D]">
             {`งวด ${activePeriod.label}`}
           </p>

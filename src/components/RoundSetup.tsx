@@ -251,7 +251,7 @@ function RoundSetupInner(props: RoundSetupProps) {
       </div>
 
       <div className="flex flex-col gap-2.5">
-        <div className={!isRandom && multiplier >= 20 ? "animate-shake" : ""}>
+        <div>
           <MultiplierPicker
             value={multiplier}
             onChange={pickMultiplier}

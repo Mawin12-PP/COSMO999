@@ -46,16 +46,15 @@ export function calculateRoundScores(
 
 /**
  * Weighted random multiplier roll
- * Covers [1, 2, 4, 5, 8, 10, 20, 50] with exciting probability weights.
+ * x1 5%, x2 10%, x4 15%, x5 25%, x8 25%, x10 15%, x20 5%, x50 0% (never rolled).
  */
 export function getRandomMultiplier(): number {
   const rand = Math.random() * 100;
   if (rand < 5) return 1;
   if (rand < 15) return 2;
-  if (rand < 25) return 4;
-  if (rand < 45) return 5;
-  if (rand < 70) return 8;
-  if (rand < 88) return 10;
-  if (rand < 98) return 20;
-  return 50; // Rare 2% jackpot for x50
+  if (rand < 30) return 4;
+  if (rand < 55) return 5;
+  if (rand < 80) return 8;
+  if (rand < 95) return 10;
+  return 20;
 }
