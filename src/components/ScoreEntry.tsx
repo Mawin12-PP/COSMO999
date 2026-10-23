@@ -1,10 +1,8 @@
 "use client";
 
-// Step two of starting a round: type each player's raw score, check it, then
-// confirm to atomically save it (players + group + history) to Firebase.
-// Mobile-first for iPhone/iPad: 48px+ touch targets, generous p-4 padding,
-// active:scale-[0.98] feedback, and crisp iOS typography.
-import { useEffect, useState } from "react";
+// Step two of starting a round: pops up over a blurred backdrop (on iPad/PC:
+// left = player score list, right = numpad; on iPhone: stacked).
+import { useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
   ClipboardCheck,
@@ -80,6 +78,7 @@ export function ScoreEntry({
   onBack: () => void;
   onReset: () => void;
 }) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
   const [displayMultiplier, setDisplayMultiplier] = useState<number>(
     triggerReveal ? 1 : multiplier,
   );
@@ -87,14 +86,24 @@ export function ScoreEntry({
   const [isLanded, setIsLanded] = useState<boolean>(!triggerReveal);
   const [rawInputs, setRawInputs] = useState<Record<string, string>>({});
   const [negatives, setNegatives] = useState<Record<string, boolean>>({});
-  const [activePlayerId, setActivePlayerId] = useState<string | null>(
-    () => players[0]?.id ?? null,
+  const [activePlayerId, setActivePlayerId] = useState<string>(
+    () => players[0]?.id ?? "",
   );
+  const [isMobileKeypadOpen, setIsMobileKeypadOpen] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [checked, setChecked] = useState<CheckedRound | null>(null);
   const [saveState, setSaveState] = useState<SaveState>({ status: "idle" });
 
   const { history } = useHistory();
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    if (!dialog.open) dialog.showModal();
+    return () => {
+      if (dialog.open) dialog.close();
+    };
+  }, []);
 
   // Multiplier Reveal Suspense Animation
   useEffect(() => {
@@ -145,6 +154,11 @@ export function ScoreEntry({
 
   const theme = getMultiplierTheme(displayMultiplier);
 
+  function selectPlayer(id: string) {
+    setActivePlayerId(id);
+    setIsMobileKeypadOpen(true);
+  }
+
   function updateScore(id: string, value: string) {
     const digits = value.replace(/\D+/g, "").replace(/^0+(?=\d)/, "");
     setRawInputs((current) => ({ ...current, [id]: digits }));
@@ -158,17 +172,25 @@ export function ScoreEntry({
 
   function goToPrevPlayer(index: number) {
     const prevId = players[index - 1]?.id;
-    if (prevId) setActivePlayerId(prevId);
+    if (prevId) {
+      setActivePlayerId(prevId);
+      setIsMobileKeypadOpen(true);
+    }
   }
 
   function advanceFromPlayer(index: number) {
     const nextId = players[index + 1]?.id;
-    setActivePlayerId(nextId ?? null);
+    if (nextId) {
+      setActivePlayerId(nextId);
+      setIsMobileKeypadOpen(true);
+    } else {
+      setIsMobileKeypadOpen(false);
+    }
   }
 
   // Physical keyboard support on desktop without triggering iOS focus-scroll jumps
   useEffect(() => {
-    if (!activePlayerId || checked) return;
+    if (!activePlayerId || checked || saveState.status === "saved") return;
     function onWindowKeyDown(event: KeyboardEvent) {
       const index = players.findIndex((p) => p.id === activePlayerId);
       if (index < 0) return;
@@ -215,12 +237,13 @@ export function ScoreEntry({
       if (event.key === "ArrowDown" || event.key === "Enter") {
         event.preventDefault();
         const nextId = players[index + 1]?.id;
-        setActivePlayerId(nextId ?? null);
+        if (nextId) setActivePlayerId(nextId);
+        else setIsMobileKeypadOpen(false);
       }
     }
     window.addEventListener("keydown", onWindowKeyDown);
     return () => window.removeEventListener("keydown", onWindowKeyDown);
-  }, [activePlayerId, checked, error, players, rawInputs]);
+  }, [activePlayerId, checked, error, players, rawInputs, saveState.status]);
 
   function handleCheck() {
     const rawScores: Record<string, number> = {};
@@ -275,200 +298,236 @@ export function ScoreEntry({
     setSaveState({ status: "saved", commentary });
   }
 
-  if (saveState.status === "saved") {
-    return (
-      <section className="reveal flex flex-col items-center gap-5 rounded-[20px] border border-black/[0.04] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] p-8 text-center shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none">
-        <span className="grid size-16 place-items-center rounded-full bg-blue-50 dark:bg-blue-950/40 text-[#007AFF] shadow-xs">
-          <PartyPopper className="size-8" />
-        </span>
-        <div className="flex flex-col gap-1">
-          <h2 className="text-xl font-semibold tracking-tight text-[#1C1C1E] dark:text-[#F2F2F7]">บันทึกรอบแล้ว!</h2>
-          <p className="text-sm text-[#8E8E93] dark:text-[#98989D]">{saveState.commentary}</p>
-        </div>
-        <div className="flex flex-col gap-2.5 w-full max-w-xs mt-3">
-          <Button onClick={onReset}>
-            <RotateCcw className="size-4.5" />
-            {liveSessionActive ? "กลับไปที่โต๊ะ (ดูผลรวม)" : "เริ่มรอบใหม่"}
-          </Button>
-        </div>
-      </section>
-    );
-  }
+  const activeIndex = Math.max(
+    0,
+    players.findIndex((p) => p.id === activePlayerId),
+  );
+  const activePlayer = players[activeIndex] ?? players[0];
+  const nextPlayer = players[activeIndex + 1];
+  const currentDigits = activePlayer ? (rawInputs[activePlayer.id] ?? "") : "";
+  const activeIsNegative = activePlayer
+    ? Boolean(negatives[activePlayer.id])
+    : false;
+  const activeDisplay =
+    currentDigits && currentDigits !== "0"
+      ? activeIsNegative
+        ? `-${currentDigits}`
+        : currentDigits
+      : currentDigits;
+
+  const keypadElement = activePlayer ? (
+    <ScoreKeypad
+      activePlayer={activePlayer}
+      activePlayerName={activePlayer.name}
+      displayValue={activeDisplay}
+      hasPrev={activeIndex > 0}
+      nextPlayerName={nextPlayer?.name}
+      isNegative={activeIsNegative}
+      onDigit={(digit) =>
+        updateScore(activePlayer.id, `${currentDigits}${digit}`)
+      }
+      onBackspace={() =>
+        updateScore(activePlayer.id, currentDigits.slice(0, -1))
+      }
+      onToggleSign={() => toggleSign(activePlayer.id)}
+      onPrev={() => goToPrevPlayer(activeIndex)}
+      onNext={() => advanceFromPlayer(activeIndex)}
+      onClose={() => setIsMobileKeypadOpen(false)}
+    />
+  ) : null;
 
   return (
-    <section className="reveal flex flex-col gap-5 rounded-[20px] border border-black/[0.04] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] p-5 sm:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none">
-      {/* Header with Title (Left) and Compact Multiplier Box (Right) */}
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2.5 min-w-0">
-          <span className="grid size-9 sm:size-10 place-items-center rounded-xl bg-blue-50 dark:bg-blue-950/40 text-[#007AFF] shadow-xs shrink-0">
-            <ClipboardCheck className="size-4.5 sm:size-5" />
+    <dialog
+      ref={dialogRef}
+      onCancel={(event) => {
+        event.preventDefault();
+        if (saveState.status === "saved") onReset();
+        else onBack();
+      }}
+      onClick={(event) => {
+        if (event.target === event.currentTarget && saveState.status === "saved") {
+          onReset();
+        }
+      }}
+      aria-label="กรอกคะแนน"
+      className={`m-auto max-h-[92dvh] overflow-y-auto rounded-[24px] border border-black/[0.04] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] p-0 text-[#1C1C1E] dark:text-[#F2F2F7] shadow-2xl backdrop:bg-black/40 backdrop:backdrop-blur-md transition-[width] duration-200 ${
+        saveState.status === "saved"
+          ? "w-[min(24rem,calc(100vw-2rem))]"
+          : "w-[min(26rem,calc(100vw-1.5rem))] md:w-[min(46rem,calc(100vw-3rem))]"
+      }`}
+    >
+      {saveState.status === "saved" ? (
+        <div className="reveal flex flex-col items-center gap-5 p-8 text-center">
+          <span className="grid size-16 place-items-center rounded-full bg-blue-50 dark:bg-blue-950/40 text-[#007AFF] shadow-xs">
+            <PartyPopper className="size-8" />
           </span>
-          <div className="min-w-0">
-            <h2 className="text-base sm:text-lg font-semibold tracking-tight text-[#1C1C1E] dark:text-[#F2F2F7] truncate">
-              กรอกคะแนน
+          <div className="flex flex-col gap-1">
+            <h2 className="text-xl font-semibold tracking-tight text-[#1C1C1E] dark:text-[#F2F2F7]">
+              บันทึกรอบแล้ว!
             </h2>
-            <p className="text-xs text-[#8E8E93] dark:text-[#98989D]">
-              ผู้เล่น {players.length} คน
+            <p className="text-sm text-[#8E8E93] dark:text-[#98989D]">
+              {saveState.commentary}
             </p>
           </div>
+          <div className="flex flex-col gap-2.5 w-full max-w-xs mt-3">
+            <Button onClick={onReset}>
+              <RotateCcw className="size-4.5" />
+              {liveSessionActive ? "กลับไปที่โต๊ะ (ดูผลรวม)" : "เริ่มรอบใหม่"}
+            </Button>
+          </div>
         </div>
+      ) : (
+        <div className="grid gap-5 p-5 sm:p-6 md:grid-cols-[1fr_19rem] md:items-start">
+          {/* Left Column on iPad/PC: Header + Player List + Action Buttons */}
+          <div className="flex flex-col gap-5 min-w-0">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <span className="grid size-9 sm:size-10 place-items-center rounded-xl bg-blue-50 dark:bg-blue-950/40 text-[#007AFF] shadow-xs shrink-0">
+                  <ClipboardCheck className="size-4.5 sm:size-5" />
+                </span>
+                <div className="min-w-0">
+                  <h2 className="text-base sm:text-lg font-semibold tracking-tight text-[#1C1C1E] dark:text-[#F2F2F7] truncate">
+                    กรอกคะแนน
+                  </h2>
+                  <p className="text-xs text-[#8E8E93] dark:text-[#98989D]">
+                    ผู้เล่น {players.length} คน
+                  </p>
+                </div>
+              </div>
 
-        {/* Compact Multiplier Frame (Placed at Top-Right, Default Project Theme) */}
-        <div
-          className={`flex items-center gap-2 rounded-2xl border border-black/[0.06] dark:border-[#38383A] bg-black/[0.03] dark:bg-white/[0.05] px-3 sm:px-3.5 py-1.5 shadow-xs transition-all duration-300 shrink-0 ${
-            isLanded ? "ring-2 ring-blue-500/25 dark:ring-blue-500/30" : ""
-          } ${triggerReveal && isLanded && displayMultiplier === 20 ? "animate-shake" : ""}`}
-        >
-          <span className="grid size-7 sm:size-8 place-items-center rounded-xl bg-white dark:bg-[#1C1C1E] text-[#007AFF] dark:text-[#2E8BFF] border border-black/[0.04] dark:border-white/5 shadow-xs">
-            {isRevealing ? (
-              <Dices className="size-3.5 sm:size-4 animate-spin text-[#007AFF]" />
-            ) : (
-              <theme.Icon className="size-3.5 sm:size-4 text-[#007AFF] dark:text-[#2E8BFF]" />
-            )}
-          </span>
-          <span
-            className={`text-base sm:text-lg font-black tabular-nums tracking-tight text-[#007AFF] dark:text-[#2E8BFF] transition-transform duration-300 ${
-              isLanded ? "scale-105" : "scale-100"
-            }`}
-          >
-            x{displayMultiplier}
-          </span>
-        </div>
-      </div>
-
-      <ul className="overflow-hidden rounded-[16px] border border-black/[0.04] dark:border-[#38383A] divide-y divide-gray-100/80 dark:divide-[#38383A] bg-white dark:bg-[#1C1C1E]">
-        {players.map((player) => {
-          const isNegative = Boolean(negatives[player.id]);
-          const isActive = activePlayerId === player.id;
-          const digits = rawInputs[player.id] ?? "";
-          const displayValue =
-            digits && digits !== "0"
-              ? isNegative
-                ? `-${digits}`
-                : digits
-              : digits;
-          return (
-            <li
-              key={player.id}
-              onClick={() => setActivePlayerId(player.id)}
-              className={`flex min-h-[56px] items-center gap-2.5 sm:gap-3.5 px-3.5 sm:px-4 py-3 transition-colors cursor-pointer ${
-                isActive
-                  ? "bg-blue-50/40 dark:bg-blue-950/25"
-                  : "hover:bg-gray-50/60 dark:hover:bg-[#2C2C2E]/40"
-              }`}
-            >
-              <PlayerAvatar player={player} className="size-10 text-sm shrink-0" />
-              <label
-                htmlFor={`score-${player.id}`}
-                className="min-w-0 flex-1 truncate text-base font-semibold text-[#1C1C1E] dark:text-[#F2F2F7] cursor-pointer"
+              <div
+                className={`flex items-center gap-2 rounded-2xl border border-black/[0.06] dark:border-[#38383A] bg-black/[0.03] dark:bg-white/[0.05] px-3 sm:px-3.5 py-1.5 shadow-xs transition-all duration-300 shrink-0 ${
+                  isLanded ? "ring-2 ring-blue-500/25 dark:ring-blue-500/30" : ""
+                } ${triggerReveal && isLanded && displayMultiplier === 20 ? "animate-shake" : ""}`}
               >
-                {player.name}
-              </label>
-              <div className="flex items-center gap-1.5 shrink-0">
-                <button
-                  type="button"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    setActivePlayerId(player.id);
-                    toggleSign(player.id);
-                  }}
-                  aria-pressed={isNegative}
-                  aria-label={
-                    isNegative
-                      ? `คะแนนลบ (${player.name}) กดเพื่อเปลี่ยนเป็นบวก`
-                      : `คะแนนบวก (${player.name}) กดเพื่อเปลี่ยนเป็นลบ`
-                  }
-                  className={`grid size-11 place-items-center rounded-xl border transition-all duration-150 active:scale-[0.94] cursor-pointer select-none ${
-                    isNegative
-                      ? "border-[#FF3B30]/30 bg-[#FF3B30]/12 text-[#FF3B30] dark:border-[#FF453A]/35 dark:bg-[#FF453A]/15 dark:text-[#FF453A]"
-                      : "border-[#34C759]/25 bg-[#34C759]/10 text-[#34C759] dark:border-[#34C759]/30 dark:bg-[#34C759]/15"
+                <span className="grid size-7 sm:size-8 place-items-center rounded-xl bg-white dark:bg-[#1C1C1E] text-[#007AFF] dark:text-[#2E8BFF] border border-black/[0.04] dark:border-white/5 shadow-xs">
+                  {isRevealing ? (
+                    <Dices className="size-3.5 sm:size-4 animate-spin text-[#007AFF]" />
+                  ) : (
+                    <theme.Icon className="size-3.5 sm:size-4 text-[#007AFF] dark:text-[#2E8BFF]" />
+                  )}
+                </span>
+                <span
+                  className={`text-base sm:text-lg font-black tabular-nums tracking-tight text-[#007AFF] dark:text-[#2E8BFF] transition-transform duration-300 ${
+                    isLanded ? "scale-105" : "scale-100"
                   }`}
                 >
-                  {isNegative ? (
-                    <Minus className="size-5 stroke-[2.75]" />
-                  ) : (
-                    <Plus className="size-5 stroke-[2.75]" />
-                  )}
-                </button>
-                <input
-                  id={`score-${player.id}`}
-                  type="text"
-                  readOnly
-                  inputMode="none"
-                  autoComplete="off"
-                  placeholder={isNegative ? "-0" : "0"}
-                  value={displayValue}
-                  onClick={() => setActivePlayerId(player.id)}
-                  className={`h-11 w-24 sm:w-28 rounded-xl border bg-white dark:bg-[#2C2C2E] px-3.5 py-1.5 text-right text-lg font-bold tabular-nums outline-none shadow-xs transition-all cursor-pointer select-none ${
-                    isNegative
-                      ? `border-[#FF3B30]/35 dark:border-[#FF453A]/40 text-[#FF3B30] dark:text-[#FF453A] placeholder:text-[#FF3B30]/45 dark:placeholder:text-[#FF453A]/45 ${
-                          isActive ? "border-[#FF3B30] ring-2 ring-red-500/20" : ""
-                        }`
-                      : `border-black/[0.06] dark:border-[#38383A] text-[#1C1C1E] dark:text-[#F2F2F7] placeholder:text-[#8E8E93]/60 dark:placeholder:text-[#98989D]/60 ${
-                          isActive ? "border-[#007AFF] ring-2 ring-blue-500/20" : ""
-                        }`
-                  }`}
-                />
+                  x{displayMultiplier}
+                </span>
               </div>
-            </li>
-          );
-        })}
-      </ul>
+            </div>
 
-      {(() => {
-        const activeIndex = players.findIndex((p) => p.id === activePlayerId);
-        const activePlayer = activeIndex >= 0 ? players[activeIndex] : null;
-        if (!activePlayer) return null;
-        const nextPlayer = players[activeIndex + 1];
-        const currentDigits = rawInputs[activePlayer.id] ?? "";
-        const isNegative = Boolean(negatives[activePlayer.id]);
-        const activeDisplay =
-          currentDigits && currentDigits !== "0"
-            ? isNegative
-              ? `-${currentDigits}`
-              : currentDigits
-            : currentDigits;
-        return (
-          <ScoreKeypad
-            activePlayer={activePlayer}
-            activePlayerName={activePlayer.name}
-            displayValue={activeDisplay}
-            hasPrev={activeIndex > 0}
-            nextPlayerName={nextPlayer?.name}
-            isNegative={isNegative}
-            onDigit={(digit) =>
-              updateScore(activePlayer.id, `${currentDigits}${digit}`)
-            }
-            onBackspace={() =>
-              updateScore(activePlayer.id, currentDigits.slice(0, -1))
-            }
-            onToggleSign={() => toggleSign(activePlayer.id)}
-            onPrev={() => goToPrevPlayer(activeIndex)}
-            onNext={() => advanceFromPlayer(activeIndex)}
-            onClose={() => setActivePlayerId(null)}
-          />
-        );
-      })()}
+            <ul className="overflow-hidden rounded-[16px] border border-black/[0.04] dark:border-[#38383A] divide-y divide-gray-100/80 dark:divide-[#38383A] bg-white dark:bg-[#1C1C1E]">
+              {players.map((player) => {
+                const isNegative = Boolean(negatives[player.id]);
+                const isActive = activePlayer?.id === player.id;
+                const digits = rawInputs[player.id] ?? "";
+                const displayValue =
+                  digits && digits !== "0"
+                    ? isNegative
+                      ? `-${digits}`
+                      : digits
+                    : digits;
+                return (
+                  <li
+                    key={player.id}
+                    onClick={() => selectPlayer(player.id)}
+                    className={`flex min-h-[56px] items-center gap-2.5 sm:gap-3.5 px-3.5 sm:px-4 py-3 transition-colors cursor-pointer ${
+                      isActive
+                        ? "bg-blue-50/40 dark:bg-blue-950/25"
+                        : "hover:bg-gray-50/60 dark:hover:bg-[#2C2C2E]/40"
+                    }`}
+                  >
+                    <PlayerAvatar player={player} className="size-10 text-sm shrink-0" />
+                    <label
+                      htmlFor={`score-${player.id}`}
+                      className="min-w-0 flex-1 truncate text-base font-semibold text-[#1C1C1E] dark:text-[#F2F2F7] cursor-pointer"
+                    >
+                      {player.name}
+                    </label>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <button
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          selectPlayer(player.id);
+                          toggleSign(player.id);
+                        }}
+                        aria-pressed={isNegative}
+                        aria-label={
+                          isNegative
+                            ? `คะแนนลบ (${player.name}) กดเพื่อเปลี่ยนเป็นบวก`
+                            : `คะแนนบวก (${player.name}) กดเพื่อเปลี่ยนเป็นลบ`
+                        }
+                        className={`grid size-11 place-items-center rounded-xl border transition-all duration-150 active:scale-[0.94] cursor-pointer select-none ${
+                          isNegative
+                            ? "border-[#FF3B30]/30 bg-[#FF3B30]/12 text-[#FF3B30] dark:border-[#FF453A]/35 dark:bg-[#FF453A]/15 dark:text-[#FF453A]"
+                            : "border-[#34C759]/25 bg-[#34C759]/10 text-[#34C759] dark:border-[#34C759]/30 dark:bg-[#34C759]/15"
+                        }`}
+                      >
+                        {isNegative ? (
+                          <Minus className="size-5 stroke-[2.75]" />
+                        ) : (
+                          <Plus className="size-5 stroke-[2.75]" />
+                        )}
+                      </button>
+                      <input
+                        id={`score-${player.id}`}
+                        type="text"
+                        readOnly
+                        inputMode="none"
+                        autoComplete="off"
+                        placeholder={isNegative ? "-0" : "0"}
+                        value={displayValue}
+                        onClick={() => selectPlayer(player.id)}
+                        className={`h-11 w-24 sm:w-28 rounded-xl border bg-white dark:bg-[#2C2C2E] px-3.5 py-1.5 text-right text-lg font-bold tabular-nums outline-none shadow-xs transition-all cursor-pointer select-none ${
+                          isNegative
+                            ? `border-[#FF3B30]/35 dark:border-[#FF453A]/40 text-[#FF3B30] dark:text-[#FF453A] placeholder:text-[#FF3B30]/45 dark:placeholder:text-[#FF453A]/45 ${
+                                isActive ? "border-[#FF3B30] ring-2 ring-red-500/20" : ""
+                              }`
+                            : `border-black/[0.06] dark:border-[#38383A] text-[#1C1C1E] dark:text-[#F2F2F7] placeholder:text-[#8E8E93]/60 dark:placeholder:text-[#98989D]/60 ${
+                                isActive ? "border-[#007AFF] ring-2 ring-blue-500/20" : ""
+                              }`
+                        }`}
+                      />
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
 
-      {error ? (
-        <p
-          role="alert"
-          className="rounded-2xl border border-red-200/80 dark:border-red-900/40 bg-red-50/80 dark:bg-red-950/30 p-4 text-sm font-medium text-[#FF3B30] backdrop-blur-sm"
-        >
-          {error}
-        </p>
-      ) : null}
+            {/* Mobile Keypad (stacked below players on iPhone) */}
+            {isMobileKeypadOpen ? (
+              <div className="md:hidden">{keypadElement}</div>
+            ) : null}
 
-      <div className="flex flex-col gap-2.5 sm:gap-3 border-t border-black/[0.04] dark:border-[#38383A] pt-5 sm:flex-row-reverse">
-        <Button onClick={handleCheck} className="flex-1">
-          <ClipboardCheck className="size-4.5" />
-          บันทึกคะแนน
-        </Button>
-        <Button variant="secondary" onClick={onBack} className="flex-1">
-          <ArrowLeft className="size-4.5" />
-          ย้อนกลับ
-        </Button>
-      </div>
+            {error ? (
+              <p
+                role="alert"
+                className="rounded-2xl border border-red-200/80 dark:border-red-900/40 bg-red-50/80 dark:bg-red-950/30 p-4 text-sm font-medium text-[#FF3B30] backdrop-blur-sm"
+              >
+                {error}
+              </p>
+            ) : null}
+
+            <div className="flex flex-col gap-2.5 sm:gap-3 border-t border-black/[0.04] dark:border-[#38383A] pt-4 sm:flex-row-reverse">
+              <Button onClick={handleCheck} className="flex-1">
+                <ClipboardCheck className="size-4.5" />
+                บันทึกคะแนน
+              </Button>
+              <Button variant="secondary" onClick={onBack} className="flex-1">
+                <ArrowLeft className="size-4.5" />
+                ย้อนกลับ
+              </Button>
+            </div>
+          </div>
+
+          {/* Right Column on iPad/PC: Dedicated Keypad Side-by-Side */}
+          <div className="hidden md:block md:sticky md:top-0">
+            {keypadElement}
+          </div>
+        </div>
+      )}
 
       {checked ? (
         <PreviewDialog
@@ -485,6 +544,6 @@ export function ScoreEntry({
           onConfirm={handleConfirm}
         />
       ) : null}
-    </section>
+    </dialog>
   );
 }

@@ -48,7 +48,10 @@ export function EditRoundDialog({
     );
   });
   const [negatives, setNegatives] = useState<Record<string, boolean>>({});
-  const [activePlayerId, setActivePlayerId] = useState<string | null>(null);
+  const [activePlayerId, setActivePlayerId] = useState<string>(
+    () => playerIds[0] ?? "",
+  );
+  const [isMobileKeypadOpen, setIsMobileKeypadOpen] = useState<boolean>(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -69,6 +72,11 @@ export function EditRoundDialog({
     return calculateRoundScores(playerIds, raw, multiplier);
   }, [playerIds, inputs, negatives, multiplier]);
 
+  function selectPlayer(id: string) {
+    setActivePlayerId(id);
+    setIsMobileKeypadOpen(true);
+  }
+
   function updateScore(id: string, value: string) {
     const digits = value.replace(/\D+/g, "").replace(/^0+(?=\d)/, "");
     setInputs((current) => ({ ...current, [id]: digits }));
@@ -82,12 +90,20 @@ export function EditRoundDialog({
 
   function goToPrevPlayer(index: number) {
     const prevId = playerIds[index - 1];
-    if (prevId) setActivePlayerId(prevId);
+    if (prevId) {
+      setActivePlayerId(prevId);
+      setIsMobileKeypadOpen(true);
+    }
   }
 
   function advanceFromPlayer(index: number) {
     const nextId = playerIds[index + 1];
-    setActivePlayerId(nextId ?? null);
+    if (nextId) {
+      setActivePlayerId(nextId);
+      setIsMobileKeypadOpen(true);
+    } else {
+      setIsMobileKeypadOpen(false);
+    }
   }
 
   // Physical keyboard support on desktop without triggering iOS focus-scroll jumps
@@ -139,7 +155,8 @@ export function EditRoundDialog({
       if (event.key === "ArrowDown" || event.key === "Enter") {
         event.preventDefault();
         const nextId = playerIds[index + 1];
-        setActivePlayerId(nextId ?? null);
+        if (nextId) setActivePlayerId(nextId);
+        else setIsMobileKeypadOpen(false);
       }
     }
     window.addEventListener("keydown", onWindowKeyDown);
@@ -180,6 +197,46 @@ export function EditRoundDialog({
     }
   }
 
+  const activeIndex = Math.max(
+    0,
+    playerIds.findIndex((id) => id === activePlayerId),
+  );
+  const activeId = playerIds[activeIndex] ?? playerIds[0];
+  const activePlayer = activeId
+    ? players.find((p) => p.id === activeId)
+    : undefined;
+  const nextId = playerIds[activeIndex + 1];
+  const nextPlayer = nextId
+    ? players.find((p) => p.id === nextId)
+    : undefined;
+  const currentDigits = activeId ? (inputs[activeId] ?? "") : "";
+  const activeIsNegative = activeId ? Boolean(negatives[activeId]) : false;
+  const activeDisplay =
+    currentDigits && currentDigits !== "0"
+      ? activeIsNegative
+        ? `-${currentDigits}`
+        : currentDigits
+      : currentDigits;
+
+  const keypadElement = activeId ? (
+    <ScoreKeypad
+      activePlayer={activePlayer}
+      activePlayerName={activePlayer ? activePlayer.name : "(ถูกลบ)"}
+      displayValue={activeDisplay}
+      hasPrev={activeIndex > 0}
+      nextPlayerName={
+        nextId ? (nextPlayer ? nextPlayer.name : "(ถูกลบ)") : undefined
+      }
+      isNegative={activeIsNegative}
+      onDigit={(digit) => updateScore(activeId, `${currentDigits}${digit}`)}
+      onBackspace={() => updateScore(activeId, currentDigits.slice(0, -1))}
+      onToggleSign={() => toggleSign(activeId)}
+      onPrev={() => goToPrevPlayer(activeIndex)}
+      onNext={() => advanceFromPlayer(activeIndex)}
+      onClose={() => setIsMobileKeypadOpen(false)}
+    />
+  ) : null;
+
   return (
     <dialog
       ref={dialogRef}
@@ -191,197 +248,173 @@ export function EditRoundDialog({
         if (event.target === event.currentTarget) dismiss();
       }}
       aria-labelledby="edit-round-title"
-      className="m-auto max-h-[92dvh] w-[min(26rem,calc(100vw-2rem))] overflow-y-auto rounded-[20px] border border-black/[0.04] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] p-0 text-[#1C1C1E] dark:text-[#F2F2F7] shadow-2xl backdrop:bg-black/40 backdrop:backdrop-blur-sm"
+      className="m-auto max-h-[92dvh] w-[min(26rem,calc(100vw-1.5rem))] md:w-[min(46rem,calc(100vw-3rem))] overflow-y-auto rounded-[24px] border border-black/[0.04] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] p-0 text-[#1C1C1E] dark:text-[#F2F2F7] shadow-2xl backdrop:bg-black/40 backdrop:backdrop-blur-md"
     >
-      <div className="flex flex-col gap-5 p-5 sm:p-6">
-        <div className="flex items-start justify-between gap-3">
-          <h2
-            id="edit-round-title"
-            className="text-base font-semibold leading-snug"
-          >
-            แก้ไขรอบนี้
-          </h2>
-          <button
-            type="button"
-            onClick={dismiss}
-            disabled={busy}
-            aria-label="ปิด"
-            className="flex size-11 min-h-[44px] min-w-[44px] items-center justify-center -mr-2 -mt-2 rounded-full text-[#8E8E93] dark:text-[#98989D] transition-all duration-200 ease-out active:scale-[0.97] hover:bg-black/[0.04] hover:text-[#1C1C1E] dark:hover:bg-white/[0.06] dark:hover:text-[#F2F2F7] disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <X className="size-5" />
-          </button>
-        </div>
+      <div className="grid gap-5 p-5 sm:p-6 md:grid-cols-[1fr_19rem] md:items-start">
+        {/* Left Column on iPad/PC: Multiplier + Player List + Save/Cancel */}
+        <div className="flex flex-col gap-5 min-w-0">
+          <div className="flex items-start justify-between gap-3">
+            <h2
+              id="edit-round-title"
+              className="text-base font-semibold leading-snug"
+            >
+              แก้ไขรอบนี้
+            </h2>
+            <button
+              type="button"
+              onClick={dismiss}
+              disabled={busy}
+              aria-label="ปิด"
+              className="flex size-11 min-h-[44px] min-w-[44px] items-center justify-center -mr-2 -mt-2 rounded-full text-[#8E8E93] dark:text-[#98989D] transition-all duration-200 ease-out active:scale-[0.97] hover:bg-black/[0.04] hover:text-[#1C1C1E] dark:hover:bg-white/[0.06] dark:hover:text-[#F2F2F7] disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <X className="size-5" />
+            </button>
+          </div>
 
-        {/* Multiplier */}
-        <div className="flex flex-col gap-2">
-          <span className="text-xs font-medium text-[#8E8E93] dark:text-[#98989D]">
-            ตัวคูณ
-          </span>
-          <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
-            {MULTIPLIERS.map((m) => {
-              const active = multiplier === m;
+          {/* Multiplier */}
+          <div className="flex flex-col gap-2">
+            <span className="text-xs font-medium text-[#8E8E93] dark:text-[#98989D]">
+              ตัวคูณ
+            </span>
+            <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
+              {MULTIPLIERS.map((m) => {
+                const active = multiplier === m;
+                return (
+                  <button
+                    key={m}
+                    type="button"
+                    onClick={() => setMultiplier(m)}
+                    aria-pressed={active}
+                    className={`flex h-10 items-center justify-center rounded-xl text-sm font-semibold tabular-nums transition-all duration-150 ease-out cursor-pointer ${
+                      active
+                        ? "bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] text-white shadow-md shadow-blue-500/20"
+                        : "border border-black/[0.08] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] text-gray-800 dark:text-[#F2F2F7] shadow-2xs hover:bg-gray-50 dark:hover:bg-[#2C2C2E]"
+                    }`}
+                  >
+                    x{m}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Raw scores with live net preview */}
+          <ul className="overflow-hidden rounded-[16px] border border-black/[0.04] dark:border-[#38383A] divide-y divide-gray-100/80 dark:divide-[#38383A]">
+            {playerIds.map((id) => {
+              const player = players.find((p) => p.id === id);
+              const net = result.netScores[id] ?? 0;
+              const isNegative = Boolean(negatives[id]);
+              const isActive = activeId === id;
+              const digits = inputs[id] ?? "";
+              const displayValue =
+                digits && digits !== "0"
+                  ? isNegative
+                    ? `-${digits}`
+                    : digits
+                  : digits;
               return (
-                <button
-                  key={m}
-                  type="button"
-                  onClick={() => setMultiplier(m)}
-                  aria-pressed={active}
-                  className={`flex h-10 items-center justify-center rounded-xl text-sm font-semibold tabular-nums transition-all duration-150 ease-out cursor-pointer ${
-                    active
-                      ? "bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] text-white shadow-md shadow-blue-500/20"
-                      : "border border-black/[0.08] dark:border-[#38383A] bg-white dark:bg-[#1C1C1E] text-gray-800 dark:text-[#F2F2F7] shadow-2xs hover:bg-gray-50 dark:hover:bg-[#2C2C2E]"
+                <li
+                  key={id}
+                  onClick={() => selectPlayer(id)}
+                  className={`flex min-h-[56px] items-center gap-2.5 sm:gap-3 px-3.5 py-2.5 transition-colors cursor-pointer ${
+                    isActive
+                      ? "bg-blue-50/40 dark:bg-blue-950/25"
+                      : "hover:bg-gray-50/60 dark:hover:bg-[#2C2C2E]/40"
                   }`}
                 >
-                  x{m}
-                </button>
+                  {player ? (
+                    <PlayerAvatar player={player} className="size-9 text-sm shrink-0" />
+                  ) : null}
+                  <div className="min-w-0 flex-1">
+                    <label
+                      htmlFor={`edit-score-${id}`}
+                      className="block truncate text-sm font-semibold cursor-pointer"
+                    >
+                      {player ? player.name : "(ถูกลบ)"}
+                    </label>
+                    <span className={`text-xs font-bold tabular-nums ${netTone(net)}`}>
+                      {formatNet(net)}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <button
+                      type="button"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        selectPlayer(id);
+                        toggleSign(id);
+                      }}
+                      aria-pressed={isNegative}
+                      aria-label={
+                        isNegative
+                          ? `คะแนนลบ (${player ? player.name : id}) กดเพื่อเปลี่ยนเป็นบวก`
+                          : `คะแนนบวก (${player ? player.name : id}) กดเพื่อเปลี่ยนเป็นลบ`
+                      }
+                      className={`grid size-11 place-items-center rounded-xl border transition-all duration-150 active:scale-[0.94] cursor-pointer select-none ${
+                        isNegative
+                          ? "border-[#FF3B30]/30 bg-[#FF3B30]/12 text-[#FF3B30] dark:border-[#FF453A]/35 dark:bg-[#FF453A]/15 dark:text-[#FF453A]"
+                          : "border-[#34C759]/25 bg-[#34C759]/10 text-[#34C759] dark:border-[#34C759]/30 dark:bg-[#34C759]/15"
+                      }`}
+                    >
+                      {isNegative ? (
+                        <Minus className="size-5 stroke-[2.75]" />
+                      ) : (
+                        <Plus className="size-5 stroke-[2.75]" />
+                      )}
+                    </button>
+                    <input
+                      id={`edit-score-${id}`}
+                      type="text"
+                      readOnly
+                      inputMode="none"
+                      autoComplete="off"
+                      placeholder={isNegative ? "-0" : "0"}
+                      value={displayValue}
+                      onClick={() => selectPlayer(id)}
+                      className={`h-11 w-24 rounded-xl border bg-white dark:bg-[#2C2C2E] px-3 py-1.5 text-right text-base font-bold tabular-nums outline-none shadow-xs transition-all cursor-pointer select-none ${
+                        isNegative
+                          ? `border-[#FF3B30]/35 dark:border-[#FF453A]/40 text-[#FF3B30] dark:text-[#FF453A] placeholder:text-[#FF3B30]/45 dark:placeholder:text-[#FF453A]/45 ${
+                              isActive ? "border-[#FF3B30] ring-2 ring-red-500/20" : ""
+                            }`
+                          : `border-black/[0.06] dark:border-[#38383A] text-[#1C1C1E] dark:text-[#F2F2F7] placeholder:text-[#8E8E93]/60 dark:placeholder:text-[#98989D]/60 ${
+                              isActive ? "border-[#007AFF] ring-2 ring-blue-500/20" : ""
+                            }`
+                      }`}
+                    />
+                  </div>
+                </li>
               );
             })}
+          </ul>
+
+          {/* Mobile Keypad (stacked below players on iPhone) */}
+          {isMobileKeypadOpen ? (
+            <div className="md:hidden">{keypadElement}</div>
+          ) : null}
+
+          {error ? (
+            <p
+              role="alert"
+              className="rounded-2xl border border-red-200/80 dark:border-red-500/30 bg-red-50/80 dark:bg-red-500/10 p-3 text-sm text-[#FF3B30] dark:text-[#FF453A]"
+            >
+              {error}
+            </p>
+          ) : null}
+
+          <div className="flex flex-col gap-2.5 sm:flex-row-reverse">
+            <Button onClick={handleSave} disabled={busy || !changed} className="flex-1">
+              {busy ? <Loader2 className="size-4.5 animate-spin" aria-hidden /> : null}
+              {busy ? "กำลังบันทึก..." : "บันทึกการแก้ไข"}
+            </Button>
+            <Button variant="secondary" onClick={dismiss} disabled={busy} className="flex-1">
+              ยกเลิก
+            </Button>
           </div>
         </div>
 
-        {/* Raw scores with live net preview */}
-        <ul className="overflow-hidden rounded-[16px] border border-black/[0.04] dark:border-[#38383A] divide-y divide-gray-100/80 dark:divide-[#38383A]">
-          {playerIds.map((id) => {
-            const player = players.find((p) => p.id === id);
-            const net = result.netScores[id] ?? 0;
-            const isNegative = Boolean(negatives[id]);
-            const isActive = activePlayerId === id;
-            const digits = inputs[id] ?? "";
-            const displayValue =
-              digits && digits !== "0"
-                ? isNegative
-                  ? `-${digits}`
-                  : digits
-                : digits;
-            return (
-              <li
-                key={id}
-                onClick={() => setActivePlayerId(id)}
-                className={`flex min-h-[56px] items-center gap-2.5 sm:gap-3 px-3.5 py-2.5 transition-colors cursor-pointer ${
-                  isActive
-                    ? "bg-blue-50/40 dark:bg-blue-950/25"
-                    : "hover:bg-gray-50/60 dark:hover:bg-[#2C2C2E]/40"
-                }`}
-              >
-                {player ? (
-                  <PlayerAvatar player={player} className="size-9 text-sm shrink-0" />
-                ) : null}
-                <div className="min-w-0 flex-1">
-                  <label
-                    htmlFor={`edit-score-${id}`}
-                    className="block truncate text-sm font-semibold cursor-pointer"
-                  >
-                    {player ? player.name : "(ถูกลบ)"}
-                  </label>
-                  <span className={`text-xs font-bold tabular-nums ${netTone(net)}`}>
-                    {formatNet(net)}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1.5 shrink-0">
-                  <button
-                    type="button"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      setActivePlayerId(id);
-                      toggleSign(id);
-                    }}
-                    aria-pressed={isNegative}
-                    aria-label={
-                      isNegative
-                        ? `คะแนนลบ (${player ? player.name : id}) กดเพื่อเปลี่ยนเป็นบวก`
-                        : `คะแนนบวก (${player ? player.name : id}) กดเพื่อเปลี่ยนเป็นลบ`
-                    }
-                    className={`grid size-11 place-items-center rounded-xl border transition-all duration-150 active:scale-[0.94] cursor-pointer select-none ${
-                      isNegative
-                        ? "border-[#FF3B30]/30 bg-[#FF3B30]/12 text-[#FF3B30] dark:border-[#FF453A]/35 dark:bg-[#FF453A]/15 dark:text-[#FF453A]"
-                        : "border-[#34C759]/25 bg-[#34C759]/10 text-[#34C759] dark:border-[#34C759]/30 dark:bg-[#34C759]/15"
-                    }`}
-                  >
-                    {isNegative ? (
-                      <Minus className="size-5 stroke-[2.75]" />
-                    ) : (
-                      <Plus className="size-5 stroke-[2.75]" />
-                    )}
-                  </button>
-                  <input
-                    id={`edit-score-${id}`}
-                    type="text"
-                    readOnly
-                    inputMode="none"
-                    autoComplete="off"
-                    placeholder={isNegative ? "-0" : "0"}
-                    value={displayValue}
-                    onClick={() => setActivePlayerId(id)}
-                    className={`h-11 w-24 rounded-xl border bg-white dark:bg-[#2C2C2E] px-3 py-1.5 text-right text-base font-bold tabular-nums outline-none shadow-xs transition-all cursor-pointer select-none ${
-                      isNegative
-                        ? `border-[#FF3B30]/35 dark:border-[#FF453A]/40 text-[#FF3B30] dark:text-[#FF453A] placeholder:text-[#FF3B30]/45 dark:placeholder:text-[#FF453A]/45 ${
-                            isActive ? "border-[#FF3B30] ring-2 ring-red-500/20" : ""
-                          }`
-                        : `border-black/[0.06] dark:border-[#38383A] text-[#1C1C1E] dark:text-[#F2F2F7] placeholder:text-[#8E8E93]/60 dark:placeholder:text-[#98989D]/60 ${
-                            isActive ? "border-[#007AFF] ring-2 ring-blue-500/20" : ""
-                          }`
-                    }`}
-                  />
-                </div>
-              </li>
-            );
-          })}
-        </ul>
-
-        {(() => {
-          const activeIndex = playerIds.findIndex((id) => id === activePlayerId);
-          if (activeIndex < 0) return null;
-          const activeId = playerIds[activeIndex];
-          const activePlayer = players.find((p) => p.id === activeId);
-          const nextId = playerIds[activeIndex + 1];
-          const nextPlayer = nextId ? players.find((p) => p.id === nextId) : undefined;
-          const currentDigits = inputs[activeId] ?? "";
-          const isNegative = Boolean(negatives[activeId]);
-          const activeDisplay =
-            currentDigits && currentDigits !== "0"
-              ? isNegative
-                ? `-${currentDigits}`
-                : currentDigits
-              : currentDigits;
-          return (
-            <ScoreKeypad
-              activePlayer={activePlayer}
-              activePlayerName={activePlayer ? activePlayer.name : "(ถูกลบ)"}
-              displayValue={activeDisplay}
-              hasPrev={activeIndex > 0}
-              nextPlayerName={nextId ? (nextPlayer ? nextPlayer.name : "(ถูกลบ)") : undefined}
-              isNegative={isNegative}
-              onDigit={(digit) =>
-                updateScore(activeId, `${currentDigits}${digit}`)
-              }
-              onBackspace={() =>
-                updateScore(activeId, currentDigits.slice(0, -1))
-              }
-              onToggleSign={() => toggleSign(activeId)}
-              onPrev={() => goToPrevPlayer(activeIndex)}
-              onNext={() => advanceFromPlayer(activeIndex)}
-              onClose={() => setActivePlayerId(null)}
-            />
-          );
-        })()}
-
-        {error ? (
-          <p
-            role="alert"
-            className="rounded-2xl border border-red-200/80 dark:border-red-500/30 bg-red-50/80 dark:bg-red-500/10 p-3 text-sm text-[#FF3B30] dark:text-[#FF453A]"
-          >
-            {error}
-          </p>
-        ) : null}
-
-        <div className="flex flex-col gap-2.5 sm:flex-row-reverse">
-          <Button onClick={handleSave} disabled={busy || !changed} className="flex-1">
-            {busy ? <Loader2 className="size-4.5 animate-spin" aria-hidden /> : null}
-            {busy ? "กำลังบันทึก..." : "บันทึกการแก้ไข"}
-          </Button>
-          <Button variant="secondary" onClick={dismiss} disabled={busy} className="flex-1">
-            ยกเลิก
-          </Button>
+        {/* Right Column on iPad/PC: Dedicated Keypad Side-by-Side */}
+        <div className="hidden md:block md:sticky md:top-0">
+          {keypadElement}
         </div>
       </div>
     </dialog>

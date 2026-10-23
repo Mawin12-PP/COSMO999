@@ -124,23 +124,6 @@ function RoundSetupInner(props: RoundSetupProps) {
     }
   }, [presetTrigger, players]);
 
-  useEffect(() => {
-    if (step !== "entry") return;
-    const timer = setTimeout(() => {
-      const el = document.getElementById("round-setup-section");
-      if (el) {
-        const rect = el.getBoundingClientRect();
-        const headerOffset = 72;
-        const targetTop = window.scrollY + rect.top - headerOffset;
-        window.scrollTo({
-          top: Math.max(0, targetTop),
-          behavior: "smooth",
-        });
-      }
-    }, 40);
-    return () => clearTimeout(timer);
-  }, [step]);
-
   function togglePlayer(id: string) {
     setSelectedIds((current) =>
       current.includes(id)
@@ -188,23 +171,6 @@ function RoundSetupInner(props: RoundSetupProps) {
     setRoundPlayers([]);
     setTriggerReveal(false);
     setStep("setup");
-  }
-
-  if (step === "entry") {
-    return (
-      <div id="round-setup-section" className="scroll-mt-20 sm:scroll-mt-24">
-        <ScoreEntry
-          players={roundPlayers}
-          multiplier={multiplier}
-          triggerReveal={triggerReveal}
-          onBack={() => {
-            setTriggerReveal(false);
-            setStep("setup");
-          }}
-          onReset={resetRound}
-        />
-      </div>
-    );
   }
 
   return (
@@ -284,6 +250,19 @@ function RoundSetupInner(props: RoundSetupProps) {
           <ArrowRight className="size-4.5" />
         </button>
       </div>
+
+      {step === "entry" ? (
+        <ScoreEntry
+          players={roundPlayers}
+          multiplier={multiplier}
+          triggerReveal={triggerReveal}
+          onBack={() => {
+            setTriggerReveal(false);
+            setStep("setup");
+          }}
+          onReset={resetRound}
+        />
+      ) : null}
     </section>
   );
 }

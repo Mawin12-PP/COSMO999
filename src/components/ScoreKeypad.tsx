@@ -42,7 +42,7 @@ export function ScoreKeypad({
   onClose: () => void;
 }) {
   return (
-    <div className="reveal flex flex-col gap-2.5 rounded-[18px] border border-black/[0.06] dark:border-[#38383A] bg-[#F2F2F7]/90 dark:bg-[#2C2C2E]/90 p-3 backdrop-blur-xl shadow-inner select-none">
+    <div className="flex flex-col gap-2.5 rounded-[18px] border border-black/[0.06] dark:border-[#38383A] bg-[#F2F2F7]/90 dark:bg-[#2C2C2E]/90 p-3 backdrop-blur-xl shadow-inner select-none">
       {/* Keypad Top Bar: Shows current player + live input value */}
       <div className="flex items-center justify-between gap-2 rounded-xl bg-white/80 dark:bg-[#1C1C1E]/80 px-3 py-2 border border-black/[0.04] dark:border-white/[0.06]">
         <div className="flex items-center gap-2 min-w-0">
@@ -69,7 +69,7 @@ export function ScoreKeypad({
             type="button"
             onClick={onClose}
             aria-label="ซ่อนแป้นพิมพ์"
-            className="flex size-8 items-center justify-center rounded-lg text-[#8E8E93] dark:text-[#98989D] hover:bg-black/[0.05] dark:hover:bg-white/[0.08] active:scale-95 transition-all cursor-pointer"
+            className="flex md:hidden size-8 items-center justify-center rounded-lg text-[#8E8E93] dark:text-[#98989D] hover:bg-black/[0.05] dark:hover:bg-white/[0.08] active:scale-95 transition-all cursor-pointer"
           >
             <X className="size-4" />
           </button>
