@@ -8,6 +8,7 @@ import { Loader2, Minus, Plus, X } from "lucide-react";
 import { Button } from "@/components/Button";
 import { MULTIPLIERS } from "@/components/MultiplierPicker";
 import { PlayerAvatar } from "@/components/PlayerAvatar";
+import { ScoreKeypad } from "@/components/ScoreKeypad";
 import { generateRoundCommentary } from "@/lib/commentary";
 import { editRound } from "@/lib/rounds";
 import { calculateRoundScores, deriveRawScores } from "@/lib/scoring";
@@ -37,6 +38,7 @@ export function EditRoundDialog({
   onClose: () => void;
 }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const inputRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const playerIds = useMemo(() => Object.keys(entry.playerScores), [entry]);
 
   const [multiplier, setMultiplier] = useState(entry.multiplier);
@@ -47,6 +49,7 @@ export function EditRoundDialog({
     );
   });
   const [negatives, setNegatives] = useState<Record<string, boolean>>({});
+  const [activePlayerId, setActivePlayerId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -78,9 +81,22 @@ export function EditRoundDialog({
     if (error) setError(null);
   }
 
+  function advanceFromPlayer(index: number) {
+    const nextId = playerIds[index + 1];
+    if (nextId) {
+      setActivePlayerId(nextId);
+      inputRefs.current[nextId]?.focus();
+    } else {
+      setActivePlayerId(null);
+      const currentId = playerIds[index];
+      if (currentId) inputRefs.current[currentId]?.blur();
+    }
+  }
+
   function handleKeyDown(
     event: React.KeyboardEvent<HTMLInputElement>,
     id: string,
+    index: number,
   ) {
     if (event.key === "-") {
       event.preventDefault();
@@ -91,6 +107,11 @@ export function EditRoundDialog({
       event.preventDefault();
       setNegatives((current) => ({ ...current, [id]: false }));
       if (error) setError(null);
+      return;
+    }
+    if (event.key === "Enter") {
+      event.preventDefault();
+      advanceFromPlayer(index);
     }
   }
 
@@ -189,10 +210,11 @@ export function EditRoundDialog({
 
         {/* Raw scores with live net preview */}
         <ul className="overflow-hidden rounded-[16px] border border-black/[0.04] dark:border-[#38383A] divide-y divide-gray-100/80 dark:divide-[#38383A]">
-          {playerIds.map((id) => {
+          {playerIds.map((id, index) => {
             const player = players.find((p) => p.id === id);
             const net = result.netScores[id] ?? 0;
             const isNegative = Boolean(negatives[id]);
+            const isActive = activePlayerId === id;
             const digits = inputs[id] ?? "";
             const displayValue =
               digits && digits !== "0"
@@ -203,7 +225,15 @@ export function EditRoundDialog({
             return (
               <li
                 key={id}
-                className="flex min-h-[56px] items-center gap-2.5 sm:gap-3 px-3.5 py-2.5"
+                onClick={() => {
+                  setActivePlayerId(id);
+                  inputRefs.current[id]?.focus();
+                }}
+                className={`flex min-h-[56px] items-center gap-2.5 sm:gap-3 px-3.5 py-2.5 transition-colors cursor-pointer ${
+                  isActive
+                    ? "bg-blue-50/40 dark:bg-blue-950/25"
+                    : "hover:bg-gray-50/60 dark:hover:bg-[#2C2C2E]/40"
+                }`}
               >
                 {player ? (
                   <PlayerAvatar player={player} className="size-9 text-sm shrink-0" />
@@ -211,7 +241,7 @@ export function EditRoundDialog({
                 <div className="min-w-0 flex-1">
                   <label
                     htmlFor={`edit-score-${id}`}
-                    className="block truncate text-sm font-semibold"
+                    className="block truncate text-sm font-semibold cursor-pointer"
                   >
                     {player ? player.name : "(ถูกลบ)"}
                   </label>
@@ -222,7 +252,11 @@ export function EditRoundDialog({
                 <div className="flex items-center gap-1.5 shrink-0">
                   <button
                     type="button"
-                    onClick={() => toggleSign(id)}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      setActivePlayerId(id);
+                      toggleSign(id);
+                    }}
                     aria-pressed={isNegative}
                     aria-label={
                       isNegative
@@ -243,18 +277,25 @@ export function EditRoundDialog({
                   </button>
                   <input
                     id={`edit-score-${id}`}
+                    ref={(node) => {
+                      inputRefs.current[id] = node;
+                    }}
                     type="text"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
+                    inputMode="none"
                     autoComplete="off"
                     placeholder={isNegative ? "-0" : "0"}
                     value={displayValue}
+                    onFocus={() => setActivePlayerId(id)}
                     onChange={(event) => updateScore(id, event.target.value)}
-                    onKeyDown={(event) => handleKeyDown(event, id)}
+                    onKeyDown={(event) => handleKeyDown(event, id, index)}
                     className={`h-11 w-24 rounded-xl border bg-white dark:bg-[#2C2C2E] px-3 py-1.5 text-right text-base font-bold tabular-nums outline-none shadow-xs transition-all ${
                       isNegative
-                        ? "border-[#FF3B30]/35 dark:border-[#FF453A]/40 text-[#FF3B30] dark:text-[#FF453A] placeholder:text-[#FF3B30]/45 dark:placeholder:text-[#FF453A]/45 focus:border-[#FF3B30] focus:ring-2 focus:ring-red-500/20"
-                        : "border-black/[0.06] dark:border-[#38383A] text-[#1C1C1E] dark:text-[#F2F2F7] placeholder:text-[#8E8E93]/60 dark:placeholder:text-[#98989D]/60 focus:border-[#007AFF] focus:ring-2 focus:ring-blue-500/20"
+                        ? `border-[#FF3B30]/35 dark:border-[#FF453A]/40 text-[#FF3B30] dark:text-[#FF453A] placeholder:text-[#FF3B30]/45 dark:placeholder:text-[#FF453A]/45 ${
+                            isActive ? "border-[#FF3B30] ring-2 ring-red-500/20" : ""
+                          }`
+                        : `border-black/[0.06] dark:border-[#38383A] text-[#1C1C1E] dark:text-[#F2F2F7] placeholder:text-[#8E8E93]/60 dark:placeholder:text-[#98989D]/60 ${
+                            isActive ? "border-[#007AFF] ring-2 ring-blue-500/20" : ""
+                          }`
                     }`}
                   />
                 </div>
@@ -262,6 +303,35 @@ export function EditRoundDialog({
             );
           })}
         </ul>
+
+        {(() => {
+          const activeIndex = playerIds.findIndex((id) => id === activePlayerId);
+          if (activeIndex < 0) return null;
+          const activeId = playerIds[activeIndex];
+          const activePlayer = players.find((p) => p.id === activeId);
+          const nextId = playerIds[activeIndex + 1];
+          const nextPlayer = nextId ? players.find((p) => p.id === nextId) : undefined;
+          const currentDigits = inputs[activeId] ?? "";
+          return (
+            <ScoreKeypad
+              activePlayerName={activePlayer ? activePlayer.name : "(ถูกลบ)"}
+              nextPlayerName={nextId ? (nextPlayer ? nextPlayer.name : "(ถูกลบ)") : undefined}
+              isNegative={Boolean(negatives[activeId])}
+              onDigit={(digit) =>
+                updateScore(activeId, `${currentDigits}${digit}`)
+              }
+              onBackspace={() =>
+                updateScore(activeId, currentDigits.slice(0, -1))
+              }
+              onToggleSign={() => toggleSign(activeId)}
+              onNext={() => advanceFromPlayer(activeIndex)}
+              onClose={() => {
+                setActivePlayerId(null);
+                inputRefs.current[activeId]?.blur();
+              }}
+            />
+          );
+        })()}
 
         {error ? (
           <p

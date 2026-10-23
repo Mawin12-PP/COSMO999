@@ -22,6 +22,7 @@ import {
 import { Button } from "@/components/Button";
 import { PlayerAvatar } from "@/components/PlayerAvatar";
 import { PreviewDialog } from "@/components/PreviewDialog";
+import { ScoreKeypad } from "@/components/ScoreKeypad";
 import { generateRoundCommentary } from "@/lib/commentary";
 import { saveRound } from "@/lib/rounds";
 import { calculateRoundScores, type RoundScoreResult } from "@/lib/scoring";
@@ -86,6 +87,9 @@ export function ScoreEntry({
   const [isLanded, setIsLanded] = useState<boolean>(!triggerReveal);
   const [rawInputs, setRawInputs] = useState<Record<string, string>>({});
   const [negatives, setNegatives] = useState<Record<string, boolean>>({});
+  const [activePlayerId, setActivePlayerId] = useState<string | null>(
+    () => players[0]?.id ?? null,
+  );
   const [error, setError] = useState<string | null>(null);
   const [checked, setChecked] = useState<CheckedRound | null>(null);
   const [saveState, setSaveState] = useState<SaveState>({ status: "idle" });
@@ -164,6 +168,18 @@ export function ScoreEntry({
     if (error) setError(null);
   }
 
+  function advanceFromPlayer(index: number) {
+    const nextId = players[index + 1]?.id;
+    if (nextId) {
+      setActivePlayerId(nextId);
+      inputRefs.current[nextId]?.focus();
+    } else {
+      setActivePlayerId(null);
+      const currentId = players[index]?.id;
+      if (currentId) inputRefs.current[currentId]?.blur();
+    }
+  }
+
   function handleKeyDown(
     event: React.KeyboardEvent<HTMLInputElement>,
     id: string,
@@ -182,9 +198,7 @@ export function ScoreEntry({
     }
     if (event.key !== "Enter") return;
     event.preventDefault();
-    const nextId = players[index + 1]?.id;
-    if (nextId) inputRefs.current[nextId]?.focus();
-    else event.currentTarget.blur();
+    advanceFromPlayer(index);
   }
 
   function handleCheck() {
@@ -304,6 +318,7 @@ export function ScoreEntry({
       <ul className="overflow-hidden rounded-[16px] border border-black/[0.04] dark:border-[#38383A] divide-y divide-gray-100/80 dark:divide-[#38383A] bg-white dark:bg-[#1C1C1E]">
         {players.map((player, index) => {
           const isNegative = Boolean(negatives[player.id]);
+          const isActive = activePlayerId === player.id;
           const digits = rawInputs[player.id] ?? "";
           const displayValue =
             digits && digits !== "0"
@@ -314,19 +329,31 @@ export function ScoreEntry({
           return (
             <li
               key={player.id}
-              className="flex min-h-[56px] items-center gap-2.5 sm:gap-3.5 px-3.5 sm:px-4 py-3 transition-colors hover:bg-gray-50/60 dark:hover:bg-[#2C2C2E]/40 focus-within:bg-blue-50/20 dark:focus-within:bg-blue-950/20"
+              onClick={() => {
+                setActivePlayerId(player.id);
+                inputRefs.current[player.id]?.focus();
+              }}
+              className={`flex min-h-[56px] items-center gap-2.5 sm:gap-3.5 px-3.5 sm:px-4 py-3 transition-colors cursor-pointer ${
+                isActive
+                  ? "bg-blue-50/40 dark:bg-blue-950/25"
+                  : "hover:bg-gray-50/60 dark:hover:bg-[#2C2C2E]/40"
+              }`}
             >
               <PlayerAvatar player={player} className="size-10 text-sm shrink-0" />
               <label
                 htmlFor={`score-${player.id}`}
-                className="min-w-0 flex-1 truncate text-base font-semibold text-[#1C1C1E] dark:text-[#F2F2F7]"
+                className="min-w-0 flex-1 truncate text-base font-semibold text-[#1C1C1E] dark:text-[#F2F2F7] cursor-pointer"
               >
                 {player.name}
               </label>
               <div className="flex items-center gap-1.5 shrink-0">
                 <button
                   type="button"
-                  onClick={() => toggleSign(player.id)}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    setActivePlayerId(player.id);
+                    toggleSign(player.id);
+                  }}
                   aria-pressed={isNegative}
                   aria-label={
                     isNegative
@@ -351,17 +378,21 @@ export function ScoreEntry({
                     inputRefs.current[player.id] = node;
                   }}
                   type="text"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
+                  inputMode="none"
                   autoComplete="off"
                   placeholder={isNegative ? "-0" : "0"}
                   value={displayValue}
+                  onFocus={() => setActivePlayerId(player.id)}
                   onChange={(event) => updateScore(player.id, event.target.value)}
                   onKeyDown={(event) => handleKeyDown(event, player.id, index)}
                   className={`h-11 w-24 sm:w-28 rounded-xl border bg-white dark:bg-[#2C2C2E] px-3.5 py-1.5 text-right text-lg font-bold tabular-nums outline-none shadow-xs transition-all ${
                     isNegative
-                      ? "border-[#FF3B30]/35 dark:border-[#FF453A]/40 text-[#FF3B30] dark:text-[#FF453A] placeholder:text-[#FF3B30]/45 dark:placeholder:text-[#FF453A]/45 focus:border-[#FF3B30] focus:ring-2 focus:ring-red-500/20"
-                      : "border-black/[0.06] dark:border-[#38383A] text-[#1C1C1E] dark:text-[#F2F2F7] placeholder:text-[#8E8E93]/60 dark:placeholder:text-[#98989D]/60 focus:border-[#007AFF] focus:ring-2 focus:ring-blue-500/20"
+                      ? `border-[#FF3B30]/35 dark:border-[#FF453A]/40 text-[#FF3B30] dark:text-[#FF453A] placeholder:text-[#FF3B30]/45 dark:placeholder:text-[#FF453A]/45 ${
+                          isActive ? "border-[#FF3B30] ring-2 ring-red-500/20" : ""
+                        }`
+                      : `border-black/[0.06] dark:border-[#38383A] text-[#1C1C1E] dark:text-[#F2F2F7] placeholder:text-[#8E8E93]/60 dark:placeholder:text-[#98989D]/60 ${
+                          isActive ? "border-[#007AFF] ring-2 ring-blue-500/20" : ""
+                        }`
                   }`}
                 />
               </div>
@@ -369,6 +400,33 @@ export function ScoreEntry({
           );
         })}
       </ul>
+
+      {(() => {
+        const activeIndex = players.findIndex((p) => p.id === activePlayerId);
+        const activePlayer = activeIndex >= 0 ? players[activeIndex] : null;
+        if (!activePlayer) return null;
+        const nextPlayer = players[activeIndex + 1];
+        const currentDigits = rawInputs[activePlayer.id] ?? "";
+        return (
+          <ScoreKeypad
+            activePlayerName={activePlayer.name}
+            nextPlayerName={nextPlayer?.name}
+            isNegative={Boolean(negatives[activePlayer.id])}
+            onDigit={(digit) =>
+              updateScore(activePlayer.id, `${currentDigits}${digit}`)
+            }
+            onBackspace={() =>
+              updateScore(activePlayer.id, currentDigits.slice(0, -1))
+            }
+            onToggleSign={() => toggleSign(activePlayer.id)}
+            onNext={() => advanceFromPlayer(activeIndex)}
+            onClose={() => {
+              setActivePlayerId(null);
+              inputRefs.current[activePlayer.id]?.blur();
+            }}
+          />
+        );
+      })()}
 
       {error ? (
         <p
