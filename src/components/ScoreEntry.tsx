@@ -11,7 +11,9 @@ import {
   Crown,
   Dices,
   Flame,
+  Minus,
   PartyPopper,
+  Plus,
   RotateCcw,
   Sparkles,
   Target,
@@ -48,9 +50,11 @@ type SaveState =
   | { status: "saved"; commentary: string }
   | { status: "error"; message: string };
 
-function parseScore(value: string): number {
-  const parsed = Number.parseInt(value, 10);
-  return Number.isNaN(parsed) ? 0 : parsed;
+function parseScore(value: string, isNegative = false): number {
+  const digits = value.replace(/\D+/g, "");
+  const parsed = Number.parseInt(digits, 10);
+  if (Number.isNaN(parsed) || parsed === 0) return 0;
+  return isNegative ? -parsed : parsed;
 }
 
 interface CheckedRound {
@@ -81,6 +85,7 @@ export function ScoreEntry({
   const [isRevealing, setIsRevealing] = useState<boolean>(Boolean(triggerReveal));
   const [isLanded, setIsLanded] = useState<boolean>(!triggerReveal);
   const [rawInputs, setRawInputs] = useState<Record<string, string>>({});
+  const [negatives, setNegatives] = useState<Record<string, boolean>>({});
   const [error, setError] = useState<string | null>(null);
   const [checked, setChecked] = useState<CheckedRound | null>(null);
   const [saveState, setSaveState] = useState<SaveState>({ status: "idle" });
@@ -149,11 +154,32 @@ export function ScoreEntry({
   }, [players, isRevealing]);
 
   function updateScore(id: string, value: string) {
-    setRawInputs((current) => ({ ...current, [id]: value }));
+    const digits = value.replace(/\D+/g, "").replace(/^0+(?=\d)/, "");
+    setRawInputs((current) => ({ ...current, [id]: digits }));
     if (error) setError(null);
   }
 
-  function handleKeyDown(event: React.KeyboardEvent<HTMLInputElement>, index: number) {
+  function toggleSign(id: string) {
+    setNegatives((current) => ({ ...current, [id]: !current[id] }));
+    if (error) setError(null);
+  }
+
+  function handleKeyDown(
+    event: React.KeyboardEvent<HTMLInputElement>,
+    id: string,
+    index: number,
+  ) {
+    if (event.key === "-") {
+      event.preventDefault();
+      toggleSign(id);
+      return;
+    }
+    if (event.key === "+") {
+      event.preventDefault();
+      setNegatives((current) => ({ ...current, [id]: false }));
+      if (error) setError(null);
+      return;
+    }
     if (event.key !== "Enter") return;
     event.preventDefault();
     const nextId = players[index + 1]?.id;
@@ -164,7 +190,10 @@ export function ScoreEntry({
   function handleCheck() {
     const rawScores: Record<string, number> = {};
     for (const player of players) {
-      rawScores[player.id] = parseScore(rawInputs[player.id] ?? "");
+      rawScores[player.id] = parseScore(
+        rawInputs[player.id] ?? "",
+        Boolean(negatives[player.id]),
+      );
     }
 
     const result = calculateRoundScores(
@@ -273,33 +302,72 @@ export function ScoreEntry({
       </div>
 
       <ul className="overflow-hidden rounded-[16px] border border-black/[0.04] dark:border-[#38383A] divide-y divide-gray-100/80 dark:divide-[#38383A] bg-white dark:bg-[#1C1C1E]">
-        {players.map((player, index) => (
-          <li
-            key={player.id}
-            className="flex min-h-[56px] items-center gap-3.5 px-4 py-3 transition-colors hover:bg-gray-50/60 dark:hover:bg-[#2C2C2E]/40 focus-within:bg-blue-50/20 dark:focus-within:bg-blue-950/20"
-          >
-            <PlayerAvatar player={player} className="size-10 text-sm shrink-0" />
-            <label
-              htmlFor={`score-${player.id}`}
-              className="min-w-0 flex-1 truncate text-base font-semibold text-[#1C1C1E] dark:text-[#F2F2F7]"
+        {players.map((player, index) => {
+          const isNegative = Boolean(negatives[player.id]);
+          const digits = rawInputs[player.id] ?? "";
+          const displayValue =
+            digits && digits !== "0"
+              ? isNegative
+                ? `-${digits}`
+                : digits
+              : digits;
+          return (
+            <li
+              key={player.id}
+              className="flex min-h-[56px] items-center gap-2.5 sm:gap-3.5 px-3.5 sm:px-4 py-3 transition-colors hover:bg-gray-50/60 dark:hover:bg-[#2C2C2E]/40 focus-within:bg-blue-50/20 dark:focus-within:bg-blue-950/20"
             >
-              {player.name}
-            </label>
-            <input
-              id={`score-${player.id}`}
-              ref={(node) => {
-                inputRefs.current[player.id] = node;
-              }}
-              type="text"
-              autoComplete="off"
-              placeholder="0"
-              value={rawInputs[player.id] ?? ""}
-              onChange={(event) => updateScore(player.id, event.target.value)}
-              onKeyDown={(event) => handleKeyDown(event, index)}
-              className="h-11 w-28 rounded-xl border border-black/[0.06] dark:border-[#38383A] bg-white dark:bg-[#2C2C2E] px-3.5 py-1.5 text-right text-lg font-bold tabular-nums text-[#1C1C1E] dark:text-[#F2F2F7] outline-none shadow-xs transition-all placeholder:text-[#8E8E93]/60 dark:placeholder:text-[#98989D]/60 focus:border-[#007AFF] focus:ring-2 focus:ring-blue-500/20"
-            />
-          </li>
-        ))}
+              <PlayerAvatar player={player} className="size-10 text-sm shrink-0" />
+              <label
+                htmlFor={`score-${player.id}`}
+                className="min-w-0 flex-1 truncate text-base font-semibold text-[#1C1C1E] dark:text-[#F2F2F7]"
+              >
+                {player.name}
+              </label>
+              <div className="flex items-center gap-1.5 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => toggleSign(player.id)}
+                  aria-pressed={isNegative}
+                  aria-label={
+                    isNegative
+                      ? `คะแนนลบ (${player.name}) กดเพื่อเปลี่ยนเป็นบวก`
+                      : `คะแนนบวก (${player.name}) กดเพื่อเปลี่ยนเป็นลบ`
+                  }
+                  className={`grid size-11 place-items-center rounded-xl border transition-all duration-150 active:scale-[0.94] cursor-pointer select-none ${
+                    isNegative
+                      ? "border-[#FF3B30]/30 bg-[#FF3B30]/12 text-[#FF3B30] dark:border-[#FF453A]/35 dark:bg-[#FF453A]/15 dark:text-[#FF453A]"
+                      : "border-[#34C759]/25 bg-[#34C759]/10 text-[#34C759] dark:border-[#34C759]/30 dark:bg-[#34C759]/15"
+                  }`}
+                >
+                  {isNegative ? (
+                    <Minus className="size-5 stroke-[2.75]" />
+                  ) : (
+                    <Plus className="size-5 stroke-[2.75]" />
+                  )}
+                </button>
+                <input
+                  id={`score-${player.id}`}
+                  ref={(node) => {
+                    inputRefs.current[player.id] = node;
+                  }}
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  autoComplete="off"
+                  placeholder={isNegative ? "-0" : "0"}
+                  value={displayValue}
+                  onChange={(event) => updateScore(player.id, event.target.value)}
+                  onKeyDown={(event) => handleKeyDown(event, player.id, index)}
+                  className={`h-11 w-24 sm:w-28 rounded-xl border bg-white dark:bg-[#2C2C2E] px-3.5 py-1.5 text-right text-lg font-bold tabular-nums outline-none shadow-xs transition-all ${
+                    isNegative
+                      ? "border-[#FF3B30]/35 dark:border-[#FF453A]/40 text-[#FF3B30] dark:text-[#FF453A] placeholder:text-[#FF3B30]/45 dark:placeholder:text-[#FF453A]/45 focus:border-[#FF3B30] focus:ring-2 focus:ring-red-500/20"
+                      : "border-black/[0.06] dark:border-[#38383A] text-[#1C1C1E] dark:text-[#F2F2F7] placeholder:text-[#8E8E93]/60 dark:placeholder:text-[#98989D]/60 focus:border-[#007AFF] focus:ring-2 focus:ring-blue-500/20"
+                  }`}
+                />
+              </div>
+            </li>
+          );
+        })}
       </ul>
 
       {error ? (

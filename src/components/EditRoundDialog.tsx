@@ -4,7 +4,7 @@
 // History only stores net scores, so the raw scores shown are the equivalent
 // set recovered by deriveRawScores (same net result, lowest score = 0).
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Loader2, X } from "lucide-react";
+import { Loader2, Minus, Plus, X } from "lucide-react";
 import { Button } from "@/components/Button";
 import { MULTIPLIERS } from "@/components/MultiplierPicker";
 import { PlayerAvatar } from "@/components/PlayerAvatar";
@@ -14,9 +14,11 @@ import { calculateRoundScores, deriveRawScores } from "@/lib/scoring";
 import type { HistoryEntry, Player } from "@/types/models";
 import { scoreTone as netTone } from "@/lib/format";
 
-function parseScore(value: string): number {
-  const parsed = Number.parseInt(value, 10);
-  return Number.isNaN(parsed) ? 0 : parsed;
+function parseScore(value: string, isNegative = false): number {
+  const digits = value.replace(/\D+/g, "");
+  const parsed = Number.parseInt(digits, 10);
+  if (Number.isNaN(parsed) || parsed === 0) return 0;
+  return isNegative ? -parsed : parsed;
 }
 
 function formatNet(score: number): string {
@@ -40,8 +42,11 @@ export function EditRoundDialog({
   const [multiplier, setMultiplier] = useState(entry.multiplier);
   const [inputs, setInputs] = useState<Record<string, string>>(() => {
     const raw = deriveRawScores(entry.playerScores, entry.multiplier);
-    return Object.fromEntries(playerIds.map((id) => [id, String(raw[id])]));
+    return Object.fromEntries(
+      playerIds.map((id) => [id, raw[id] === 0 ? "" : String(raw[id])]),
+    );
   });
+  const [negatives, setNegatives] = useState<Record<string, boolean>>({});
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -56,9 +61,38 @@ export function EditRoundDialog({
 
   const result = useMemo(() => {
     const raw: Record<string, number> = {};
-    for (const id of playerIds) raw[id] = parseScore(inputs[id] ?? "");
+    for (const id of playerIds) {
+      raw[id] = parseScore(inputs[id] ?? "", Boolean(negatives[id]));
+    }
     return calculateRoundScores(playerIds, raw, multiplier);
-  }, [playerIds, inputs, multiplier]);
+  }, [playerIds, inputs, negatives, multiplier]);
+
+  function updateScore(id: string, value: string) {
+    const digits = value.replace(/\D+/g, "").replace(/^0+(?=\d)/, "");
+    setInputs((current) => ({ ...current, [id]: digits }));
+    if (error) setError(null);
+  }
+
+  function toggleSign(id: string) {
+    setNegatives((current) => ({ ...current, [id]: !current[id] }));
+    if (error) setError(null);
+  }
+
+  function handleKeyDown(
+    event: React.KeyboardEvent<HTMLInputElement>,
+    id: string,
+  ) {
+    if (event.key === "-") {
+      event.preventDefault();
+      toggleSign(id);
+      return;
+    }
+    if (event.key === "+") {
+      event.preventDefault();
+      setNegatives((current) => ({ ...current, [id]: false }));
+      if (error) setError(null);
+    }
+  }
 
   const changed =
     multiplier !== entry.multiplier ||
@@ -158,8 +192,19 @@ export function EditRoundDialog({
           {playerIds.map((id) => {
             const player = players.find((p) => p.id === id);
             const net = result.netScores[id] ?? 0;
+            const isNegative = Boolean(negatives[id]);
+            const digits = inputs[id] ?? "";
+            const displayValue =
+              digits && digits !== "0"
+                ? isNegative
+                  ? `-${digits}`
+                  : digits
+                : digits;
             return (
-              <li key={id} className="flex min-h-[56px] items-center gap-3 px-3.5 py-2.5">
+              <li
+                key={id}
+                className="flex min-h-[56px] items-center gap-2.5 sm:gap-3 px-3.5 py-2.5"
+              >
                 {player ? (
                   <PlayerAvatar player={player} className="size-9 text-sm shrink-0" />
                 ) : null}
@@ -174,19 +219,45 @@ export function EditRoundDialog({
                     {formatNet(net)}
                   </span>
                 </div>
-                <input
-                  id={`edit-score-${id}`}
-                  type="text"
-                  inputMode="numeric"
-                  autoComplete="off"
-                  placeholder="0"
-                  value={inputs[id] ?? ""}
-                  onChange={(event) => {
-                    setInputs((current) => ({ ...current, [id]: event.target.value }));
-                    if (error) setError(null);
-                  }}
-                  className="h-11 w-24 rounded-xl border border-black/[0.06] dark:border-[#38383A] bg-white dark:bg-[#2C2C2E] px-3 py-1.5 text-right text-base font-bold tabular-nums text-[#1C1C1E] dark:text-[#F2F2F7] outline-none shadow-xs transition-all placeholder:text-[#8E8E93]/60 dark:placeholder:text-[#98989D]/60 focus:border-[#007AFF] focus:ring-2 focus:ring-blue-500/20"
-                />
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => toggleSign(id)}
+                    aria-pressed={isNegative}
+                    aria-label={
+                      isNegative
+                        ? `คะแนนลบ (${player ? player.name : id}) กดเพื่อเปลี่ยนเป็นบวก`
+                        : `คะแนนบวก (${player ? player.name : id}) กดเพื่อเปลี่ยนเป็นลบ`
+                    }
+                    className={`grid size-11 place-items-center rounded-xl border transition-all duration-150 active:scale-[0.94] cursor-pointer select-none ${
+                      isNegative
+                        ? "border-[#FF3B30]/30 bg-[#FF3B30]/12 text-[#FF3B30] dark:border-[#FF453A]/35 dark:bg-[#FF453A]/15 dark:text-[#FF453A]"
+                        : "border-[#34C759]/25 bg-[#34C759]/10 text-[#34C759] dark:border-[#34C759]/30 dark:bg-[#34C759]/15"
+                    }`}
+                  >
+                    {isNegative ? (
+                      <Minus className="size-5 stroke-[2.75]" />
+                    ) : (
+                      <Plus className="size-5 stroke-[2.75]" />
+                    )}
+                  </button>
+                  <input
+                    id={`edit-score-${id}`}
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    autoComplete="off"
+                    placeholder={isNegative ? "-0" : "0"}
+                    value={displayValue}
+                    onChange={(event) => updateScore(id, event.target.value)}
+                    onKeyDown={(event) => handleKeyDown(event, id)}
+                    className={`h-11 w-24 rounded-xl border bg-white dark:bg-[#2C2C2E] px-3 py-1.5 text-right text-base font-bold tabular-nums outline-none shadow-xs transition-all ${
+                      isNegative
+                        ? "border-[#FF3B30]/35 dark:border-[#FF453A]/40 text-[#FF3B30] dark:text-[#FF453A] placeholder:text-[#FF3B30]/45 dark:placeholder:text-[#FF453A]/45 focus:border-[#FF3B30] focus:ring-2 focus:ring-red-500/20"
+                        : "border-black/[0.06] dark:border-[#38383A] text-[#1C1C1E] dark:text-[#F2F2F7] placeholder:text-[#8E8E93]/60 dark:placeholder:text-[#98989D]/60 focus:border-[#007AFF] focus:ring-2 focus:ring-blue-500/20"
+                    }`}
+                  />
+                </div>
               </li>
             );
           })}
