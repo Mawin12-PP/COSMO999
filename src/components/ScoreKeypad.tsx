@@ -42,7 +42,7 @@ export function ScoreKeypad({
   onClose: () => void;
 }) {
   return (
-    <div className="flex flex-col gap-2.5 rounded-[18px] border border-black/[0.06] dark:border-[#38383A] bg-[#F2F2F7]/90 dark:bg-[#2C2C2E]/90 p-3 backdrop-blur-xl shadow-inner select-none">
+    <div className="flex h-full flex-col justify-between gap-2.5 rounded-[18px] border border-black/[0.06] dark:border-[#38383A] bg-[#F2F2F7]/90 dark:bg-[#2C2C2E]/90 p-3 backdrop-blur-xl shadow-inner select-none">
       {/* Keypad Top Bar: Shows current player + live input value */}
       <div className="flex items-center justify-between gap-2 rounded-xl bg-white/80 dark:bg-[#1C1C1E]/80 px-3 py-2 border border-black/[0.04] dark:border-white/[0.06]">
         <div className="flex items-center gap-2 min-w-0">
@@ -77,13 +77,13 @@ export function ScoreKeypad({
       </div>
 
       {/* 3x4 iOS Number Grid */}
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid flex-1 grid-cols-3 gap-2">
         {DIGITS.map((digit) => (
           <button
             key={digit}
             type="button"
             onClick={() => onDigit(digit)}
-            className="flex h-12 items-center justify-center rounded-xl border border-black/[0.05] dark:border-white/[0.06] bg-white dark:bg-[#3A3A3C] text-xl font-bold tabular-nums text-[#1C1C1E] dark:text-[#F2F2F7] shadow-2xs transition-all duration-100 active:scale-[0.95] active:bg-gray-100 dark:active:bg-[#48484A] cursor-pointer"
+            className="flex min-h-[48px] items-center justify-center rounded-xl border border-black/[0.05] dark:border-white/[0.06] bg-white dark:bg-[#3A3A3C] text-xl font-bold tabular-nums text-[#1C1C1E] dark:text-[#F2F2F7] shadow-2xs transition-all duration-100 active:scale-[0.95] active:bg-gray-100 dark:active:bg-[#48484A] cursor-pointer"
           >
             {digit}
           </button>
@@ -94,22 +94,19 @@ export function ScoreKeypad({
           type="button"
           onClick={onToggleSign}
           aria-pressed={isNegative}
-          className={`flex h-12 items-center justify-center gap-1 rounded-xl border text-base font-bold transition-all duration-100 active:scale-[0.95] cursor-pointer ${
-            isNegative
-              ? "border-[#FF3B30]/35 bg-[#FF3B30]/15 text-[#FF3B30] dark:border-[#FF453A]/40 dark:bg-[#FF453A]/20 dark:text-[#FF453A]"
-              : "border-[#34C759]/30 bg-[#34C759]/12 text-[#34C759] dark:border-[#34C759]/35 dark:bg-[#34C759]/20"
-          }`}
+          aria-label="สลับเครื่องหมายบวกลบ"
+          className="flex min-h-[48px] items-center justify-center gap-1 rounded-xl border border-black/[0.05] dark:border-white/[0.06] bg-[#E5E5EA] dark:bg-[#2C2C2E] text-base font-bold text-[#1C1C1E] dark:text-[#F2F2F7] transition-all duration-100 active:scale-[0.95] active:bg-gray-300 dark:active:bg-[#48484A] cursor-pointer"
         >
-          <Plus className="size-4 stroke-[2.75]" />
-          <span className="text-xs opacity-60">/</span>
-          <Minus className="size-4 stroke-[2.75]" />
+          <Plus className="size-4 stroke-[2.5]" />
+          <span className="text-xs opacity-50">/</span>
+          <Minus className="size-4 stroke-[2.5]" />
         </button>
 
         {/* Bottom-center: 0 */}
         <button
           type="button"
           onClick={() => onDigit("0")}
-          className="flex h-12 items-center justify-center rounded-xl border border-black/[0.05] dark:border-white/[0.06] bg-white dark:bg-[#3A3A3C] text-xl font-bold tabular-nums text-[#1C1C1E] dark:text-[#F2F2F7] shadow-2xs transition-all duration-100 active:scale-[0.95] active:bg-gray-100 dark:active:bg-[#48484A] cursor-pointer"
+          className="flex min-h-[48px] items-center justify-center rounded-xl border border-black/[0.05] dark:border-white/[0.06] bg-white dark:bg-[#3A3A3C] text-xl font-bold tabular-nums text-[#1C1C1E] dark:text-[#F2F2F7] shadow-2xs transition-all duration-100 active:scale-[0.95] active:bg-gray-100 dark:active:bg-[#48484A] cursor-pointer"
         >
           0
         </button>
@@ -119,7 +116,7 @@ export function ScoreKeypad({
           type="button"
           onClick={onBackspace}
           aria-label="ลบตัวเลข"
-          className="flex h-12 items-center justify-center rounded-xl border border-black/[0.05] dark:border-white/[0.06] bg-[#E5E5EA] dark:bg-[#2C2C2E] text-[#1C1C1E] dark:text-[#F2F2F7] transition-all duration-100 active:scale-[0.95] active:bg-gray-300 dark:active:bg-[#48484A] cursor-pointer"
+          className="flex min-h-[48px] items-center justify-center rounded-xl border border-black/[0.05] dark:border-white/[0.06] bg-[#E5E5EA] dark:bg-[#2C2C2E] text-[#1C1C1E] dark:text-[#F2F2F7] transition-all duration-100 active:scale-[0.95] active:bg-gray-300 dark:active:bg-[#48484A] cursor-pointer"
         >
           <Delete className="size-5" />
         </button>
