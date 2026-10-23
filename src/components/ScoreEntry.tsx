@@ -3,25 +3,29 @@
 // Step two of starting a round: pops up over a blurred backdrop (on iPad/PC:
 // left = player score list, right = numpad; on iPhone: stacked).
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   ClipboardCheck,
   Crown,
   Dices,
   Flame,
+  Home,
+  Loader2,
   PartyPopper,
   RotateCcw,
   Sparkles,
   Target,
+  Trophy,
   Zap,
 } from "lucide-react";
 import { Button } from "@/components/Button";
 import { PlayerAvatar } from "@/components/PlayerAvatar";
-import { PreviewDialog } from "@/components/PreviewDialog";
 import { ScoreKeypad } from "@/components/ScoreKeypad";
 import { generateRoundCommentary } from "@/lib/commentary";
+import { formatSignedScore, scoreTone } from "@/lib/format";
 import { saveRound } from "@/lib/rounds";
-import { calculateRoundScores, type RoundScoreResult } from "@/lib/scoring";
+import { calculateRoundScores, getRandomMultiplier } from "@/lib/scoring";
 import { useHistory } from "@/hooks/useHistory";
 import type { Player } from "@/types/models";
 
@@ -44,7 +48,7 @@ async function fireConfetti() {
 type SaveState =
   | { status: "idle" }
   | { status: "saving" }
-  | { status: "saved"; commentary: string }
+  | { status: "saved"; commentary: string; netScores: Record<string, number> }
   | { status: "error"; message: string };
 
 function parseScore(value: string, isNegative = false): number {
@@ -52,11 +56,6 @@ function parseScore(value: string, isNegative = false): number {
   const parsed = Number.parseInt(digits, 10);
   if (Number.isNaN(parsed) || parsed === 0) return 0;
   return isNegative ? -parsed : parsed;
-}
-
-interface CheckedRound {
-  rawScores: Record<string, number>;
-  result: RoundScoreResult;
 }
 
 export function ScoreEntry({
@@ -76,7 +75,10 @@ export function ScoreEntry({
   onBack: () => void;
   onReset: () => void;
 }) {
+  const router = useRouter();
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const [currentMultiplier, setCurrentMultiplier] = useState<number>(multiplier);
+  const [revealCount, setRevealCount] = useState<number>(triggerReveal ? 1 : 0);
   const [displayMultiplier, setDisplayMultiplier] = useState<number>(
     triggerReveal ? 1 : multiplier,
   );
@@ -89,7 +91,6 @@ export function ScoreEntry({
   );
   const [isMobileKeypadOpen, setIsMobileKeypadOpen] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [checked, setChecked] = useState<CheckedRound | null>(null);
   const [saveState, setSaveState] = useState<SaveState>({ status: "idle" });
 
   const { history } = useHistory();
@@ -105,8 +106,8 @@ export function ScoreEntry({
 
   // Multiplier Reveal Suspense Animation
   useEffect(() => {
-    if (!triggerReveal) {
-      setDisplayMultiplier(multiplier);
+    if (revealCount === 0) {
+      setDisplayMultiplier(currentMultiplier);
       setIsRevealing(false);
       setIsLanded(true);
       return;
@@ -131,7 +132,7 @@ export function ScoreEntry({
     steps.forEach((step) => {
       const t = setTimeout(() => {
         if (step.isFinal) {
-          setDisplayMultiplier(multiplier);
+          setDisplayMultiplier(currentMultiplier);
           setIsRevealing(false);
           setIsLanded(true);
         } else {
@@ -148,7 +149,7 @@ export function ScoreEntry({
     return () => {
       timers.forEach((t) => clearTimeout(t));
     };
-  }, [triggerReveal, multiplier]);
+  }, [revealCount, currentMultiplier]);
 
   const theme = getMultiplierTheme(displayMultiplier);
 
@@ -176,19 +177,88 @@ export function ScoreEntry({
     }
   }
 
+  async function handleSave() {
+    if (saveState.status === "saving" || saveState.status === "saved") return;
+
+    const rawScores: Record<string, number> = {};
+    for (const player of players) {
+      rawScores[player.id] = parseScore(
+        rawInputs[player.id] ?? "",
+        Boolean(negatives[player.id]),
+      );
+    }
+
+    const result = calculateRoundScores(
+      players.map((player) => player.id),
+      rawScores,
+      currentMultiplier,
+    );
+
+    if (result.totalNetScore !== 0) {
+      setError(
+        `ผลรวมคะแนนสุทธิไม่เท่ากับ 0 (ได้ ${result.totalNetScore}) กรุณาตรวจสอบคะแนนอีกครั้ง`,
+      );
+      return;
+    }
+
+    setError(null);
+    setSaveState({ status: "saving" });
+    const commentary = generateRoundCommentary(result.netScores, players, history);
+
+    const outcome = await saveRound({
+      playerIds: players.map((player) => player.id),
+      netScores: result.netScores,
+      multiplier: currentMultiplier,
+      commentary,
+      sessionId,
+    });
+
+    if (!outcome.committed) {
+      setSaveState({
+        status: "error",
+        message: "บันทึกไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองใหม่",
+      });
+      return;
+    }
+
+    if (result.hasPositive) void fireConfetti();
+    setSaveState({ status: "saved", commentary, netScores: result.netScores });
+  }
+
+  function handlePlaySameGroupAgain() {
+    const rolled = getRandomMultiplier();
+    setCurrentMultiplier(rolled);
+    setRevealCount((c) => c + 1);
+    setRawInputs({});
+    setNegatives({});
+    setActivePlayerId(players[0]?.id ?? "");
+    setIsMobileKeypadOpen(true);
+    setError(null);
+    setSaveState({ status: "idle" });
+  }
+
+  function handleGoToLeaderboard() {
+    dialogRef.current?.close();
+    onReset();
+    router.push("/leaderboard");
+  }
+
+  function handleReturnHome() {
+    dialogRef.current?.close();
+    onReset();
+  }
+
   function advanceFromPlayer(index: number) {
     const nextId = players[index + 1]?.id;
     if (nextId) {
       setActivePlayerId(nextId);
       setIsMobileKeypadOpen(true);
-    } else {
-      setIsMobileKeypadOpen(false);
     }
   }
 
   // Physical keyboard support on desktop without triggering iOS focus-scroll jumps
   useEffect(() => {
-    if (!activePlayerId || checked || saveState.status === "saved") return;
+    if (!activePlayerId || saveState.status === "saving" || saveState.status === "saved") return;
     function onWindowKeyDown(event: KeyboardEvent) {
       const index = players.findIndex((p) => p.id === activePlayerId);
       if (index < 0) return;
@@ -232,69 +302,23 @@ export function ScoreEntry({
         if (prevId) setActivePlayerId(prevId);
         return;
       }
-      if (event.key === "ArrowDown" || event.key === "Enter") {
+      if (event.key === "ArrowDown") {
         event.preventDefault();
         const nextId = players[index + 1]?.id;
         if (nextId) setActivePlayerId(nextId);
-        else setIsMobileKeypadOpen(false);
+        return;
+      }
+      if (event.key === "Enter") {
+        event.preventDefault();
+        const nextId = players[index + 1]?.id;
+        if (nextId) setActivePlayerId(nextId);
+        else void handleSave();
       }
     }
     window.addEventListener("keydown", onWindowKeyDown);
     return () => window.removeEventListener("keydown", onWindowKeyDown);
-  }, [activePlayerId, checked, error, players, rawInputs, saveState.status]);
-
-  function handleCheck() {
-    const rawScores: Record<string, number> = {};
-    for (const player of players) {
-      rawScores[player.id] = parseScore(
-        rawInputs[player.id] ?? "",
-        Boolean(negatives[player.id]),
-      );
-    }
-
-    const result = calculateRoundScores(
-      players.map((player) => player.id),
-      rawScores,
-      multiplier,
-    );
-
-    if (result.totalNetScore !== 0) {
-      setError(
-        `ผลรวมคะแนนสุทธิไม่เท่ากับ 0 (ได้ ${result.totalNetScore}) กรุณาตรวจสอบคะแนนอีกครั้ง`,
-      );
-      return;
-    }
-
-    setError(null);
-    setChecked({ rawScores, result });
-  }
-
-  async function handleConfirm() {
-    if (!checked || saveState.status === "saving") return;
-
-    setSaveState({ status: "saving" });
-    const commentary = generateRoundCommentary(checked.result.netScores, players, history);
-
-    const outcome = await saveRound({
-      playerIds: players.map((player) => player.id),
-      netScores: checked.result.netScores,
-      multiplier,
-      commentary,
-      sessionId,
-    });
-
-    if (!outcome.committed) {
-      setSaveState({
-        status: "error",
-        message: "บันทึกไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองใหม่",
-      });
-      return;
-    }
-
-    if (checked.result.hasPositive) void fireConfetti();
-    setChecked(null);
-    setSaveState({ status: "saved", commentary });
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activePlayerId, saveState.status, error, players, rawInputs, negatives, currentMultiplier]);
 
   const activeIndex = Math.max(
     0,
@@ -319,7 +343,7 @@ export function ScoreEntry({
       activePlayerName={activePlayer.name}
       displayValue={activeDisplay}
       hasPrev={activeIndex > 0}
-      nextPlayerName={nextPlayer?.name}
+      hasNext={Boolean(nextPlayer)}
       isNegative={activeIsNegative}
       onDigit={(digit) =>
         updateScore(activePlayer.id, `${currentDigits}${digit}`)
@@ -330,7 +354,6 @@ export function ScoreEntry({
       onToggleSign={() => toggleSign(activePlayer.id)}
       onPrev={() => goToPrevPlayer(activeIndex)}
       onNext={() => advanceFromPlayer(activeIndex)}
-      onClose={() => setIsMobileKeypadOpen(false)}
     />
   ) : null;
 
@@ -339,12 +362,12 @@ export function ScoreEntry({
       ref={dialogRef}
       onCancel={(event) => {
         event.preventDefault();
-        if (saveState.status === "saved") onReset();
+        if (saveState.status === "saved") handleReturnHome();
         else onBack();
       }}
       onClick={(event) => {
         if (event.target === event.currentTarget && saveState.status === "saved") {
-          onReset();
+          handleReturnHome();
         }
       }}
       aria-label="กรอกคะแนน"
@@ -355,9 +378,9 @@ export function ScoreEntry({
       }`}
     >
       {saveState.status === "saved" ? (
-        <div className="reveal flex flex-col items-center gap-5 p-8 text-center">
-          <span className="grid size-16 place-items-center rounded-full bg-blue-50 dark:bg-blue-950/40 text-[#007AFF] shadow-xs">
-            <PartyPopper className="size-8" />
+        <div className="reveal flex flex-col items-center gap-4 p-6 sm:p-7 text-center">
+          <span className="grid size-14 place-items-center rounded-full bg-blue-50 dark:bg-blue-950/40 text-[#007AFF] shadow-xs">
+            <PartyPopper className="size-7" />
           </span>
           <div className="flex flex-col gap-1">
             <h2 className="text-xl font-semibold tracking-tight text-[#1C1C1E] dark:text-[#F2F2F7]">
@@ -367,11 +390,64 @@ export function ScoreEntry({
               {saveState.commentary}
             </p>
           </div>
-          <div className="flex flex-col gap-2.5 w-full max-w-xs mt-3">
-            <Button onClick={onReset}>
-              <RotateCcw className="size-4.5" />
-              {liveSessionActive ? "กลับไปที่โต๊ะ (ดูผลรวม)" : "เริ่มรอบใหม่"}
-            </Button>
+
+          <ul className="w-full overflow-hidden rounded-2xl border border-black/[0.05] dark:border-[#38383A] divide-y divide-gray-100/80 dark:divide-[#38383A] bg-gray-50/60 dark:bg-[#2C2C2E]/60 text-left">
+            {[...players]
+              .sort(
+                (a, b) =>
+                  (saveState.netScores[b.id] ?? 0) -
+                  (saveState.netScores[a.id] ?? 0),
+              )
+              .map((player) => {
+                const netScore = saveState.netScores[player.id] ?? 0;
+                return (
+                  <li
+                    key={player.id}
+                    className="flex items-center justify-between gap-3 px-4 py-2.5"
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <PlayerAvatar
+                        player={player}
+                        className="size-8 text-xs shrink-0"
+                      />
+                      <span className="truncate text-sm font-semibold text-[#1C1C1E] dark:text-[#F2F2F7]">
+                        {player.name}
+                      </span>
+                    </div>
+                    <span
+                      className={`text-base font-bold tabular-nums shrink-0 ${scoreTone(
+                        netScore,
+                      )}`}
+                    >
+                      {formatSignedScore(netScore)}
+                    </span>
+                  </li>
+                );
+              })}
+          </ul>
+
+          <div className="flex flex-col gap-2.5 w-full mt-1">
+            {liveSessionActive ? (
+              <Button onClick={handleReturnHome}>
+                <RotateCcw className="size-4.5" />
+                กลับไปที่โต๊ะ (ดูผลรวม)
+              </Button>
+            ) : (
+              <>
+                <Button onClick={handlePlaySameGroupAgain}>
+                  <RotateCcw className="size-4.5" />
+                  เริ่มรอบใหม่
+                </Button>
+                <Button variant="secondary" onClick={handleGoToLeaderboard}>
+                  <Trophy className="size-4.5" />
+                  อันดับ
+                </Button>
+                <Button variant="secondary" onClick={handleReturnHome}>
+                  <Home className="size-4.5" />
+                  กลับหน้าหลัก
+                </Button>
+              </>
+            )}
           </div>
         </div>
       ) : (
@@ -395,7 +471,7 @@ export function ScoreEntry({
             <div
               className={`flex items-center gap-2 rounded-2xl border border-black/[0.06] dark:border-[#38383A] bg-black/[0.03] dark:bg-white/[0.05] px-3 sm:px-3.5 py-1.5 shadow-xs transition-all duration-300 shrink-0 ${
                 isLanded ? "ring-2 ring-blue-500/25 dark:ring-blue-500/30" : ""
-              } ${triggerReveal && isLanded && displayMultiplier === 20 ? "animate-shake" : ""}`}
+              } ${revealCount > 0 && isLanded && displayMultiplier === 20 ? "animate-shake" : ""}`}
             >
               <span className="grid size-7 sm:size-8 place-items-center rounded-xl bg-white dark:bg-[#1C1C1E] text-[#007AFF] dark:text-[#2E8BFF] border border-black/[0.04] dark:border-white/5 shadow-xs">
                 {isRevealing ? (
@@ -477,44 +553,39 @@ export function ScoreEntry({
             <div className="hidden md:block h-full">{keypadElement}</div>
           </div>
 
-          {error ? (
+          {error || saveState.status === "error" ? (
             <p
               role="alert"
               className="rounded-2xl border border-red-200/80 dark:border-red-900/40 bg-red-50/80 dark:bg-red-950/30 p-4 text-sm font-medium text-[#FF3B30] backdrop-blur-sm"
             >
-              {error}
+              {error ?? (saveState.status === "error" ? saveState.message : "")}
             </p>
           ) : null}
 
           {/* 3. Full-Width Symmetrical Footer */}
           <div className="flex flex-col-reverse gap-2.5 sm:grid sm:grid-cols-2 sm:gap-4 border-t border-black/[0.04] dark:border-[#38383A] pt-4">
-            <Button variant="secondary" onClick={onBack}>
+            <Button
+              variant="secondary"
+              onClick={onBack}
+              disabled={saveState.status === "saving"}
+            >
               <ArrowLeft className="size-4.5" />
               ย้อนกลับ
             </Button>
-            <Button onClick={handleCheck}>
-              <ClipboardCheck className="size-4.5" />
-              บันทึกคะแนน
+            <Button
+              onClick={handleSave}
+              disabled={saveState.status === "saving"}
+            >
+              {saveState.status === "saving" ? (
+                <Loader2 className="size-4.5 animate-spin" aria-hidden />
+              ) : (
+                <ClipboardCheck className="size-4.5" />
+              )}
+              {saveState.status === "saving" ? "กำลังบันทึก..." : "บันทึกคะแนน"}
             </Button>
           </div>
         </div>
       )}
-
-      {checked ? (
-        <PreviewDialog
-          players={players}
-          rawScores={checked.rawScores}
-          result={checked.result}
-          multiplier={multiplier}
-          saving={saveState.status === "saving"}
-          error={saveState.status === "error" ? saveState.message : null}
-          onClose={() => {
-            setChecked(null);
-            setSaveState({ status: "idle" });
-          }}
-          onConfirm={handleConfirm}
-        />
-      ) : null}
     </dialog>
   );
 }

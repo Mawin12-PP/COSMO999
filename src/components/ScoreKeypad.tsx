@@ -1,13 +1,11 @@
 "use client";
 
 import {
-  Check,
   ChevronDown,
   ChevronUp,
   Delete,
   Minus,
   Plus,
-  X,
 } from "lucide-react";
 import { PlayerAvatar } from "@/components/PlayerAvatar";
 import type { Player } from "@/types/models";
@@ -19,27 +17,25 @@ export function ScoreKeypad({
   activePlayerName,
   displayValue,
   hasPrev,
-  nextPlayerName,
+  hasNext,
   isNegative,
   onDigit,
   onBackspace,
   onToggleSign,
   onPrev,
   onNext,
-  onClose,
 }: {
   activePlayer?: Player;
   activePlayerName: string;
   displayValue: string;
   hasPrev: boolean;
-  nextPlayerName?: string;
+  hasNext: boolean;
   isNegative: boolean;
   onDigit: (digit: string) => void;
   onBackspace: () => void;
   onToggleSign: () => void;
   onPrev: () => void;
   onNext: () => void;
-  onClose: () => void;
 }) {
   return (
     <div className="flex h-full flex-col justify-between gap-2.5 rounded-[18px] border border-black/[0.06] dark:border-[#38383A] bg-[#F2F2F7]/90 dark:bg-[#2C2C2E]/90 p-3 backdrop-blur-xl shadow-inner select-none">
@@ -55,25 +51,15 @@ export function ScoreKeypad({
             {activePlayerName}
           </span>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <span
-            className={`min-w-[3.25rem] rounded-lg px-2 py-0.5 text-right text-base font-bold tabular-nums ${
-              isNegative
-                ? "bg-[#FF3B30]/12 text-[#FF3B30] dark:bg-[#FF453A]/15 dark:text-[#FF453A]"
-                : "bg-black/[0.04] dark:bg-white/[0.08] text-[#1C1C1E] dark:text-[#F2F2F7]"
-            }`}
-          >
-            {displayValue || (isNegative ? "-0" : "0")}
-          </span>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="ซ่อนแป้นพิมพ์"
-            className="flex md:hidden size-8 items-center justify-center rounded-lg text-[#8E8E93] dark:text-[#98989D] hover:bg-black/[0.05] dark:hover:bg-white/[0.08] active:scale-95 transition-all cursor-pointer"
-          >
-            <X className="size-4" />
-          </button>
-        </div>
+        <span
+          className={`min-w-[3.25rem] shrink-0 rounded-lg px-2 py-0.5 text-right text-base font-bold tabular-nums ${
+            isNegative
+              ? "bg-[#FF3B30]/12 text-[#FF3B30] dark:bg-[#FF453A]/15 dark:text-[#FF453A]"
+              : "bg-black/[0.04] dark:bg-white/[0.08] text-[#1C1C1E] dark:text-[#F2F2F7]"
+          }`}
+        >
+          {displayValue || (isNegative ? "-0" : "0")}
+        </span>
       </div>
 
       {/* 3x4 iOS Number Grid */}
@@ -122,35 +108,28 @@ export function ScoreKeypad({
         </button>
       </div>
 
-      {/* Player Up / Down Navigation Row */}
-      <div className="flex items-center gap-2">
+      {/* Symmetrical Up / Down Navigation Row */}
+      <div className="grid grid-cols-2 gap-2">
         <button
           type="button"
           onClick={onPrev}
           disabled={!hasPrev}
-          aria-label="ผู้เล่นคนก่อนหน้า (ด้านบน)"
-          className="flex h-12 items-center justify-center gap-1.5 rounded-xl border border-black/[0.06] dark:border-white/[0.08] bg-white dark:bg-[#3A3A3C] px-4 text-sm font-semibold text-[#1C1C1E] dark:text-[#F2F2F7] shadow-2xs transition-all duration-150 active:scale-[0.97] disabled:opacity-40 disabled:pointer-events-none cursor-pointer shrink-0"
+          aria-label="เลื่อนขึ้น"
+          className="flex h-12 items-center justify-center gap-1.5 rounded-xl border border-black/[0.06] dark:border-white/[0.08] bg-white dark:bg-[#3A3A3C] px-4 text-sm font-semibold text-[#1C1C1E] dark:text-[#F2F2F7] shadow-2xs transition-all duration-150 active:scale-[0.97] disabled:opacity-35 disabled:pointer-events-none cursor-pointer"
         >
           <ChevronUp className="size-4.5 stroke-[2.5]" />
-          <span>คนบน</span>
+          <span>ขึ้น</span>
         </button>
 
         <button
           type="button"
           onClick={onNext}
-          className="flex h-12 flex-1 min-w-0 items-center justify-center gap-1.5 rounded-xl bg-gradient-to-b from-[#2E8BFF] to-[#007AFF] px-4 text-sm font-semibold text-white shadow-sm shadow-blue-500/20 transition-all duration-150 active:scale-[0.98] cursor-pointer"
+          disabled={!hasNext}
+          aria-label="เลื่อนลง"
+          className="flex h-12 items-center justify-center gap-1.5 rounded-xl border border-black/[0.06] dark:border-white/[0.08] bg-white dark:bg-[#3A3A3C] px-4 text-sm font-semibold text-[#1C1C1E] dark:text-[#F2F2F7] shadow-2xs transition-all duration-150 active:scale-[0.97] disabled:opacity-35 disabled:pointer-events-none cursor-pointer"
         >
-          {nextPlayerName ? (
-            <>
-              <span className="truncate">ถัดไป: {nextPlayerName}</span>
-              <ChevronDown className="size-4.5 stroke-[2.5] shrink-0" />
-            </>
-          ) : (
-            <>
-              <Check className="size-4.5 stroke-[2.5] shrink-0" />
-              <span>เสร็จสิ้น</span>
-            </>
-          )}
+          <ChevronDown className="size-4.5 stroke-[2.5]" />
+          <span>ลง</span>
         </button>
       </div>
     </div>

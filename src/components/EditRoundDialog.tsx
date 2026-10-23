@@ -96,13 +96,45 @@ export function EditRoundDialog({
     }
   }
 
+  const changed =
+    multiplier !== entry.multiplier ||
+    playerIds.some((id) => result.netScores[id] !== entry.playerScores[id]);
+
+  function dismiss() {
+    if (busy) return;
+    dialogRef.current?.close();
+    onClose();
+  }
+
+  async function handleSave() {
+    if (busy || !changed) return;
+    setBusy(true);
+    setError(null);
+    const others = history.filter((h) => h.id !== entry.id);
+    const commentary = generateRoundCommentary(
+      result.netScores,
+      players,
+      others,
+    );
+    const { committed } = await editRound(
+      entry.id,
+      result.netScores,
+      multiplier,
+      commentary,
+    );
+    setBusy(false);
+    if (committed) {
+      dismiss();
+    } else {
+      setError("บันทึกการแก้ไขไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองใหม่");
+    }
+  }
+
   function advanceFromPlayer(index: number) {
     const nextId = playerIds[index + 1];
     if (nextId) {
       setActivePlayerId(nextId);
       setIsMobileKeypadOpen(true);
-    } else {
-      setIsMobileKeypadOpen(false);
     }
   }
 
@@ -152,50 +184,23 @@ export function EditRoundDialog({
         if (prevId) setActivePlayerId(prevId);
         return;
       }
-      if (event.key === "ArrowDown" || event.key === "Enter") {
+      if (event.key === "ArrowDown") {
         event.preventDefault();
         const nextId = playerIds[index + 1];
         if (nextId) setActivePlayerId(nextId);
-        else setIsMobileKeypadOpen(false);
+        return;
+      }
+      if (event.key === "Enter") {
+        event.preventDefault();
+        const nextId = playerIds[index + 1];
+        if (nextId) setActivePlayerId(nextId);
+        else if (changed && !busy) void handleSave();
       }
     }
     window.addEventListener("keydown", onWindowKeyDown);
     return () => window.removeEventListener("keydown", onWindowKeyDown);
-  }, [activePlayerId, busy, error, inputs, playerIds]);
-
-  const changed =
-    multiplier !== entry.multiplier ||
-    playerIds.some((id) => result.netScores[id] !== entry.playerScores[id]);
-
-  function dismiss() {
-    if (busy) return;
-    dialogRef.current?.close();
-    onClose();
-  }
-
-  async function handleSave() {
-    if (busy || !changed) return;
-    setBusy(true);
-    setError(null);
-    const others = history.filter((h) => h.id !== entry.id);
-    const commentary = generateRoundCommentary(
-      result.netScores,
-      players,
-      others,
-    );
-    const { committed } = await editRound(
-      entry.id,
-      result.netScores,
-      multiplier,
-      commentary,
-    );
-    setBusy(false);
-    if (committed) {
-      dismiss();
-    } else {
-      setError("บันทึกการแก้ไขไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองใหม่");
-    }
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activePlayerId, busy, changed, error, inputs, playerIds]);
 
   const activeIndex = Math.max(
     0,
@@ -206,9 +211,6 @@ export function EditRoundDialog({
     ? players.find((p) => p.id === activeId)
     : undefined;
   const nextId = playerIds[activeIndex + 1];
-  const nextPlayer = nextId
-    ? players.find((p) => p.id === nextId)
-    : undefined;
   const currentDigits = activeId ? (inputs[activeId] ?? "") : "";
   const activeIsNegative = activeId ? Boolean(negatives[activeId]) : false;
   const activeDisplay =
@@ -224,16 +226,13 @@ export function EditRoundDialog({
       activePlayerName={activePlayer ? activePlayer.name : "(ถูกลบ)"}
       displayValue={activeDisplay}
       hasPrev={activeIndex > 0}
-      nextPlayerName={
-        nextId ? (nextPlayer ? nextPlayer.name : "(ถูกลบ)") : undefined
-      }
+      hasNext={Boolean(nextId)}
       isNegative={activeIsNegative}
       onDigit={(digit) => updateScore(activeId, `${currentDigits}${digit}`)}
       onBackspace={() => updateScore(activeId, currentDigits.slice(0, -1))}
       onToggleSign={() => toggleSign(activeId)}
       onPrev={() => goToPrevPlayer(activeIndex)}
       onNext={() => advanceFromPlayer(activeIndex)}
-      onClose={() => setIsMobileKeypadOpen(false)}
     />
   ) : null;
 
