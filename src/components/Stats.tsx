@@ -14,8 +14,7 @@ import {
   TriangleAlert,
 } from "lucide-react";
 import { AnimatedNumber } from "@/components/AnimatedNumber";
-import { InteractiveSegmentedControl } from "@/components/InteractiveSegmentedControl";
-import { PeriodDropdownPicker } from "@/components/PeriodDropdownPicker";
+import { PeriodDropdownPicker, type PeriodOption } from "@/components/PeriodDropdownPicker";
 import { PlayerAvatar } from "@/components/PlayerAvatar";
 import { PlayerDropdownPicker } from "@/components/PlayerDropdownPicker";
 import { useHistory } from "@/hooks/useHistory";
@@ -109,11 +108,14 @@ export function Stats() {
 
   const loading = hLoading || pLoading;
 
-  // Only include history entries where the selected player actually participated.
+  // Only include history entries where the selected player actually participated with a recorded score.
   const playerHistory = useMemo(
     () =>
       selectedId
-        ? history.filter((m) => m.playerScores[selectedId] !== undefined)
+        ? history.filter((m) => {
+            const score = m.playerScores?.[selectedId];
+            return typeof score === "number" && !isNaN(score);
+          })
         : [],
     [history, selectedId],
   );
@@ -134,19 +136,22 @@ export function Stats() {
   const activePeriod =
     playerPeriods.find((period) => period.key === viewKey) ?? null;
 
-  const isPastPeriodActive =
-    viewKey !== "all" && viewKey !== currentPeriod.key;
-
-  const viewItems = useMemo(
-    () =>
-      hasCurrentPeriod
-        ? [
-            { key: "all", label: "ตลอดกาล" },
-            { key: currentPeriod.key, label: "งวดนี้" },
-          ]
-        : [{ key: "all", label: "ตลอดกาล" }],
-    [hasCurrentPeriod, currentPeriod.key],
-  );
+  const periodOptions: PeriodOption[] = useMemo(() => {
+    const options: PeriodOption[] = [{ key: "all", label: "ตลอดกาล" }];
+    if (hasCurrentPeriod) {
+      options.push({
+        key: currentPeriod.key,
+        label: `งวดนี้ (${currentPeriod.label})`,
+      });
+    }
+    for (const period of pastPeriods) {
+      options.push({
+        key: period.key,
+        label: period.label,
+      });
+    }
+    return options;
+  }, [hasCurrentPeriod, currentPeriod, pastPeriods]);
 
   const playersMap = useMemo(
     () => new Map(players.map((p) => [p.id, p])),
@@ -205,25 +210,19 @@ export function Stats() {
               />
             </div>
 
-            {selectedId && hasAnyHistory && (hasCurrentPeriod || pastPeriods.length > 0) ? (
-              <div className="relative z-20 flex flex-col gap-3 pt-1 sm:flex-row sm:items-center sm:justify-between">
-                <InteractiveSegmentedControl
-                  items={viewItems}
-                  activeKey={isPastPeriodActive ? null : viewKey}
-                  onChange={setViewKey}
-                  className="w-fit"
-                  buttonClassName="min-w-[88px] sm:min-w-[100px]"
+            {selectedId && hasAnyHistory && periodOptions.length > 1 ? (
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-medium uppercase tracking-wider text-[#8E8E93] dark:text-[#98989D]">
+                  ช่วงเวลา
+                </label>
+                <PeriodDropdownPicker
+                  periods={periodOptions}
+                  selectedKey={viewKey}
+                  onSelect={setViewKey}
+                  placeholder="เลือกช่วงเวลา"
+                  className="w-full"
+                  align="full"
                 />
-
-                {pastPeriods.length > 0 ? (
-                  <PeriodDropdownPicker
-                    periods={pastPeriods}
-                    selectedKey={isPastPeriodActive ? viewKey : null}
-                    onSelect={setViewKey}
-                    placeholder="ดูงวดย้อนหลัง..."
-                    className="w-full sm:w-auto sm:min-w-[190px]"
-                  />
-                ) : null}
               </div>
             ) : null}
           </div>

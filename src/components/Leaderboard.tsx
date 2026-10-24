@@ -532,8 +532,14 @@ export function Leaderboard() {
     () => listPeriodsInHistory(history),
     [history],
   );
-  const pastPeriods = periodsInHistory.filter(
-    (period) => period.key !== currentPeriod.key,
+  const pastPeriods = useMemo(
+    () =>
+      periodsInHistory.filter((period) => {
+        if (period.key === currentPeriod.key) return false;
+        const periodScores = aggregatePeriod(history, period.key);
+        return Object.keys(periodScores).length > 0;
+      }),
+    [periodsInHistory, currentPeriod.key, history],
   );
   const selectablePeriods = periodsInHistory.some(
     (period) => period.key === currentPeriod.key,

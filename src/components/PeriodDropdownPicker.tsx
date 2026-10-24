@@ -21,12 +21,14 @@ export function PeriodDropdownPicker({
   onSelect,
   placeholder = "ดูงวดย้อนหลัง...",
   className = "",
+  align = "right",
 }: {
   periods: PeriodOption[];
   selectedKey: string | null;
   onSelect: (key: string) => void;
   placeholder?: string;
   className?: string;
+  align?: "left" | "right" | "full";
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
@@ -83,6 +85,13 @@ export function PeriodDropdownPicker({
     triggerClose();
   }
 
+  const alignClass =
+    align === "full"
+      ? "left-0 right-0 w-full"
+      : align === "left"
+        ? "left-0 right-0 sm:left-0 sm:right-auto w-full sm:min-w-[240px]"
+        : "left-0 right-0 sm:left-auto sm:right-0 w-full sm:min-w-[240px]";
+
   return (
     <div
       ref={containerRef}
@@ -130,12 +139,12 @@ export function PeriodDropdownPicker({
       {/* Floating Dropdown Menu: 1 Column List with Slide Down/Up + Fade In/Out */}
       {(isOpen || isClosing) && (
         <div
-          className={`absolute left-0 right-0 sm:left-auto sm:right-0 top-full mt-1.5 z-50 w-full sm:min-w-[240px] overflow-hidden rounded-2xl border border-black/[0.08] dark:border-[#38383A] bg-white/95 dark:bg-[#1C1C1E]/95 backdrop-blur-2xl shadow-xl transition-all duration-180 ease-out ${
+          className={`absolute top-full mt-1.5 z-50 overflow-hidden rounded-2xl border border-black/[0.08] dark:border-[#38383A] bg-white/95 dark:bg-[#1C1C1E]/95 backdrop-blur-2xl shadow-xl transition-all duration-180 ease-out ${alignClass} ${
             isClosing
               ? "opacity-0 -translate-y-2 scale-[0.98] pointer-events-none"
               : "opacity-100 translate-y-0 scale-100 animate-in fade-in-0 slide-in-from-top-2 duration-200"
           }`}
-          style={{ transformOrigin: "top right" }}
+          style={{ transformOrigin: align === "left" ? "top left" : align === "full" ? "top" : "top right" }}
         >
           <ul className="flex flex-col divide-y divide-black/[0.04] dark:divide-white/[0.04] max-h-[260px] sm:max-h-[280px] overflow-y-auto p-1.5 overscroll-contain">
             {periods.map((period) => {

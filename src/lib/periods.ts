@@ -64,12 +64,20 @@ export function getCurrentPeriod(now: Date = new Date()): Period {
   return getPeriodOfTimestamp(now.toISOString());
 }
 
-// Distinct periods actually represented in history, newest first. Sorting
-// lexicographically on `key` works because year/month are zero-padded and
+// Distinct periods actually represented in history with recorded scores, newest first.
+// Sorting lexicographically on `key` works because year/month are zero-padded and
 // "A" < "B" alphabetically, matching chronological order within a month.
 export function listPeriodsInHistory(history: HistoryEntry[]): Period[] {
   const byKey = new Map<string, Period>();
   for (const entry of history) {
+    if (!entry.playerScores) continue;
+    const scores = Object.values(entry.playerScores);
+    if (scores.length === 0) continue;
+    const hasRecordedScore = scores.some(
+      (s) => typeof s === "number" && !isNaN(s),
+    );
+    if (!hasRecordedScore) continue;
+
     const period = getPeriodOfTimestamp(entry.timestamp);
     if (!byKey.has(period.key)) {
       byKey.set(period.key, period);

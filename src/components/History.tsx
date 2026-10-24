@@ -111,8 +111,8 @@ function HistoryRow({
   );
 }
 
-const INITIAL_LIMIT = 10;
-const PAGE_SIZE = 10;
+const INITIAL_LIMIT = 5;
+const PAGE_SIZE = 5;
 
 export function History() {
   const { history, loading, error } = useHistory();
